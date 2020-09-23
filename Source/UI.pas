@@ -250,6 +250,7 @@ end;
 procedure TForm_UI.TimerTimer(Sender: TObject);
 begin
   dxRibbonStatusBar.Panels[6].Text := FormatDateTime('yyyyÄêmmÔÂddÈÕ hh:nn:ss', Now);
+  //Testgit;
 end;
 
 end.

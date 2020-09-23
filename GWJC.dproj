@@ -71,8 +71,8 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_DcuOutput>F:\ZHYFILE\弓网检测装置\软件代码\GWJC\UnitsOutput\</DCC_DcuOutput>
-        <DCC_ExeOutput>F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Bin\</DCC_ExeOutput>
+        <DCC_DcuOutput>F:\弓网检测\UnitsOutput\</DCC_DcuOutput>
+        <DCC_ExeOutput>F:\弓网检测\Bin\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>

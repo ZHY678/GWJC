@@ -29,7 +29,6 @@ object Form_UI: TForm_UI
     TabOrder = 0
     TabStop = False
     OnMinimizedChanged = dxRibbonMinimizedChanged
-    ExplicitWidth = 1274
     object dxRibbonTab_System: TdxRibbonTab
       Active = True
       Caption = #31995#32479#25511#21046#21488
@@ -106,7 +105,6 @@ object Form_UI: TForm_UI
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
-    ExplicitTop = 32000
   end
   object RzPageControl: TRzPageControl
     Left = 0
@@ -116,11 +114,7 @@ object Form_UI: TForm_UI
     Hint = ''
     ActivePage = TabSheet_Acying
     Align = alClient
-    TabOrder = 6
-    ExplicitLeft = 104
-    ExplicitTop = 184
-    ExplicitWidth = 300
-    ExplicitHeight = 150
+    TabOrder = 2
     FixedDimension = 19
     object TabSheet_Conductor: TRzTabSheet
       TabVisible = False
@@ -151,6 +145,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -449,6 +445,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -610,6 +608,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -793,6 +793,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -907,6 +909,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -995,10 +999,6 @@ object Form_UI: TForm_UI
     object TabSheet_Acying: TRzTabSheet
       TabVisible = False
       Caption = #29123#24359#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Acying: TChart
         Left = 0
         Top = 0
@@ -1021,6 +1021,8 @@ object Form_UI: TForm_UI
         Legend.Shadow.Transparency = 0
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -1075,9 +1077,6 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
-        ExplicitTop = 136
-        ExplicitWidth = 1360
-        ExplicitHeight = 560
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object Series_AcyingTime: TFastLineSeries
@@ -1282,7 +1281,7 @@ object Form_UI: TForm_UI
           ItemName = 'LargeButton_Pause'
         end>
       OneOnRow = False
-      Row = 1
+      Row = 0
       UseOwnFont = False
       Visible = True
       WholeRow = False
@@ -1310,7 +1309,7 @@ object Form_UI: TForm_UI
           ItemName = 'LargeButton_Close'
         end>
       OneOnRow = False
-      Row = 1
+      Row = 0
       UseOwnFont = False
       Visible = True
       WholeRow = False
@@ -1469,7 +1468,7 @@ object Form_UI: TForm_UI
           Visible = True
           ItemName = 'LargeButton_Arcing'
         end>
-      OneOnRow = True
+      OneOnRow = False
       Row = 0
       UseOwnFont = False
       Visible = True
