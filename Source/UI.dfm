@@ -999,6 +999,10 @@ object Form_UI: TForm_UI
     object TabSheet_Acying: TRzTabSheet
       TabVisible = False
       Caption = #29123#24359#30028#38754
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Chart_Acying: TChart
         Left = 0
         Top = 0
