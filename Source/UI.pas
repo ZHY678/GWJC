@@ -10,7 +10,7 @@ uses
   cxControls, cxLookAndFeels, cxLookAndFeelPainters, dxRibbonSkins,
   dxRibbonCustomizationForm, dxRibbon, Vcl.ExtCtrls, dxStatusBar,
   dxRibbonStatusBar, RzTabs, VclTee.TeeGDIPlus, VCLTee.TeEngine, VCLTee.Series,
-  VCLTee.TeeProcs, VCLTee.Chart;
+  VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara;
 
 type
   TForm_UI = class(TForm)
@@ -146,6 +146,7 @@ type
     procedure Action_AcyingDisplayExecute(Sender: TObject);
   private
     { Private declarations }
+    FGlobalpara: TGlobalpara;
   public
     { Public declarations }
   end;
@@ -156,6 +157,22 @@ var
 implementation
 
 {$R *.dfm}
+
+function CollectThread(p: Pointer): Integer; stdcall;
+begin
+  ;
+end;
+
+function ProcessThread(p: Pointer): Integer; stdcall;
+begin
+  ;
+end;
+
+
+function DrawThread(p: Pointer): Integer; stdcall;
+begin
+  ;
+end;
 
 procedure TForm_UI.Action_AcyingDisplayExecute(Sender: TObject);
 begin
@@ -244,7 +261,21 @@ end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
 begin
-  RzPageControl.ActivePage := TabSheet_Conductor;
+  RzPageControl.ActivePage := TabSheet_Parameter;
+
+  //关联相应地址
+  ErrorLogPath := ExtractFilePath(Application.ExeName)  + Ansistring('ErrorLog\ErrorLog.txt');
+  ConfigurationFilePath := ExtractFilePath(Application.ExeName) + AnsiString('ConfigurationFile\ConfigurationFile.txt');
+  BackupFilePath := ExtractFilePath(Application.ExeName) + AnsiString('ConfigurationFile\配置备份\ConfigurationFile.txt');
+  SavedOriginalDataPath := ExtractFilePath(Application.ExeName) + AnsiString('SavedData\');
+  SavedResultDataPath := ExtractFilePath(Application.ExeName) + AnsiString('DATA\');
+
+  FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减
+  FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
+
+  //创建线程
+  //testgit;
+  //1234
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
