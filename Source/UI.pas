@@ -273,8 +273,7 @@ begin
   FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
 
-  //创建线程
-  //12345
+  //创建线程123
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
