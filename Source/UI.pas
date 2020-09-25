@@ -261,7 +261,7 @@ end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
 begin
-  RzPageControl.ActivePage := TabSheet_Parameter;
+  RzPageControl.ActivePage := TabSheet_Hardspot;
 
   //关联相应地址
   ErrorLogPath := ExtractFilePath(Application.ExeName)  + Ansistring('ErrorLog\ErrorLog.txt');
@@ -275,7 +275,7 @@ begin
 
   //创建线程
   //testgit;
-  //123
+  //1234
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
