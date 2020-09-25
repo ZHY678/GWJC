@@ -261,7 +261,7 @@ end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
 begin
-  RzPageControl.ActivePage := TabSheet_ContactForce;
+  RzPageControl.ActivePage := TabSheet_Conductor;
 
   //关联相应地址
   ErrorLogPath := ExtractFilePath(Application.ExeName)  + Ansistring('ErrorLog\ErrorLog.txt');
@@ -274,8 +274,7 @@ begin
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
 
   //创建线程
-  //testgit;
-  //12345
+
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
