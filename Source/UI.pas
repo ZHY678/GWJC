@@ -10,7 +10,7 @@ uses
   cxControls, cxLookAndFeels, cxLookAndFeelPainters, dxRibbonSkins,
   dxRibbonCustomizationForm, dxRibbon, Vcl.ExtCtrls, dxStatusBar,
   dxRibbonStatusBar, RzTabs, VclTee.TeeGDIPlus, VCLTee.TeEngine, VCLTee.Series,
-  VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara;
+  VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara, JCWMesh, JCWDataDef, YEGinc;
 
 type
   TForm_UI = class(TForm)
@@ -20,13 +20,13 @@ type
     MenuItem_Help: TMenuItem;
     MenuItem_Init: TMenuItem;
     MenuItem_Sensor: TMenuItem;
-    MenuItem_Exit: TMenuItem;
+    MenuItem_Restore: TMenuItem;
     MenuItem_Version: TMenuItem;
     MenuItem_StartCollect: TMenuItem;
     MenuItem_StopCollect: TMenuItem;
     MenuItem_Save: TMenuItem;
     MenuItem_Server: TMenuItem;
-    MenuItem_Line: TMenuItem;
+    MenuItem_LineAndSensor: TMenuItem;
     MenuItem_StartSave: TMenuItem;
     MenuItem_StopSave: TMenuItem;
     MenuItem_Connect: TMenuItem;
@@ -56,7 +56,7 @@ type
     ManagerBar_Collect: TdxBar;
     ManagerBar_Save: TdxBar;
     ManagerBar_Server: TdxBar;
-    ManagerBar_Line: TdxBar;
+    ManagerBar_LineAndSensor: TdxBar;
     ManagerBar_Playback: TdxBar;
     LargeButton_StartCollect: TdxBarLargeButton;
     LargeButton_StopCollect: TdxBarLargeButton;
@@ -130,6 +130,10 @@ type
     Action_HardspotDisplay: TAction;
     Action_ElectricDisplay: TAction;
     Action_AcyingDisplay: TAction;
+    Action_Restore: TAction;
+    Action_StopCollect: TAction;
+    Action_StartCollect: TAction;
+    LargeButton_Sensor: TdxBarLargeButton;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -144,11 +148,23 @@ type
     procedure Action_HardspotDisplayExecute(Sender: TObject);
     procedure Action_ElectricDisplayExecute(Sender: TObject);
     procedure Action_AcyingDisplayExecute(Sender: TObject);
+    procedure Action_RestoreExecute(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure Action_StopCollectExecute(Sender: TObject);
+    procedure Action_StartCollectExecute(Sender: TObject);
   private
     { Private declarations }
+    errorLogPath, configurationFilePath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
+
+    m_hjcw: Pointer;
+    m_iDevid: JMDEVID;
+
+    m_hYEG: Pointer;   //指针和Cardinal都可以
+
     FGlobalpara: TGlobalpara;
   public
     { Public declarations }
+    PCollectThread, PProcessThread, PDrawThread: DWORD;   //各个线程
   end;
 
 var
@@ -172,6 +188,37 @@ end;
 function DrawThread(p: Pointer): Integer; stdcall;
 begin
   ;
+end;
+
+procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
+var
+  i : cardinal;
+begin
+  if WaitForSingleObject(m_mutex, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    if uiPotNum > 5 then
+    begin
+      Setlength(m_vecPot, uiPotNum);
+      for i := 0 to uiPotNum - 1 do
+      begin
+        m_vecPot[i] := potArray[i];
+      end;
+    end;
+    m_dTimeStampLast := dtimestamp;
+    m_uiFrameNo := uiframeNo;
+    m_uiFrameRecvCount := m_uiFrameRecvCount + 1;
+    m_uiPotNum := uiPotNum;
+  end;
+  ReleaseMutex(m_mutex);
+end;
+
+procedure fnResultCallback(const pTag: Pointer; const tempData: JCWJH); cdecl;
+begin
+  if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    m_data := tempData;
+  end;
+  ReleaseMutex(m_lock);
 end;
 
 procedure TForm_UI.Action_AcyingDisplayExecute(Sender: TObject);
@@ -219,6 +266,36 @@ begin
   RzPageControl.ActivePage := TabSheet_Parameter;
 end;
 
+procedure TForm_UI.Action_RestoreExecute(Sender: TObject);
+var
+  backupTextFile: TextFile;
+begin
+  AssignFile(backupTextFile, backupFilePath);
+  if FileExists(backupFilePath) then
+  begin
+    if MessageBox(Handle, '您确定要恢复之前的设置吗？', '恢复设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
+    begin
+      CopyFile(PChar(backupFilePath), PChar(configurationFilePath), False);
+      MessageBox(Handle, '设置已恢复。', '恢复设置', MB_OK + MB_ICONQUESTION);
+    end;
+  end
+  else MessageBox(Handle, '未发现备份的配置文件。', '恢复设置', MB_OK + MB_ICONQUESTION);
+end;
+
+procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
+begin
+  ResumeThread(Form_UI.PCollectThread);
+  ResumeThread(Form_UI.PProcessThread);
+  ResumeThread(Form_UI.PDrawThread);
+end;
+
+procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
+begin
+  SuspendThread(Form_UI.PCollectThread);
+  SuspendThread(Form_UI.PProcessThread);
+  SuspendThread(Form_UI.PDrawThread);
+end;
+
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
 var
   verInfoSize, errorExtraction, verValueSize: DWORD;
@@ -260,6 +337,8 @@ begin
 end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
+var
+  FCollectThreadID, FProcessThreadID, FDrawThreadID: DWORD;   //各个线程ID,THandle不行
 begin
   RzPageControl.ActivePage := TabSheet_Conductor;
 
@@ -274,7 +353,33 @@ begin
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
 
   //创建线程
+  PCollectThread := CreateThread(nil, 0, @CollectThread, nil, 4, FCollectThreadID);
+  PProcessThread := CreateThread(nil, 0, @ProcessThread, nil, 4, FProcessThreadID);
+  PDrawThread := CreateThread(nil, 0, @DrawThread, nil, 4, FDrawThreadID);
 
+  //2D初始化（导高拉出值）
+  Set8087CW(DWord($133f));   //屏蔽错误用
+  m_lock := CreateMutex(nil, False, nil);
+  m_hjcw := Jcw_InitInstance();
+  m_iDevid := JMID_GEO_DEV0;
+  Jcw_SetResultCallBack(m_hjcw, self, @fnResultCallback);
+
+  //2D初始化（点云数据）
+  m_mutex := CreateMutex(nil, False, nil);
+  m_hYEG := YEG_CreateInstance;
+  YEG_SetScanPointCallBack(m_hYEG, @OnPointCould, Self);
+end;
+
+procedure TForm_UI.FormDestroy(Sender: TObject);
+begin
+  //线程销毁
+  TerminateThread(PCollectThread, 0);
+  TerminateThread(PProcessThread, 0);
+  TerminateThread(PDrawThread, 0);
+
+  //2D析构
+  CloseHandle(m_mutex);
+  CloseHandle(m_lock);
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);

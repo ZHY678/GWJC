@@ -8,7 +8,8 @@ uses
   JCWDataDef in 'Source\JCWDataDef.pas',
   JCWMesh in 'Source\JCWMesh.pas',
   YEGinc in 'Source\YEGinc.pas',
-  UGlobalpara in 'Source\UGlobalpara.pas';
+  UGlobalpara in 'Source\UGlobalpara.pas',
+  UI_SensorSetting in 'Source\UI_SensorSetting.pas' {Form_Sensor};
 
 {$R *.res}
 
@@ -17,5 +18,6 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TForm_UI, Form_UI);
   Application.CreateForm(TForm_LineSetting, Form_LineSetting);
+  Application.CreateForm(TForm_Sensor, Form_Sensor);
   Application.Run;
 end.

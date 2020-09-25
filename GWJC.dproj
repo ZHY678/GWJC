@@ -100,6 +100,10 @@
         <DCCReference Include="Source\JCWMesh.pas"/>
         <DCCReference Include="Source\YEGinc.pas"/>
         <DCCReference Include="Source\UGlobalpara.pas"/>
+        <DCCReference Include="Source\UI_SensorSetting.pas">
+            <Form>Form_Sensor</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

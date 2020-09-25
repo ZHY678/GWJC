@@ -30,6 +30,9 @@ type
     Panel_SettingSet: TPanel;
     Button_Set: TButton;
     Button_Start: TButton;
+    procedure Button_StartClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -41,6 +44,27 @@ var
 
 implementation
 
+uses
+  UI;
+
 {$R *.dfm}
+
+procedure TForm_LineSetting.Button_StartClick(Sender: TObject);
+begin
+  ResumeThread(Form_UI.PCollectThread);
+  ResumeThread(Form_UI.PProcessThread);
+  ResumeThread(Form_UI.PDrawThread);
+end;
+
+procedure TForm_LineSetting.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Form_UI.Enabled := True;
+end;
+
+procedure TForm_LineSetting.FormShow(Sender: TObject);
+begin
+  Form_UI.Enabled := False;
+end;
 
 end.

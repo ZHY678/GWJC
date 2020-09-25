@@ -13,6 +13,8 @@ object Form_LineSetting: TForm_LineSetting
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 19
   object Panel_Kilometer: TPanel
@@ -203,6 +205,7 @@ object Form_LineSetting: TForm_LineSetting
       Height = 25
       Caption = #24320#22987
       TabOrder = 1
+      OnClick = Button_StartClick
     end
   end
 end

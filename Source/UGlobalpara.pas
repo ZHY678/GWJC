@@ -3,7 +3,7 @@ unit UGlobalpara;
 interface
 
 Uses
-  System.SysUtils, Vcl.Dialogs, winapi.Windows, System.Classes, System.StrUtils;
+  System.SysUtils, Vcl.Dialogs, winapi.Windows, System.Classes, System.StrUtils, JCWDataDef, YEGinc;
 
 type
   TGlobalpara = class
@@ -28,7 +28,17 @@ type
     MinResidualDiskSize = 10.0;   //最小磁盘容量
 
   Var
-    errorLogPath, configurationFilePath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
+//    errorLogPath, configurationFilePath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
+
+    //2D数据变量（导高拉出值）
+    m_data: JCWJH;
+    m_lock: THandle;
+
+    //2D数据变量（点云数据）
+    m_vecPot : array of YEGtagPOINTF;
+    m_dTimeStampLast: Single;
+    m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
+    m_mutex: THandle;
 
 implementation
 
@@ -222,7 +232,8 @@ begin
       Begin
         DeleteFile(PWideChar(WideString(TempTStringList[I])));
         TempTStringList.Delete(I);
-      End;
+      End
+      else Break;
     End;
   end;
   Result := TempTStringList;
