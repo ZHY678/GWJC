@@ -5,7 +5,7 @@ object Form_Sensor: TForm_Sensor
   BorderStyle = bsSingle
   Caption = #20256#24863#22120#35774#32622
   ClientHeight = 388
-  ClientWidth = 339
+  ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,6 +13,8 @@ object Form_Sensor: TForm_Sensor
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object GroupBox_2D: TGroupBox
@@ -150,7 +152,7 @@ object Form_Sensor: TForm_Sensor
     Font.Style = []
     ParentFont = False
     TabOrder = 1
-    object Label_1: TLabel
+    object Label_UDPIP1: TLabel
       Left = 16
       Top = 32
       Width = 95
@@ -163,7 +165,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_11: TLabel
+    object Label_UDPIP2: TLabel
       Left = 143
       Top = 40
       Width = 5
@@ -176,7 +178,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_12: TLabel
+    object Label_UDPIP3: TLabel
       Left = 198
       Top = 40
       Width = 5
@@ -189,7 +191,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_13: TLabel
+    object Label_UDPIP4: TLabel
       Left = 248
       Top = 40
       Width = 5
@@ -202,7 +204,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_18: TLabel
+    object Label_UDPPort: TLabel
       Left = 16
       Top = 80
       Width = 96
@@ -215,7 +217,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Edit_1: TEdit
+    object Edit_UDPIP1: TEdit
       Left = 104
       Top = 32
       Width = 33
@@ -229,7 +231,7 @@ object Form_Sensor: TForm_Sensor
       TabOrder = 0
       Text = '192'
     end
-    object Edit_11: TEdit
+    object Edit_UDPIP2: TEdit
       Left = 159
       Top = 32
       Width = 33
@@ -243,7 +245,7 @@ object Form_Sensor: TForm_Sensor
       TabOrder = 1
       Text = '168'
     end
-    object Edit_12: TEdit
+    object Edit_UDPIP3: TEdit
       Left = 209
       Top = 32
       Width = 33
@@ -257,7 +259,7 @@ object Form_Sensor: TForm_Sensor
       TabOrder = 2
       Text = '100'
     end
-    object Edit_13: TEdit
+    object Edit_UDPIP4: TEdit
       Left = 259
       Top = 32
       Width = 33
@@ -271,7 +273,7 @@ object Form_Sensor: TForm_Sensor
       TabOrder = 3
       Text = '100'
     end
-    object Edit_18: TEdit
+    object Edit_UDPPort: TEdit
       Left = 104
       Top = 80
       Width = 88
@@ -286,7 +288,7 @@ object Form_Sensor: TForm_Sensor
       Text = '192'
     end
   end
-  object GroupBox_11: TGroupBox
+  object GroupBox_Acying: TGroupBox
     Left = 8
     Top = 232
     Width = 305
@@ -299,121 +301,13 @@ object Form_Sensor: TForm_Sensor
     Font.Style = []
     ParentFont = False
     TabOrder = 2
-    object Label_14: TLabel
-      Left = 16
-      Top = 32
-      Width = 95
-      Height = 19
-      Caption = #35774#22791'IP'#22320#22336#65306
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label_15: TLabel
-      Left = 143
-      Top = 40
-      Width = 5
-      Height = 19
-      Caption = '.'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label_16: TLabel
-      Left = 198
-      Top = 40
-      Width = 5
-      Height = 19
-      Caption = '.'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label_17: TLabel
-      Left = 248
-      Top = 40
-      Width = 5
-      Height = 19
-      Caption = '.'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Edit_14: TEdit
-      Left = 104
-      Top = 32
-      Width = 33
-      Height = 27
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      Text = '192'
-    end
-    object Edit_15: TEdit
-      Left = 159
-      Top = 32
-      Width = 33
-      Height = 27
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 1
-      Text = '168'
-    end
-    object Edit_16: TEdit
-      Left = 209
-      Top = 32
-      Width = 33
-      Height = 27
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 2
-      Text = '100'
-    end
-    object Edit_17: TEdit
-      Left = 259
-      Top = 32
-      Width = 33
-      Height = 27
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 3
-      Text = '100'
-    end
   end
   object Button_Comfirm: TButton
     Left = 107
     Top = 335
     Width = 104
     Height = 33
-    Caption = 'Button_Comfirm'
+    Caption = #30830#35748
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16

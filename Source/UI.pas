@@ -10,7 +10,8 @@ uses
   cxControls, cxLookAndFeels, cxLookAndFeelPainters, dxRibbonSkins,
   dxRibbonCustomizationForm, dxRibbon, Vcl.ExtCtrls, dxStatusBar,
   dxRibbonStatusBar, RzTabs, VclTee.TeeGDIPlus, VCLTee.TeEngine, VCLTee.Series,
-  VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara, JCWMesh, JCWDataDef, YEGinc;
+  VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara, JCWMesh, JCWDataDef, YEGinc,
+  UI_SensorSetting;
 
 type
   TForm_UI = class(TForm)
@@ -134,6 +135,7 @@ type
     Action_StopCollect: TAction;
     Action_StartCollect: TAction;
     LargeButton_Sensor: TdxBarLargeButton;
+    Action_OpenSensorUI: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -152,6 +154,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure Action_StopCollectExecute(Sender: TObject);
     procedure Action_StartCollectExecute(Sender: TObject);
+    procedure Action_OpenSensorUIExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, configurationFilePath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
@@ -162,6 +165,10 @@ type
     m_hYEG: Pointer;   //指针和Cardinal都可以
 
     FGlobalpara: TGlobalpara;
+
+    procedure InitFolder;
+    procedure InitConfigurationFile;
+    procedure InitSubGroup;
   public
     { Public declarations }
     PCollectThread, PProcessThread, PDrawThread: DWORD;   //各个线程
@@ -261,6 +268,11 @@ begin
   Form_LineSetting.Show;
 end;
 
+procedure TForm_UI.Action_OpenSensorUIExecute(Sender: TObject);
+begin
+  Form_Sensor.Show;
+end;
+
 procedure TForm_UI.Action_ParameterDisplayExecute(Sender: TObject);
 begin
   RzPageControl.ActivePage := TabSheet_Parameter;
@@ -276,6 +288,8 @@ begin
     if MessageBox(Handle, '您确定要恢复之前的设置吗？', '恢复设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
     begin
       CopyFile(PChar(backupFilePath), PChar(configurationFilePath), False);
+      InitConfigurationFile;
+      InitSubGroup;
       MessageBox(Handle, '设置已恢复。', '恢复设置', MB_OK + MB_ICONQUESTION);
     end;
   end
@@ -349,7 +363,11 @@ begin
   SavedOriginalDataPath := ExtractFilePath(Application.ExeName) + AnsiString('SavedData\');
   SavedResultDataPath := ExtractFilePath(Application.ExeName) + AnsiString('DATA\');
 
-  FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减
+  InitFolder;
+  InitConfigurationFile;
+  InitSubGroup;
+
+  FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
 
   //创建线程
@@ -385,6 +403,108 @@ end;
 procedure TForm_UI.TimerTimer(Sender: TObject);
 begin
   dxRibbonStatusBar.Panels[6].Text := FormatDateTime('yyyy年mm月dd日 hh:nn:ss', Now);
+end;
+
+procedure TForm_UI.InitFolder;
+begin
+  if not DirectoryExists(ExtractFilePath(ErrorLogPath)) then ForceDirectories(ExtractFilePath(ErrorLogPath));
+  if not DirectoryExists(ExtractFilePath(BackupFilePath)) then ForceDirectories(ExtractFilePath(BackupFilePath));
+  if not DirectoryExists(ExtractFilePath(SavedOriginalDataPath)) then ForceDirectories(ExtractFilePath(SavedOriginalDataPath));
+  if not DirectoryExists(ExtractFilePath(SavedResultDataPath)) then ForceDirectories(ExtractFilePath(SavedResultDataPath));
+end;
+
+procedure TForm_UI.InitConfigurationFile;
+//var
+//  ConfigurationTextFile : TextFile;
+//  IniFile : TIniFile;
+begin
+//  try
+//    AssignFile(ConfigurationTextFile, ConfigurationFilePath);
+//    if not FileExists(ConfigurationFilePath) then
+//    Begin
+//      Rewrite(ConfigurationTextFile);
+//      Writeln(ConfigurationTextFile, '[SenSorSetting]');
+//      Writeln(ConfigurationTextFile, '');
+//
+//      Writeln(ConfigurationTextFile, '[ParameticCorrection]');
+//      Writeln(ConfigurationTextFile, 'IsThermalCompensation = 0');
+//      Writeln(ConfigurationTextFile, 'UpperSensorAngle = 0');
+//      Writeln(ConfigurationTextFile, 'LowerSensorAngle = 0');
+//      Writeln(ConfigurationTextFile, 'SensorsDistance = 0');
+//      Writeln(ConfigurationTextFile, '');
+//
+//      Writeln(ConfigurationTextFile, '[CalibrationParameter]');
+//      Writeln(ConfigurationTextFile, 'UpperLineMeanValue = 0');
+//      Writeln(ConfigurationTextFile, 'LowerLineMeanValue = 0');
+//      Writeln(ConfigurationTextFile, 'UpperSensorTemperature = 0');
+//      Writeln(ConfigurationTextFile, 'LowerSensorTemperature = 0');
+//      Writeln(ConfigurationTextFile, '');
+//
+//      Writeln(ConfigurationTextFile, '[Debug]');
+//      Writeln(ConfigurationTextFile, 'IsDebug = 0');
+//      Writeln(ConfigurationTextFile, 'IsShow3D = 0');
+//
+//      CloseFile(ConfigurationTextFile);
+//    End;
+//
+//    IniFile := TIniFile.Create(ConfigurationFilePath);
+//
+//    GConfigParameter.IsThermalCompensation := IniFile.ReadInteger('ParameticCorrection', 'IsThermalCompensation', 0);
+//    GConfigParameter.UpperSensorAngle := IniFile.ReadFloat('ParameticCorrection', 'UpperSensorAngle', 0);
+//    GConfigParameter.LowerSensorAngle := IniFile.ReadFloat('ParameticCorrection', 'LowerSensorAngle', 0);
+//    GConfigParameter.SensorsDistance := IniFile.ReadFloat('ParameticCorrection', 'SensorsDistance', 0);
+//
+//    GConfigParameter.UpperLineMeanValue := IniFile.ReadFloat('CalibrationParameter', 'UpperLineMeanValue', 0);
+//    GConfigParameter.LowerLineMeanValue := IniFile.ReadFloat('CalibrationParameter', 'LowerLineMeanValue', 0);
+//    GConfigParameter.UpperSensorTemperature := IniFile.ReadFloat('CalibrationParameter', 'UpperSensorTemperature', 0);
+//    GConfigParameter.LowerSensorTemperature := IniFile.ReadFloat('CalibrationParameter', 'LowerSensorTemperature', 0);
+//
+//    GConfigParameter.IsDebug := IniFile.ReadInteger('Debug', 'IsDebug', 0);
+//    GConfigParameter.IsShow3D := IniFile.ReadInteger('Debug', 'IsShow3D', 0);
+//
+//    IniFile.Free;
+//
+//    GConfigParameter.StandardThickness := StrToFloat(StandardEdit.Text);
+//    GConfigParameter.CenterPoint := StrToFloat(CenterPointEdit.Text);
+//
+//    if (GConfigParameter.IsThermalCompensation > 1) Or (GConfigParameter.IsDebug > 1) then
+//    begin
+//      RibbonStatusBar.Panels[2].Text := '软件初始化失败，请检查配置文件。';
+//      OpenSensorLargeButton.Enabled := False;
+//      CloseSensorLargeButton.Enabled := False;
+//    end;
+//
+//    if GConfigParameter.IsDebug > 0 then DebugTab.Visible := True
+//    else DebugTab.Visible := False;
+//
+//    InitCalibPara;
+//
+//  except
+//    On E : Exception Do
+//    begin
+//      FGlobalpara.ShowAndSaveErrorLog(ErrorLogPath, 'InitConfigurationFile', E.Message, False);
+//      RibbonStatusBar.Panels[2].Text := '软件初始化失败，请检查配置文件。';
+//      OpenSensorLargeButton.Enabled := False;
+//      CloseSensorLargeButton.Enabled := False;
+//    end;
+//  end;
+end;
+
+procedure TForm_UI.InitSubGroup;
+begin
+//  StartMeasureLargeButton.Enabled := False;
+//  StopMeasureLargeButton.Enabled := False;
+//  dxBarLargeButton_Show3D.Enabled := False;
+//  dxBarLargeButton_Hide3D.Enabled := False;
+//  RzPageControl.ActivePage := DetectionTabSheet;
+//
+//  OUpperAngleEdit.Text := FloatToStr(GConfigParameter.UpperSensorAngle);
+//  OLowerAngleEdit.Text := FloatToStr(GConfigParameter.LowerSensorAngle);
+//  OUpperValueEdit.Text := FloatToStr(GConfigParameter.UpperLineMeanValue);
+//  OLowerValueEdit.Text := FloatToStr(GConfigParameter.LowerLineMeanValue);
+//  OSensorDistanceEdit.Text := FloatToStr(GConfigParameter.SensorsDistance);
+//  OUpperTempEdit.Text := FloatToStr(GConfigParameter.UpperSensorTemperature);
+//  OLowerTempEdit.Text := FloatToStr(GConfigParameter.LowerSensorTemperature);
 end;
 
 end.

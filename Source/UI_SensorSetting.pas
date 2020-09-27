@@ -18,26 +18,20 @@ type
     Edit_IP4: TEdit;
     GroupBox_2D: TGroupBox;
     GroupBox_DataCollecter: TGroupBox;
-    Label_1: TLabel;
-    Label_11: TLabel;
-    Label_12: TLabel;
-    Label_13: TLabel;
-    Edit_1: TEdit;
-    Edit_11: TEdit;
-    Edit_12: TEdit;
-    Edit_13: TEdit;
-    GroupBox_11: TGroupBox;
-    Label_14: TLabel;
-    Label_15: TLabel;
-    Label_16: TLabel;
-    Label_17: TLabel;
-    Edit_14: TEdit;
-    Edit_15: TEdit;
-    Edit_16: TEdit;
-    Edit_17: TEdit;
-    Edit_18: TEdit;
-    Label_18: TLabel;
+    Label_UDPIP1: TLabel;
+    Label_UDPIP2: TLabel;
+    Label_UDPIP3: TLabel;
+    Label_UDPIP4: TLabel;
+    Edit_UDPIP1: TEdit;
+    Edit_UDPIP2: TEdit;
+    Edit_UDPIP3: TEdit;
+    Edit_UDPIP4: TEdit;
+    GroupBox_Acying: TGroupBox;
+    Edit_UDPPort: TEdit;
+    Label_UDPPort: TLabel;
     Button_Comfirm: TButton;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -49,6 +43,19 @@ var
 
 implementation
 
+uses
+  UI;
+
 {$R *.dfm}
+
+procedure TForm_Sensor.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Form_UI.Enabled := True;
+end;
+
+procedure TForm_Sensor.FormShow(Sender: TObject);
+begin
+  Form_UI.Enabled := False;
+end;
 
 end.
