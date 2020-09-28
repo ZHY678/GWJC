@@ -16,6 +16,8 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+//  Application.CreateForm(TForm_LineSetting, Form_LineSetting);
+//  Application.CreateForm(TForm_Sensor, Form_Sensor);
   Application.CreateForm(TForm_UI, Form_UI);
   Application.CreateForm(TForm_LineSetting, Form_LineSetting);
   Application.CreateForm(TForm_Sensor, Form_Sensor);

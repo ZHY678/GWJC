@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, UGlobalpara;
 
 type
   TForm_LineSetting = class(TForm)
@@ -33,10 +33,15 @@ type
     procedure Button_StartClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Button_SetClick(Sender: TObject);
   private
     { Private declarations }
+    FGlobalpara: TGlobalpara;
   public
     { Public declarations }
+    kilometer: Double;
+    line_name, shangxiaxing, direction: string;
+    plus_minus: Byte;
   end;
 
 var
@@ -48,6 +53,38 @@ uses
   UI;
 
 {$R *.dfm}
+
+procedure TForm_LineSetting.Button_SetClick(Sender: TObject);
+begin
+  if not (FGlobalpara.IsNumberType(Edit_Kilometer.Text) <> 0) then MessageBox(Handle, '公里标输入的值存在问题，请检查。', '线路设置', MB_OK)
+  else
+  begin
+    if Length(ComboBox_Line.Text) = 0 then MessageBox(Handle, '未选择线路名称，请检查。', '线路设置', MB_OK)
+    else
+    begin
+      if not (RadioButton_Up.Checked or RadioButton_Down.Checked) then MessageBox(Handle, '未选择上下行，请检查。', '线路设置', MB_OK)
+      else
+      begin
+        if not (RadioButton_Front.Checked or RadioButton_Back.Checked) then MessageBox(Handle, '未选择正反向，请检查。', '线路设置', MB_OK)
+        else
+        begin
+          if not (RadioButton_Add.Checked or RadioButton_Substract.Checked) then MessageBox(Handle, '未选择递增递减，请检查。', '线路设置', MB_OK)
+          else
+          begin
+            kilometer := StrToFloat(Edit_Kilometer.Text);
+            line_name := ComboBox_Line.Text;
+            if RadioButton_Up.Checked then shangxiaxing := '上行'
+            else shangxiaxing := '下行';
+            if RadioButton_Front.Checked then direction := '正向'
+            else direction := '反向';
+            if RadioButton_Add.Checked then plus_minus := 1
+            else plus_minus := 0;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
 
 procedure TForm_LineSetting.Button_StartClick(Sender: TObject);
 begin

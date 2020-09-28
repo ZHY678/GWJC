@@ -18,6 +18,7 @@ type
     public
       procedure ShowAndSaveErrorLog(txtPath, errorProcedure, errorResult: String; testFlag: Boolean);
       Procedure DataSelfDelete(TempSaveDataPath : String; TempCompareDataSize : Single);
+      function IsNumberType(inputString : string) : Byte;   //返回值：0——字符串，1——整数，2——小数
   end;
 
   Const
@@ -28,8 +29,6 @@ type
     MinResidualDiskSize = 10.0;   //最小磁盘容量
 
   Var
-//    errorLogPath, configurationFilePath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
-
     //2D数据变量（导高拉出值）
     m_data: JCWJH;
     m_lock: THandle;
@@ -244,6 +243,39 @@ Procedure TGlobalpara.DataSelfDelete(TempSaveDataPath: string; TempCompareDataSi
 begin
   if Not(IsResidualDiskSizeEnough(TempSaveDataPath, TempCompareDataSize)) then
   DeleteRedundantFile(TempSaveDataPath, TempCompareDataSize, FileTimeSort(PathToTime(FindFileList(TempSaveDataPath, '.*')), FindFileList(TempSaveDataPath, '.*')));
+end;
+
+function TGlobalpara.IsNumberType(inputString: string) : Byte;   //返回值：0——字符串，1——整数，2——小数
+var
+  i : Word;
+begin
+  Result := 0;
+  if Length(inputString) > 0 then
+  Begin
+    for i := 1 to Length(inputString) do
+    Begin
+      if (inputString[i] < '0') or (inputString[i] > '9') then
+      Begin
+        if (inputString[i] = '.') And (i <> 1) And (i <> Length(inputString)) then
+        Begin
+          if Result = 2 then
+          Begin
+            Result := 0;
+            Exit;
+          End;
+          Result := 2;
+          Continue;
+        End;
+        if (i = 1) And (inputString[i] = '-') And (Length(inputString) > 1) then Result := 1
+        else
+        Begin
+          Result := 0;
+          Exit;
+        End;
+      End;
+    End;
+    if Result <> 2 then Result := 1;
+  End;
 end;
 
 end.

@@ -94,7 +94,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      Text = '192'
     end
     object Edit_IP2: TEdit
       Left = 159
@@ -108,7 +107,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      Text = '168'
     end
     object Edit_IP3: TEdit
       Left = 209
@@ -122,7 +120,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 2
-      Text = '100'
     end
     object Edit_IP4: TEdit
       Left = 259
@@ -136,7 +133,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 3
-      Text = '100'
     end
   end
   object GroupBox_DataCollecter: TGroupBox
@@ -229,7 +225,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      Text = '192'
     end
     object Edit_UDPIP2: TEdit
       Left = 159
@@ -243,7 +238,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      Text = '168'
     end
     object Edit_UDPIP3: TEdit
       Left = 209
@@ -257,7 +251,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 2
-      Text = '100'
     end
     object Edit_UDPIP4: TEdit
       Left = 259
@@ -271,7 +264,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 3
-      Text = '100'
     end
     object Edit_UDPPort: TEdit
       Left = 104
@@ -285,7 +277,6 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 4
-      Text = '192'
     end
   end
   object GroupBox_Acying: TGroupBox
@@ -315,5 +306,6 @@ object Form_Sensor: TForm_Sensor
     Font.Style = []
     ParentFont = False
     TabOrder = 3
+    OnClick = Button_ComfirmClick
   end
 end

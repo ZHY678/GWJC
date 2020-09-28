@@ -197,6 +197,7 @@ object Form_LineSetting: TForm_LineSetting
       Height = 25
       Caption = #35774#32622
       TabOrder = 0
+      OnClick = Button_SetClick
     end
     object Button_Start: TButton
       Left = 232
