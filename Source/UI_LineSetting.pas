@@ -88,9 +88,35 @@ end;
 
 procedure TForm_LineSetting.Button_StartClick(Sender: TObject);
 begin
-  ResumeThread(Form_UI.PCollectThread);
-  ResumeThread(Form_UI.PProcessThread);
-  ResumeThread(Form_UI.PDrawThread);
+  case Form_UI.Init2DIP of
+    0:
+    begin
+      case Form_UI.Open2D of
+        0:
+        begin
+          Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+
+          ResumeThread(Form_UI.PCollectThread);
+          ResumeThread(Form_UI.PProcessThread);
+          ResumeThread(Form_UI.PDrawThread);
+        end;
+        -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+        -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+        -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+        -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+        -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+        -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+        -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+      end;
+    end;
+    -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+    -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+    -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+    -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+    -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+    -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+    -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+  end;
 end;
 
 procedure TForm_LineSetting.FormClose(Sender: TObject;

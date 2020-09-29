@@ -163,20 +163,27 @@ type
     LineName, TCPIP, UDPIP, UDPPort: string;
     IsDebug: Byte;
 
-    m_hjcw: Pointer;
-    m_iDevid: JMDEVID;
-
-    m_hYEG: Pointer;   //指针和Cardinal都可以
-
     FGlobalpara: TGlobalpara;
 
     procedure InitFolder;
     procedure InitConfigurationFile;
     procedure InitSubGroup;
+    function JCWSetIP(tempTCPIP: string): Integer;
+    function YEGConnect(tempTCPIP: string): Integer;
+    procedure YEGDisconnect;
   public
     { Public declarations }
+    m_hjcw: Pointer;
+    m_iDevid: JMDEVID;
+
+    m_hYEG: Pointer;   //指针和Cardinal都可以
+
     PCollectThread, PProcessThread, PDrawThread: DWORD;   //各个线程
     configurationFilePath: string;
+
+    function Init2DIP: Integer;
+    function Open2D: Integer;
+    procedure Close2D;
   end;
 
 var
@@ -303,9 +310,35 @@ end;
 
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
-  ResumeThread(Form_UI.PCollectThread);
-  ResumeThread(Form_UI.PProcessThread);
-  ResumeThread(Form_UI.PDrawThread);
+  case Init2DIP of
+    0:
+    begin
+      case Open2D of
+        0:
+        begin
+          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+
+          ResumeThread(Form_UI.PCollectThread);
+          ResumeThread(Form_UI.PProcessThread);
+          ResumeThread(Form_UI.PDrawThread);
+        end;
+        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+      end;
+    end;
+    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+  end;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
@@ -313,6 +346,9 @@ begin
   SuspendThread(Form_UI.PCollectThread);
   SuspendThread(Form_UI.PProcessThread);
   SuspendThread(Form_UI.PDrawThread);
+
+  Close2D;
+  dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -368,17 +404,6 @@ begin
   SavedOriginalDataPath := ExtractFilePath(Application.ExeName) + AnsiString('SavedData\');
   SavedResultDataPath := ExtractFilePath(Application.ExeName) + AnsiString('DATA\');
 
-  InitFolder;
-  InitConfigurationFile;
-
-  FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
-  FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
-
-  //创建线程
-  PCollectThread := CreateThread(nil, 0, @CollectThread, nil, 4, FCollectThreadID);
-  PProcessThread := CreateThread(nil, 0, @ProcessThread, nil, 4, FProcessThreadID);
-  PDrawThread := CreateThread(nil, 0, @DrawThread, nil, 4, FDrawThreadID);
-
   //2D初始化（导高拉出值）
   Set8087CW(DWord($133f));   //屏蔽错误用
   m_lock := CreateMutex(nil, False, nil);
@@ -390,6 +415,17 @@ begin
   m_mutex := CreateMutex(nil, False, nil);
   m_hYEG := YEG_CreateInstance;
   YEG_SetScanPointCallBack(m_hYEG, @OnPointCould, Self);
+
+  InitFolder;
+  InitConfigurationFile;
+
+  FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
+  FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
+
+  //创建线程
+  PCollectThread := CreateThread(nil, 0, @CollectThread, nil, 4, FCollectThreadID);
+  PProcessThread := CreateThread(nil, 0, @ProcessThread, nil, 4, FProcessThreadID);
+  PDrawThread := CreateThread(nil, 0, @DrawThread, nil, 4, FDrawThreadID);
 
   Timer_InitSubGroup.Enabled := True;
 end;
@@ -526,6 +562,40 @@ begin
   end;
 
   Form_Sensor.Edit_UDPPort.Text := UDPPort;
+end;
+
+function TForm_UI.JCWSetIP(tempTCPIP: string) : Integer;
+begin
+  Result := Jcw_SetDevAddress(m_hjcw, m_iDevid, PAnsiChar(AnsiString(tempTCPIP)), 6771);
+end;
+
+function TForm_UI.YEGConnect(tempTCPIP: string) : Integer;
+begin
+  Result := YEG_Connect(m_hYEG, PAnsiChar(AnsiString(tempTCPIP)));
+end;
+
+procedure TForm_UI.YEGDisconnect;
+begin
+  if m_hYEG <> nil then YEG_Disconnect(m_hYEG);
+end;
+
+function TForm_UI.Init2DIP: Integer;
+begin
+  Result := JCWSetIP(TCPIP);
+  if Result = 0 then Result := YEGConnect(TCPIP);
+end;
+
+function TForm_UI.Open2D: Integer;
+begin
+  Result := Jcw_Start(m_hjcw);
+  if Result = 0 then Result := YEG_StartGrab(m_hYEG);
+end;
+
+procedure TForm_UI.Close2D;
+begin
+  YEGDisconnect;
+  Jcw_Stop(m_hjcw);
+  YEG_StopGrab(m_hYEG);
 end;
 
 end.
