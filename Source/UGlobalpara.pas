@@ -6,6 +6,10 @@ Uses
   System.SysUtils, Vcl.Dialogs, winapi.Windows, System.Classes, System.StrUtils, JCWDataDef, YEGinc;
 
 type
+  data2D = record
+    lineHeight, lineWidth, lineHeightValue, lineWidthValue: Single;
+  end;
+
   TGlobalpara = class
     private
       Function GetResidualDiskSize(TempSaveDataPath : String) : Int64;
@@ -38,6 +42,10 @@ type
     m_dTimeStampLast: Single;
     m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
     m_mutex: THandle;
+
+    data2DArray: array[0..3] of array[0..199] of data2D;
+    draw2DArray: array[0..4] of array[0..999] of data2D;
+    calCounts, drawCount: Word;
 
 implementation
 

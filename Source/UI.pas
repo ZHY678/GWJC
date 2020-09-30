@@ -199,14 +199,20 @@ begin
 end;
 
 function ProcessThread(p: Pointer): Integer; stdcall;
+var
+  i: Byte;
 begin
-  ;
+  if calCounts = 200 then
+  begin
+    for I := 0 to 199 do
+
+  end;
 end;
 
 
 function DrawThread(p: Pointer): Integer; stdcall;
 begin
-  ;
+//  Synchronize；
 end;
 
 procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
@@ -232,10 +238,20 @@ begin
 end;
 
 procedure fnResultCallback(const pTag: Pointer; const tempData: JCWJH); cdecl;
+var
+  i: Byte;
 begin
   if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
   begin
     m_data := tempData;
+    for I := 0 to 3 do
+    begin
+      data2DArray[i][calCounts].lineHeight := m_data.jcx[i].pntLinePos.x;
+      data2DArray[i][calCounts].lineWidth := m_data.jcx[i].pntLinePos.y;
+      data2DArray[i][calCounts].lineHeightValue := m_data.jcxComp[i].pntLinePos.x;
+      data2DArray[i][calCounts].lineWidthValue := m_data.jcxComp[i].pntLinePos.y;
+    end;
+    Inc(calCounts);
   end;
   ReleaseMutex(m_lock);
 end;
@@ -428,6 +444,10 @@ begin
   PDrawThread := CreateThread(nil, 0, @DrawThread, nil, 4, FDrawThreadID);
 
   Timer_InitSubGroup.Enabled := True;
+
+  //计算绘图技术点初始化
+  calCounts:= 0;
+  drawCount:= 0;
 end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
