@@ -96,9 +96,15 @@ begin
         begin
           Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
 
-          ResumeThread(Form_UI.PCollectThread);
-          ResumeThread(Form_UI.PProcessThread);
-          ResumeThread(Form_UI.PDrawThread);
+          if not Form_UI.IsRun then
+          begin
+            ResumeThread(Form_UI.PCollectThread);
+            ResumeThread(Form_UI.PProcessThread);
+            ResumeThread(Form_UI.PDrawThread);
+            Form_UI.IsRun := True;
+            Form_UI.calCounts := 0;
+            Form_UI.drawCounts := 0;
+          end;
         end;
         -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
         -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
