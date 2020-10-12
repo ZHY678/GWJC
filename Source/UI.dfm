@@ -140,10 +140,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -413,10 +412,6 @@ object Form_UI: TForm_UI
     object TabSheet_Parameter: TRzTabSheet
       TabVisible = False
       Caption = #20854#20313#20960#20309#21442#25968#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Parameter: TChart
         Left = 0
         Top = 0
@@ -437,10 +432,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -573,10 +567,6 @@ object Form_UI: TForm_UI
     object TabSheet_Contactforce: TRzTabSheet
       TabVisible = False
       Caption = #25509#35302#21147#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Contactforce: TChart
         Left = 0
         Top = 0
@@ -597,10 +587,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -755,10 +744,6 @@ object Form_UI: TForm_UI
     object TabSheet_Hardspot: TRzTabSheet
       TabVisible = False
       Caption = #30828#28857#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Hardspot: TChart
         Left = 0
         Top = 0
@@ -779,10 +764,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -868,10 +852,6 @@ object Form_UI: TForm_UI
     object TabSheet_Electric: TRzTabSheet
       TabVisible = False
       Caption = #30005#27969#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Electric: TChart
         Left = 0
         Top = 0
@@ -892,10 +872,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -981,10 +960,6 @@ object Form_UI: TForm_UI
     object TabSheet_Acying: TRzTabSheet
       TabVisible = False
       Caption = #29123#24359#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Acying: TChart
         Left = 0
         Top = 0
@@ -1005,10 +980,9 @@ object Form_UI: TForm_UI
         LeftWall.Color = 14745599
         Legend.Font.Name = 'Verdana'
         Legend.Shadow.Transparency = 0
+        MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
-        Title.Text.Strings = (
-          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
