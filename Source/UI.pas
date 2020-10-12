@@ -18,6 +18,54 @@ type
     lineWidth, lineHeight, lineWidthValue, lineHeightValue: Single;
   end;
 
+  sResultDataPara = record              //信息头
+    lineName: array [0..99] of Char;    //线路名称
+    Version: Byte;                      //软件版本
+    reserved: array [0..394] of Byte;   //预留
+    inight: Integer;                    //初始杆号
+    inidis: Integer;                    //初始公里标，单位m
+    Buchang: Integer;                   //采样间隔，单位m   value*10000
+    shangxia: Byte;                     //上下行（0=未知 1=上行 2=下行）
+    rundir: Byte;                       //正反向（1=正 0=反）
+    initzengjian: Byte;                 //里程增减（1=增 0=减）
+    DataTime: array [0..11] of Char;    //采集时间 YYMMDDHHMMSS
+  end;
+
+  sDataFrame = record                    //数据
+    LCZ11_value: Single;                 //接触线1拉出值1，mm
+    LCZ12_value: Single;                 //接触线1拉出值2（柔性双线时），mm
+    LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
+    LCZ21_value: Single;                 //接触线2拉出值1，mm
+    LCZ22_value: Single;                 //接触线2拉出值2（柔性双线时），mm
+    LCZSP2_value: Single;                //接触线2水平距离（柔性双线时），mm
+    DGZ11_value: Single;                 //接触线1导高值1，mm
+    DGZ12_value: Single;                 //接触线1导高值2（柔性双线时），mm
+    DGZ21_value: Single;                 //接触线2导高值1，mm
+    DGZ22_value: Single;                 //接触线2导高值2（柔性双线时），mm
+    SPJL_value: Single;                  //锚段或线叉处接触线水平距离，mm
+    SPGC_value: Single;                  //锚段或线叉处接触线高差，mm
+    DGBHL_value: Single;                 //导高变化率
+    DWDGC_value: Single;                 //定位点高差，mm
+    JCL_value: Single;                   //接触力，N
+    JCL_mean: Single;                    //接触力均值，N
+    JCL_max: Single;                     //接触力最大值，N
+    JCL_min: Single;                     //接触力最小值，N
+    JCL_std: Single;                     //接触力标准方差
+    YD1_value: Single;                   //硬点1垂向加速度值，m/s^2
+    YD2_value: Single;                   //硬点2垂向加速度值，m/s^2
+    DL_value: Single;                    //电流值，A
+    RH_value: Single;                    //电流大于标称值30%的时间，ms
+    RH_time: Single;                     //燃弧持续时间，ms
+    RH_numb: Single;                     //燃弧次数
+    reserved: array [0..6] of Integer;   //保留
+    FrameID: Integer;                    //视频帧号
+    ghNumb: Integer;                     //杆号
+    myspeed: Single;                     //速度，单位km/h
+    mykilo: Double;                      //公里标，单位m
+    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
+    CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
+  end;
+
   TForm_UI = class(TForm)
     MainMenu_UI: TMainMenu;
     MenuItem_Setting: TMenuItem;
@@ -177,6 +225,16 @@ type
     procedure YEGDisconnect;
   public
     { Public declarations }
+    //2D数据变量（导高拉出值）
+    m_data: JCWJH;
+//    m_lock: THandle;
+
+    //2D数据变量（点云数据）
+    m_vecPot : array of YEGtagPOINTF;
+    m_dTimeStampLast: Single;
+    m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
+//    m_mutex: THandle;
+
     m_hjcw: Pointer;
     m_iDevid: JMDEVID;
 
@@ -234,189 +292,218 @@ begin
 //  Synchronize();
   while True do
   begin
-      EnterCriticalSection(Form_UI.CS);
-      if Form_UI.calCounts > 199 then
+
+
+    //以下部分只是连续2D200HZ频率采集绘图显示，因为是没有速度信号的，所以只做采集绘图测试用
+    EnterCriticalSection(Form_UI.CS);
+    if Form_UI.calCounts > 199 then
+    begin
+//      //奇怪的数组赋值问题
+//      for J := 0 to 199 do
+//      begin
+//        if Form_UI.data2DArray[1][J].lineWidth <> 0 then
+//        begin
+//          Form_UI.data2DArray[4][J].lineWidth := Abs(Form_UI.data2DArray[1][J].lineWidth - Form_UI.data2DArray[0][J].lineWidth);
+//          Form_UI.data2DArray[4][J].lineHeight := Abs(Form_UI.data2DArray[1][J].lineHeight - Form_UI.data2DArray[0][J].lineHeight);
+//        end;
+//        if Form_UI.data2DArray[3][J].lineWidth <> 0 then
+//        begin
+//          Form_UI.data2DArray[4][J].lineWidthValue := Abs(Form_UI.data2DArray[3][J].lineWidth - Form_UI.data2DArray[2][J].lineWidth);
+//          Form_UI.data2DArray[4][J].lineHeightValue := Abs(Form_UI.data2DArray[3][J].lineHeight - Form_UI.data2DArray[2][J].lineHeight);
+//        end;
+//      end;
+
+      if Form_UI.drawCounts < 5 then
       begin
-        for J := 0 to 199 do
+        for I := 0 to 3 do
         begin
-          if Form_UI.data2DArray[1][J].lineWidth <> 0 then
+          for J := 0 to 199 do
           begin
-            Form_UI.data2DArray[4][J].lineWidth := Abs(Form_UI.data2DArray[1][J].lineWidth - Form_UI.data2DArray[0][J].lineWidth);
-            Form_UI.data2DArray[4][J].lineHeight := Abs(Form_UI.data2DArray[1][J].lineHeight - Form_UI.data2DArray[0][J].lineHeight);
-          end;
-          if Form_UI.data2DArray[3][J].lineWidth <> 0 then
-          begin
-            Form_UI.data2DArray[4][J].lineWidthValue := Abs(Form_UI.data2DArray[3][J].lineWidthValue - Form_UI.data2DArray[2][J].lineWidthValue);
-            Form_UI.data2DArray[4][J].lineHeightValue := Abs(Form_UI.data2DArray[3][J].lineHeightValue - Form_UI.data2DArray[2][J].lineHeightValue);
+            Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineWidth := Form_UI.data2DArray[I][J].lineWidth;
+            Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineHeight := Form_UI.data2DArray[I][J].lineHeight;
+            Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineWidthValue := Form_UI.data2DArray[I][J].lineWidthValue;
+            Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineHeightValue := Form_UI.data2DArray[I][J].lineHeightValue;
           end;
         end;
-  
-        if Form_UI.drawCounts < 5 then
+        Form_UI.drawCounts := Form_UI.drawCounts + 1;
+      end
+      else
+      begin
+        for I := 0 to 3 do
         begin
-          for I := 0 to 4 do
+          for J := 200 to 999 do
           begin
-            for J := 0 to 199 do
-            begin
-              Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineWidth := Form_UI.data2DArray[I][J].lineWidth;
-              Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineHeight := Form_UI.data2DArray[I][J].lineHeight;
-              Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineWidthValue := Form_UI.data2DArray[I][J].lineWidthValue;
-              Form_UI.draw2DArray[I][J + Form_UI.drawCounts * 200].lineHeightValue := Form_UI.data2DArray[I][J].lineHeightValue;
-            end;
+            Form_UI.draw2DArray[I][J - 200].lineWidth := Form_UI.draw2DArray[I][J].lineWidth;
+            Form_UI.draw2DArray[I][J - 200].lineHeight := Form_UI.draw2DArray[I][J].lineHeight;
+            Form_UI.draw2DArray[I][J - 200].lineWidthValue := Form_UI.draw2DArray[I][J].lineWidthValue;
+            Form_UI.draw2DArray[I][J - 200].lineHeightValue := Form_UI.draw2DArray[I][J].lineHeightValue;
           end;
-          Form_UI.drawCounts := Form_UI.drawCounts + 1;
-        end
-        else
-        begin
-          for I := 0 to 4 do
-          begin
-            for J := 200 to 999 do
-            begin  
-              Form_UI.draw2DArray[I][J - 200].lineWidth := Form_UI.draw2DArray[I][J].lineWidth;
-              Form_UI.draw2DArray[I][J - 200].lineHeight := Form_UI.draw2DArray[I][J].lineHeight;
-              Form_UI.draw2DArray[I][J - 200].lineWidthValue := Form_UI.draw2DArray[I][J].lineWidthValue;
-              Form_UI.draw2DArray[I][J - 200].lineHeightValue := Form_UI.draw2DArray[I][J].lineHeightValue;
-            end;
-          end;
-          for I := 0 to 4 do
-          begin
-            for J := 800 to 999 do
-            begin
-              Form_UI.draw2DArray[I][J].lineWidth := Form_UI.data2DArray[I][J - 800].lineWidth;
-              Form_UI.draw2DArray[I][J].lineHeight := Form_UI.data2DArray[I][J - 800].lineHeight;
-              Form_UI.draw2DArray[I][J].lineWidthValue := Form_UI.data2DArray[I][J - 800].lineWidthValue;
-              Form_UI.draw2DArray[I][J].lineHeightValue := Form_UI.data2DArray[I][J - 800].lineHeightValue;
-            end;
-          end;
-          for J := 0 to 999 do Form_UI.drawTimeX[J] := Form_UI.drawTimeX[J] + 1;
         end;
-
-        SetLength(Series_Line1WidthValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line1HeightValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line2WidthValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line2HeightValues, length(Form_UI.drawTimeX));
-        SetLength(Series_LineDistance1Values, length(Form_UI.drawTimeX));
-        SetLength(Series_Line3WidthValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line3HeightValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line4WidthValues, length(Form_UI.drawTimeX));
-        SetLength(Series_Line4HeightValues, length(Form_UI.drawTimeX));
-        SetLength(Series_LineDistance2Values, length(Form_UI.drawTimeX));
-        SetLength(ValuesX, length(Form_UI.drawTimeX));
-
-        for J := 0 to 999 do
+        for I := 0 to 3 do
         begin
-          Series_Line1WidthValues[J] := Form_UI.draw2DArray[0][J].lineWidth;
-          Series_Line1HeightValues[J] := Form_UI.draw2DArray[0][J].lineHeight;
-          Series_Line2WidthValues[J] := Form_UI.draw2DArray[1][J].lineWidth;
-          Series_Line2HeightValues[J] := Form_UI.draw2DArray[1][J].lineHeight;
-          Series_LineDistance1Values[J] := Form_UI.data2DArray[4][J].lineWidth;
-          Series_Line3WidthValues[J] := Form_UI.draw2DArray[2][J].lineWidth;
-          Series_Line3HeightValues[J] := Form_UI.draw2DArray[2][J].lineHeight;
-          Series_Line4WidthValues[J] := Form_UI.draw2DArray[3][J].lineWidth;
-          Series_Line4HeightValues[J] := Form_UI.draw2DArray[3][J].lineHeight;
-          Series_LineDistance2Values[J] := Form_UI.data2DArray[4][J].lineWidthValue;
-          ValuesX[J] := Form_UI.drawTimeX[J];
+          for J := 800 to 999 do
+          begin
+            Form_UI.draw2DArray[I][J].lineWidth := Form_UI.data2DArray[I][J - 800].lineWidth;
+            Form_UI.draw2DArray[I][J].lineHeight := Form_UI.data2DArray[I][J - 800].lineHeight;
+            Form_UI.draw2DArray[I][J].lineWidthValue := Form_UI.data2DArray[I][J - 800].lineWidthValue;
+            Form_UI.draw2DArray[I][J].lineHeightValue := Form_UI.data2DArray[I][J - 800].lineHeightValue;
+          end;
         end;
-
-        //曲线绘图 
-        Form_UI.Series_Line1Width.XValues.Value := ValuesX;
-        Form_UI.Series_Line1Width.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line1Width.XValues.Modified := True;
-
-        Form_UI.Series_Line1Height.XValues.Value := ValuesX;
-        Form_UI.Series_Line1Height.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line1Height.XValues.Modified := True;
-
-        Form_UI.Series_Line2Width.XValues.Value := ValuesX;
-        Form_UI.Series_Line2Width.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line2Width.XValues.Modified := True;
-
-        Form_UI.Series_Line2Height.XValues.Value := ValuesX;
-        Form_UI.Series_Line2Height.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line2Height.XValues.Modified := True;
-
-        Form_UI.Series_LineDistance1.XValues.Value := ValuesX;
-        Form_UI.Series_LineDistance1.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_LineDistance1.XValues.Modified := True;
-
-        Form_UI.Series_Line3Width.XValues.Value := ValuesX;
-        Form_UI.Series_Line3Width.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line3Width.XValues.Modified := True;
-
-        Form_UI.Series_Line3Height.XValues.Value := ValuesX;
-        Form_UI.Series_Line3Height.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line3Height.XValues.Modified := True;
-
-        Form_UI.Series_Line4Width.XValues.Value := ValuesX;
-        Form_UI.Series_Line4Width.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line4Width.XValues.Modified := True;
-
-        Form_UI.Series_Line4Height.XValues.Value := ValuesX;
-        Form_UI.Series_Line4Height.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line4Height.XValues.Modified := True;
-
-        Form_UI.Series_LineDistance2.XValues.Value := ValuesX;
-        Form_UI.Series_LineDistance2.XValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_LineDistance2.XValues.Modified := True;
-      
-        Form_UI.Series_Line1Width.YValues.Value := Series_Line1WidthValues;
-        Form_UI.Series_Line1Width.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line1Width.YValues.Modified := True;
-
-        Form_UI.Series_Line1Height.YValues.Value := Series_Line1HeightValues;
-        Form_UI.Series_Line1Height.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line1Height.YValues.Modified := True;
-
-        Form_UI.Series_Line2Width.YValues.Value := Series_Line2WidthValues;
-        Form_UI.Series_Line2Width.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line2Width.YValues.Modified := True;
-
-        Form_UI.Series_Line2Height.YValues.Value := Series_Line2HeightValues;
-        Form_UI.Series_Line2Height.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line2Height.YValues.Modified := True;
-
-        Form_UI.Series_LineDistance1.YValues.Value := Series_LineDistance1Values;
-        Form_UI.Series_LineDistance1.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_LineDistance1.YValues.Modified := True;
-
-        Form_UI.Series_Line3Width.YValues.Value := Series_Line3WidthValues;
-        Form_UI.Series_Line3Width.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line3Width.YValues.Modified := True;
-
-        Form_UI.Series_Line3Height.YValues.Value := Series_Line3HeightValues;
-        Form_UI.Series_Line3Height.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line3Height.YValues.Modified := True;
-
-        Form_UI.Series_Line4Width.YValues.Value := Series_Line4WidthValues;
-        Form_UI.Series_Line4Width.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line4Width.YValues.Modified := True;
-
-        Form_UI.Series_Line4Height.YValues.Value := Series_Line4HeightValues;
-        Form_UI.Series_Line4Height.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_Line4Height.YValues.Modified := True;
-
-        Form_UI.Series_LineDistance2.YValues.Value := Series_LineDistance2Values;
-        Form_UI.Series_LineDistance2.YValues.Count := length(Form_UI.drawTimeX);
-        Form_UI.Series_LineDistance2.YValues.Modified := True;
-
-        Form_UI.Series_Line1Width.Repaint;
-        Form_UI.Series_Line1Height.Repaint;
-        Form_UI.Series_Line2Width.Repaint;
-        Form_UI.Series_Line2Height.Repaint;
-        Form_UI.Series_LineDistance1.Repaint;
-//        Form_UI.Series_Line3Width.Repaint;
-//        Form_UI.Series_Line3Height.Repaint;
-//        Form_UI.Series_Line4Width.Repaint;
-//        Form_UI.Series_Line4Height.Repaint;
-//        Form_UI.Series_LineDistance2.Repaint;
-
-        Sleep(5);
-          
-        Form_UI.calCounts := 0;
+        for J := 0 to 999 do Form_UI.drawTimeX[J] := Form_UI.drawTimeX[J] + 1;
       end;
-      
-      LeaveCriticalSection(Form_UI.CS);
-  end;
 
+      SetLength(Series_Line1WidthValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line1HeightValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line2WidthValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line2HeightValues, length(Form_UI.drawTimeX));
+      SetLength(Series_LineDistance1Values, length(Form_UI.drawTimeX));
+      SetLength(Series_Line3WidthValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line3HeightValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line4WidthValues, length(Form_UI.drawTimeX));
+      SetLength(Series_Line4HeightValues, length(Form_UI.drawTimeX));
+      SetLength(Series_LineDistance2Values, length(Form_UI.drawTimeX));
+      SetLength(ValuesX, length(Form_UI.drawTimeX));
+
+//      //奇怪数组赋值问题
+//      for J := 0 to 999 do
+//      begin
+//        Series_Line1WidthValues[J] := Form_UI.draw2DArray[0][J].lineWidth;
+//        Series_Line1HeightValues[J] := Form_UI.draw2DArray[0][J].lineHeight;
+//        Series_Line2WidthValues[J] := Form_UI.draw2DArray[1][J].lineWidth;
+//        Series_Line2HeightValues[J] := Form_UI.draw2DArray[1][J].lineHeight;
+//        Series_LineDistance1Values[J] := Form_UI.data2DArray[4][J].lineWidth;
+//        Series_Line3WidthValues[J] := Form_UI.draw2DArray[2][J].lineWidth;
+//        Series_Line3HeightValues[J] := Form_UI.draw2DArray[2][J].lineHeight;
+//        Series_Line4WidthValues[J] := Form_UI.draw2DArray[3][J].lineWidth;
+//        Series_Line4HeightValues[J] := Form_UI.draw2DArray[3][J].lineHeight;
+//        Series_LineDistance2Values[J] := Form_UI.data2DArray[4][J].lineWidthValue;
+//        ValuesX[J] := Form_UI.drawTimeX[J];
+//      end;
+
+      for J := 0 to 999 do
+      begin
+        Series_Line1WidthValues[J] := Form_UI.draw2DArray[0][J].lineWidth;
+        Series_Line1HeightValues[J] := Form_UI.draw2DArray[0][J].lineHeight;
+        Series_Line2WidthValues[J] := Form_UI.draw2DArray[1][J].lineWidth;
+        Series_Line2HeightValues[J] := Form_UI.draw2DArray[1][J].lineHeight;
+        Series_LineDistance1Values[J] := Form_UI.data2DArray[4][J].lineWidth;
+        Series_Line3WidthValues[J] := Form_UI.draw2DArray[2][J].lineWidth;
+        Series_Line3HeightValues[J] := Form_UI.draw2DArray[2][J].lineHeight;
+        Series_Line4WidthValues[J] := Form_UI.draw2DArray[3][J].lineWidth;
+        Series_Line4HeightValues[J] := Form_UI.draw2DArray[3][J].lineHeight;
+        Series_LineDistance2Values[J] := Form_UI.data2DArray[4][J].lineWidthValue;
+        if Series_Line2WidthValues[J] <> 0 then
+        begin
+          Series_LineDistance1Values[J] := Abs(Series_Line2WidthValues[J] - Series_Line1WidthValues[J]);
+        end
+        else Series_LineDistance1Values[J] := 0;
+        if Series_Line4WidthValues[J] <> 0 then
+        begin
+          Series_LineDistance2Values[J] := Abs(Series_Line4WidthValues[J] - Series_Line3WidthValues[J]);
+        end
+        else Series_LineDistance2Values[J] := 0;
+        ValuesX[J] := Form_UI.drawTimeX[J];
+      end;
+
+      //曲线绘图
+      Form_UI.Series_Line1Width.XValues.Value := ValuesX;
+      Form_UI.Series_Line1Width.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line1Width.XValues.Modified := True;
+
+      Form_UI.Series_Line1Height.XValues.Value := ValuesX;
+      Form_UI.Series_Line1Height.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line1Height.XValues.Modified := True;
+
+      Form_UI.Series_Line2Width.XValues.Value := ValuesX;
+      Form_UI.Series_Line2Width.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line2Width.XValues.Modified := True;
+
+      Form_UI.Series_Line2Height.XValues.Value := ValuesX;
+      Form_UI.Series_Line2Height.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line2Height.XValues.Modified := True;
+
+      Form_UI.Series_LineDistance1.XValues.Value := ValuesX;
+      Form_UI.Series_LineDistance1.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_LineDistance1.XValues.Modified := True;
+
+      Form_UI.Series_Line3Width.XValues.Value := ValuesX;
+      Form_UI.Series_Line3Width.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line3Width.XValues.Modified := True;
+
+      Form_UI.Series_Line3Height.XValues.Value := ValuesX;
+      Form_UI.Series_Line3Height.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line3Height.XValues.Modified := True;
+
+      Form_UI.Series_Line4Width.XValues.Value := ValuesX;
+      Form_UI.Series_Line4Width.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line4Width.XValues.Modified := True;
+
+      Form_UI.Series_Line4Height.XValues.Value := ValuesX;
+      Form_UI.Series_Line4Height.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line4Height.XValues.Modified := True;
+
+      Form_UI.Series_LineDistance2.XValues.Value := ValuesX;
+      Form_UI.Series_LineDistance2.XValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_LineDistance2.XValues.Modified := True;
+
+      Form_UI.Series_Line1Width.YValues.Value := Series_Line1WidthValues;
+      Form_UI.Series_Line1Width.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line1Width.YValues.Modified := True;
+
+      Form_UI.Series_Line1Height.YValues.Value := Series_Line1HeightValues;
+      Form_UI.Series_Line1Height.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line1Height.YValues.Modified := True;
+
+      Form_UI.Series_Line2Width.YValues.Value := Series_Line2WidthValues;
+      Form_UI.Series_Line2Width.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line2Width.YValues.Modified := True;
+
+      Form_UI.Series_Line2Height.YValues.Value := Series_Line2HeightValues;
+      Form_UI.Series_Line2Height.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line2Height.YValues.Modified := True;
+
+      Form_UI.Series_LineDistance1.YValues.Value := Series_LineDistance1Values;
+      Form_UI.Series_LineDistance1.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_LineDistance1.YValues.Modified := True;
+
+      Form_UI.Series_Line3Width.YValues.Value := Series_Line3WidthValues;
+      Form_UI.Series_Line3Width.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line3Width.YValues.Modified := True;
+
+      Form_UI.Series_Line3Height.YValues.Value := Series_Line3HeightValues;
+      Form_UI.Series_Line3Height.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line3Height.YValues.Modified := True;
+
+      Form_UI.Series_Line4Width.YValues.Value := Series_Line4WidthValues;
+      Form_UI.Series_Line4Width.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line4Width.YValues.Modified := True;
+
+      Form_UI.Series_Line4Height.YValues.Value := Series_Line4HeightValues;
+      Form_UI.Series_Line4Height.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_Line4Height.YValues.Modified := True;
+
+      Form_UI.Series_LineDistance2.YValues.Value := Series_LineDistance2Values;
+      Form_UI.Series_LineDistance2.YValues.Count := length(Form_UI.drawTimeX);
+      Form_UI.Series_LineDistance2.YValues.Modified := True;
+
+      Form_UI.Series_Line1Width.Repaint;
+      Form_UI.Series_Line1Height.Repaint;
+      Form_UI.Series_Line2Width.Repaint;
+      Form_UI.Series_Line2Height.Repaint;
+      Form_UI.Series_LineDistance1.Repaint;
+      Form_UI.Series_Line3Width.Repaint;
+      Form_UI.Series_Line3Height.Repaint;
+      Form_UI.Series_Line4Width.Repaint;
+      Form_UI.Series_Line4Height.Repaint;
+      Form_UI.Series_LineDistance2.Repaint;
+
+      Sleep(5);
+          
+      Form_UI.calCounts := 0;
+    end;
+
+    LeaveCriticalSection(Form_UI.CS);
+  end;
 end;
 
 procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
@@ -427,16 +514,16 @@ begin
   begin
     if uiPotNum > 5 then
     begin
-      Setlength(m_vecPot, uiPotNum);
+      Setlength(Form_UI.m_vecPot, uiPotNum);
       for i := 0 to uiPotNum - 1 do
       begin
-        m_vecPot[i] := potArray[i];
+        Form_UI.m_vecPot[i] := potArray[i];
       end;
     end;
-    m_dTimeStampLast := dtimestamp;
-    m_uiFrameNo := uiframeNo;
-    m_uiFrameRecvCount := m_uiFrameRecvCount + 1;
-    m_uiPotNum := uiPotNum;
+    Form_UI.m_dTimeStampLast := dtimestamp;
+    Form_UI.m_uiFrameNo := uiframeNo;
+    Form_UI.m_uiFrameRecvCount := Form_UI.m_uiFrameRecvCount + 1;
+    Form_UI.m_uiPotNum := uiPotNum;
   end;
   ReleaseMutex(m_mutex);
 end;
@@ -447,25 +534,30 @@ var
 begin
   if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
   begin
-    m_data := tempData;
+    Form_UI.m_data := tempData;
     for I := 0 to 3 do
     begin
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := m_data.jcx[i].pntLinePos.x;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := m_data.jcx[i].pntLinePos.y;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := m_data.jcxComp[i].pntLinePos.x;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := m_data.jcxComp[i].pntLinePos.y;
+      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.m_data.jcx[i].pntLinePos.x;
+      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.m_data.jcx[i].pntLinePos.y;
+      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := Form_UI.m_data.jcxComp[i].pntLinePos.x;
+      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := Form_UI.m_data.jcxComp[i].pntLinePos.y;
 
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth <> 65536 then Form_UI.TempX[i] := m_data.jcx[i].pntLinePos.x;
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight <> 65536 then Form_UI.TempY[i] := m_data.jcx[i].pntLinePos.y;
-      
+      if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth <> 65536 then Form_UI.TempX[i] := Form_UI.m_data.jcx[i].pntLinePos.x;
+      if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight <> 65536 then Form_UI.TempY[i] := Form_UI.m_data.jcx[i].pntLinePos.y;
 
       //无效数据设为0
       if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.TempX[i];
       if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.TempY[i];
       if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := 0;
       if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := 0;
+
+//      //测试数据真实性
+//      if Form_UI.data2DArray[0][Form_UI.calCounts].lineWidth > 60 then
+//      begin
+//        Sleep(5);
+//      end;
     end;
-      
+
     Inc(Form_UI.calCounts);
   end;
   ReleaseMutex(m_lock);
@@ -555,8 +647,7 @@ begin
             ResumeThread(Form_UI.PProcessThread);
             ResumeThread(Form_UI.PDrawThread);
             IsRun := True;
-            calCounts := 0;
-            drawCounts := 0;
+            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
           end;
         end;
         -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
@@ -579,6 +670,9 @@ begin
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
+var
+  I: Byte;
+  J: Word;
 begin
   if IsRun then
   begin
@@ -586,7 +680,33 @@ begin
     SuspendThread(Form_UI.PProcessThread);
     SuspendThread(Form_UI.PDrawThread);
     IsRun := False;
+    dxRibbonStatusBar.Panels[0].Text := '已停止采集。';
   end;
+
+  //为下次开始做准备
+  calCounts:= 0;
+  drawCounts:= 0;
+  for I := 0 to 4 do
+  begin
+    for J := 0 to 199 do
+    begin
+      data2DArray[I][J].lineHeight := 0;
+      data2DArray[I][J].lineWidth := 0;
+      data2DArray[I][J].lineHeightValue := 0;
+      data2DArray[I][J].lineWidthValue := 0;
+    end;
+  end;
+  for I := 0 to 4 do
+  begin
+    for J := 0 to 999 do
+    begin
+      draw2DArray[I][J].lineHeight := 0;
+      draw2DArray[I][J].lineWidth := 0;
+      draw2DArray[I][J].lineHeightValue := 0;
+      draw2DArray[I][J].lineWidthValue := 0;
+    end;
+  end;
+  for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
 
   Close2D;
   dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';

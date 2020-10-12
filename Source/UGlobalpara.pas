@@ -28,16 +28,9 @@ type
 
     MinResidualDiskSize = 10.0;   //最小磁盘容量
 
-  Var
-    //2D数据变量（导高拉出值）
-    m_data: JCWJH;
-    m_lock: THandle;
-
-    //2D数据变量（点云数据）
-    m_vecPot : array of YEGtagPOINTF;
-    m_dTimeStampLast: Single;
-    m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
-    m_mutex: THandle;
+    var
+      m_lock: THandle;    //定义在这儿，怕在调试时退出出现错误
+      m_mutex: THandle;   //定义在这儿，怕在调试时退出出现错误
 
 implementation
 

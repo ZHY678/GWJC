@@ -79,6 +79,8 @@ begin
             else direction := '反向';
             if RadioButton_Add.Checked then plus_minus := 1
             else plus_minus := 0;
+            Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
+            Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
           end;
         end;
       end;
@@ -102,8 +104,7 @@ begin
             ResumeThread(Form_UI.PProcessThread);
             ResumeThread(Form_UI.PDrawThread);
             Form_UI.IsRun := True;
-            Form_UI.calCounts := 0;
-            Form_UI.drawCounts := 0;
+            Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
           end;
         end;
         -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
