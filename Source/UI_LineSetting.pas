@@ -105,6 +105,7 @@ begin
             ResumeThread(Form_UI.PDrawThread);
             Form_UI.IdUDPServer_UDP.Active := True;
             Form_UI.IsRun := True;
+            Form_UI.UDPStartCollect;
             Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
           end;
         end;

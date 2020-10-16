@@ -260,6 +260,8 @@ type
     function Init2DIP: Integer;
     function Open2D: Integer;
     procedure Close2D;
+    procedure UDPStartCollect;
+    procedure UDPStopCollect;
   end;
 
 var
@@ -643,41 +645,45 @@ end;
 
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
-  case Init2DIP of
-    0:
-    begin
-      case Open2D of
-        0:
-        begin
-          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+  IdUDPServer_UDP.Active := True;
+  UDPStartCollect;
 
-          if not IsRun then
-          begin
-            ResumeThread(Form_UI.PCollectThread);
-            ResumeThread(Form_UI.PProcessThread);
-            ResumeThread(Form_UI.PDrawThread);
-            IdUDPServer_UDP.Active := True;
-            IsRun := True;
-            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
-          end;
-        end;
-        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
-      end;
-    end;
-    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
-  end;
+//  case Init2DIP of
+//    0:
+//    begin
+//      case Open2D of
+//        0:
+//        begin
+//          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+//
+//          if not IsRun then
+//          begin
+//            ResumeThread(Form_UI.PCollectThread);
+//            ResumeThread(Form_UI.PProcessThread);
+//            ResumeThread(Form_UI.PDrawThread);
+//            IdUDPServer_UDP.Active := True;
+//            IsRun := True;
+//            UDPStartCollect;
+//            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+//          end;
+//        end;
+//        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+//        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+//        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+//        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+//        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+//        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+//        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+//      end;
+//    end;
+//    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+//    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+//    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+//    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+//    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+//    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+//    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+//  end;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
@@ -687,41 +693,42 @@ var
 begin
   if IsRun then
   begin
+    UDPStopCollect;
     SuspendThread(Form_UI.PCollectThread);
     SuspendThread(Form_UI.PProcessThread);
     SuspendThread(Form_UI.PDrawThread);
     IdUDPServer_UDP.Active := False;
     IsRun := False;
     dxRibbonStatusBar.Panels[0].Text := '已停止采集。';
-  end;
 
-  //为下次开始做准备
-  calCounts:= 0;
-  drawCounts:= 0;
-  for I := 0 to 4 do
-  begin
-    for J := 0 to 199 do
+    //为下次开始做准备
+    calCounts:= 0;
+    drawCounts:= 0;
+    for I := 0 to 4 do
     begin
-      data2DArray[I][J].lineHeight := 0;
-      data2DArray[I][J].lineWidth := 0;
-      data2DArray[I][J].lineHeightValue := 0;
-      data2DArray[I][J].lineWidthValue := 0;
+      for J := 0 to 199 do
+      begin
+        data2DArray[I][J].lineHeight := 0;
+        data2DArray[I][J].lineWidth := 0;
+        data2DArray[I][J].lineHeightValue := 0;
+        data2DArray[I][J].lineWidthValue := 0;
+      end;
     end;
-  end;
-  for I := 0 to 4 do
-  begin
-    for J := 0 to 999 do
+    for I := 0 to 4 do
     begin
-      draw2DArray[I][J].lineHeight := 0;
-      draw2DArray[I][J].lineWidth := 0;
-      draw2DArray[I][J].lineHeightValue := 0;
-      draw2DArray[I][J].lineWidthValue := 0;
+      for J := 0 to 999 do
+      begin
+        draw2DArray[I][J].lineHeight := 0;
+        draw2DArray[I][J].lineWidth := 0;
+        draw2DArray[I][J].lineHeightValue := 0;
+        draw2DArray[I][J].lineWidthValue := 0;
+      end;
     end;
-  end;
-  for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
+    for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
 
-  Close2D;
-  dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
+    Close2D;
+    dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
+  end;
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -1018,6 +1025,68 @@ begin
   YEGDisconnect;
   Jcw_Stop(m_hjcw);
   YEG_StopGrab(m_hYEG);
+end;
+
+procedure TForm_UI.UDPStartCollect;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 0;
+  Buffer_Send[42] := 0;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+
+  Buffer_Send[2] := 49;
+  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+
+  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
+end;
+
+procedure TForm_UI.UDPStopCollect;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 2;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 0;
+  Buffer_Send[42] := 0;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+
+  Buffer_Send[2] := 49;
+  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+
+  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 end.

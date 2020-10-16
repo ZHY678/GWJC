@@ -143,6 +143,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -435,6 +438,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -590,6 +596,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -767,6 +776,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -875,6 +887,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -983,6 +998,9 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
+        Title.Visible = False
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
