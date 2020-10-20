@@ -270,5 +270,4 @@ begin
     if Result <> 2 then Result := 1;
   End;
 end;
-
 end.
