@@ -191,6 +191,12 @@ type
     Action_OpenSensorUI: TAction;
     Timer_InitSubGroup: TTimer;
     IdUDPServer_UDP: TIdUDPServer;
+    MenuItem_Calibration: TMenuItem;
+    Action_StartCalibrate: TAction;
+    Action_StopCalibrate: TAction;
+    LargeButton_StartCalibrate: TdxBarLargeButton;
+    LargeButton_StopCalibrate: TdxBarLargeButton;
+    MenuItem_StopCalibrate: TMenuItem;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -213,6 +219,8 @@ type
     procedure Timer_InitSubGroupTimer(Sender: TObject);
     procedure IdUDPServer_UDPUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
+    procedure Action_StartCalibrateExecute(Sender: TObject);
+    procedure Action_StopCalibrateExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
@@ -643,6 +651,11 @@ begin
   else MessageBox(Handle, '未发现备份的配置文件。', '恢复设置', MB_OK + MB_ICONQUESTION);
 end;
 
+procedure TForm_UI.Action_StartCalibrateExecute(Sender: TObject);
+begin
+  ;
+end;
+
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
   IdUDPServer_UDP.Active := True;
@@ -684,6 +697,11 @@ begin
 //    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
 //    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
 //  end;
+end;
+
+procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
+begin
+  ;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
