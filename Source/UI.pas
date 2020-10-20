@@ -11,7 +11,8 @@ uses
   dxRibbonCustomizationForm, dxRibbon, Vcl.ExtCtrls, dxStatusBar,
   dxRibbonStatusBar, RzTabs, VclTee.TeeGDIPlus, VCLTee.TeEngine, VCLTee.Series,
   VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara, JCWMesh, JCWDataDef, YEGinc,
-  UI_SensorSetting, System.IniFiles;
+  UI_SensorSetting, System.IniFiles, IdBaseComponent, IdComponent, IdUDPBase,
+  IdUDPServer, IdSocketHandle, IdGlobal;
 
 type
   data2D = record
@@ -189,6 +190,13 @@ type
     LargeButton_Sensor: TdxBarLargeButton;
     Action_OpenSensorUI: TAction;
     Timer_InitSubGroup: TTimer;
+    IdUDPServer_UDP: TIdUDPServer;
+    MenuItem_Calibration: TMenuItem;
+    Action_StartCalibrate: TAction;
+    Action_StopCalibrate: TAction;
+    LargeButton_StartCalibrate: TdxBarLargeButton;
+    LargeButton_StopCalibrate: TdxBarLargeButton;
+    MenuItem_StopCalibrate: TMenuItem;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -209,6 +217,10 @@ type
     procedure Action_StartCollectExecute(Sender: TObject);
     procedure Action_OpenSensorUIExecute(Sender: TObject);
     procedure Timer_InitSubGroupTimer(Sender: TObject);
+    procedure IdUDPServer_UDPUDPRead(AThread: TIdUDPListenerThread;
+      const AData: TIdBytes; ABinding: TIdSocketHandle);
+    procedure Action_StartCalibrateExecute(Sender: TObject);
+    procedure Action_StopCalibrateExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
@@ -247,7 +259,7 @@ type
 
     data2DArray: array[0..4] of array[0..199] of data2D;
     draw2DArray: array[0..4] of array[0..999] of data2D;
-    drawTimeX: array[0..999] of Single;
+    drawTimeX: array[0..999] of Double;
     calCounts, drawCounts: Word;
     TempX, TempY : array [0..3] of Single;
 
@@ -256,6 +268,8 @@ type
     function Init2DIP: Integer;
     function Open2D: Integer;
     procedure Close2D;
+    procedure UDPStartCollect;
+    procedure UDPStopCollect;
   end;
 
 var
@@ -296,7 +310,7 @@ begin
 
     //以下部分只是连续2D200HZ频率采集绘图显示，因为是没有速度信号的，所以只做采集绘图测试用
     EnterCriticalSection(Form_UI.CS);
-    if Form_UI.calCounts > 199 then
+    if Form_UI.calCounts = 200 then
     begin
 //      //奇怪的数组赋值问题
 //      for J := 0 to 199 do
@@ -406,101 +420,104 @@ begin
       end;
 
       //曲线绘图
-      Form_UI.Series_Line1Width.XValues.Value := ValuesX;
-      Form_UI.Series_Line1Width.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line1Width.XValues.Modified := True;
+      if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Conductor then
+      begin
+        Form_UI.Series_Line1Width.XValues.Value := ValuesX;
+        Form_UI.Series_Line1Width.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line1Width.XValues.Modified := True;
 
-      Form_UI.Series_Line1Height.XValues.Value := ValuesX;
-      Form_UI.Series_Line1Height.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line1Height.XValues.Modified := True;
+        Form_UI.Series_Line1Height.XValues.Value := ValuesX;
+        Form_UI.Series_Line1Height.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line1Height.XValues.Modified := True;
 
-      Form_UI.Series_Line2Width.XValues.Value := ValuesX;
-      Form_UI.Series_Line2Width.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line2Width.XValues.Modified := True;
+        Form_UI.Series_Line2Width.XValues.Value := ValuesX;
+        Form_UI.Series_Line2Width.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line2Width.XValues.Modified := True;
 
-      Form_UI.Series_Line2Height.XValues.Value := ValuesX;
-      Form_UI.Series_Line2Height.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line2Height.XValues.Modified := True;
+        Form_UI.Series_Line2Height.XValues.Value := ValuesX;
+        Form_UI.Series_Line2Height.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line2Height.XValues.Modified := True;
 
-      Form_UI.Series_LineDistance1.XValues.Value := ValuesX;
-      Form_UI.Series_LineDistance1.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_LineDistance1.XValues.Modified := True;
+        Form_UI.Series_LineDistance1.XValues.Value := ValuesX;
+        Form_UI.Series_LineDistance1.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_LineDistance1.XValues.Modified := True;
 
-      Form_UI.Series_Line3Width.XValues.Value := ValuesX;
-      Form_UI.Series_Line3Width.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line3Width.XValues.Modified := True;
+        Form_UI.Series_Line3Width.XValues.Value := ValuesX;
+        Form_UI.Series_Line3Width.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line3Width.XValues.Modified := True;
 
-      Form_UI.Series_Line3Height.XValues.Value := ValuesX;
-      Form_UI.Series_Line3Height.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line3Height.XValues.Modified := True;
+        Form_UI.Series_Line3Height.XValues.Value := ValuesX;
+        Form_UI.Series_Line3Height.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line3Height.XValues.Modified := True;
 
-      Form_UI.Series_Line4Width.XValues.Value := ValuesX;
-      Form_UI.Series_Line4Width.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line4Width.XValues.Modified := True;
+        Form_UI.Series_Line4Width.XValues.Value := ValuesX;
+        Form_UI.Series_Line4Width.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line4Width.XValues.Modified := True;
 
-      Form_UI.Series_Line4Height.XValues.Value := ValuesX;
-      Form_UI.Series_Line4Height.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line4Height.XValues.Modified := True;
+        Form_UI.Series_Line4Height.XValues.Value := ValuesX;
+        Form_UI.Series_Line4Height.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line4Height.XValues.Modified := True;
 
-      Form_UI.Series_LineDistance2.XValues.Value := ValuesX;
-      Form_UI.Series_LineDistance2.XValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_LineDistance2.XValues.Modified := True;
+        Form_UI.Series_LineDistance2.XValues.Value := ValuesX;
+        Form_UI.Series_LineDistance2.XValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_LineDistance2.XValues.Modified := True;
 
-      Form_UI.Series_Line1Width.YValues.Value := Series_Line1WidthValues;
-      Form_UI.Series_Line1Width.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line1Width.YValues.Modified := True;
+        Form_UI.Series_Line1Width.YValues.Value := Series_Line1WidthValues;
+        Form_UI.Series_Line1Width.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line1Width.YValues.Modified := True;
 
-      Form_UI.Series_Line1Height.YValues.Value := Series_Line1HeightValues;
-      Form_UI.Series_Line1Height.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line1Height.YValues.Modified := True;
+        Form_UI.Series_Line1Height.YValues.Value := Series_Line1HeightValues;
+        Form_UI.Series_Line1Height.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line1Height.YValues.Modified := True;
 
-      Form_UI.Series_Line2Width.YValues.Value := Series_Line2WidthValues;
-      Form_UI.Series_Line2Width.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line2Width.YValues.Modified := True;
+        Form_UI.Series_Line2Width.YValues.Value := Series_Line2WidthValues;
+        Form_UI.Series_Line2Width.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line2Width.YValues.Modified := True;
 
-      Form_UI.Series_Line2Height.YValues.Value := Series_Line2HeightValues;
-      Form_UI.Series_Line2Height.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line2Height.YValues.Modified := True;
+        Form_UI.Series_Line2Height.YValues.Value := Series_Line2HeightValues;
+        Form_UI.Series_Line2Height.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line2Height.YValues.Modified := True;
 
-      Form_UI.Series_LineDistance1.YValues.Value := Series_LineDistance1Values;
-      Form_UI.Series_LineDistance1.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_LineDistance1.YValues.Modified := True;
+        Form_UI.Series_LineDistance1.YValues.Value := Series_LineDistance1Values;
+        Form_UI.Series_LineDistance1.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_LineDistance1.YValues.Modified := True;
 
-      Form_UI.Series_Line3Width.YValues.Value := Series_Line3WidthValues;
-      Form_UI.Series_Line3Width.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line3Width.YValues.Modified := True;
+        Form_UI.Series_Line3Width.YValues.Value := Series_Line3WidthValues;
+        Form_UI.Series_Line3Width.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line3Width.YValues.Modified := True;
 
-      Form_UI.Series_Line3Height.YValues.Value := Series_Line3HeightValues;
-      Form_UI.Series_Line3Height.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line3Height.YValues.Modified := True;
+        Form_UI.Series_Line3Height.YValues.Value := Series_Line3HeightValues;
+        Form_UI.Series_Line3Height.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line3Height.YValues.Modified := True;
 
-      Form_UI.Series_Line4Width.YValues.Value := Series_Line4WidthValues;
-      Form_UI.Series_Line4Width.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line4Width.YValues.Modified := True;
+        Form_UI.Series_Line4Width.YValues.Value := Series_Line4WidthValues;
+        Form_UI.Series_Line4Width.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line4Width.YValues.Modified := True;
 
-      Form_UI.Series_Line4Height.YValues.Value := Series_Line4HeightValues;
-      Form_UI.Series_Line4Height.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_Line4Height.YValues.Modified := True;
+        Form_UI.Series_Line4Height.YValues.Value := Series_Line4HeightValues;
+        Form_UI.Series_Line4Height.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_Line4Height.YValues.Modified := True;
 
-      Form_UI.Series_LineDistance2.YValues.Value := Series_LineDistance2Values;
-      Form_UI.Series_LineDistance2.YValues.Count := length(Form_UI.drawTimeX);
-      Form_UI.Series_LineDistance2.YValues.Modified := True;
+        Form_UI.Series_LineDistance2.YValues.Value := Series_LineDistance2Values;
+        Form_UI.Series_LineDistance2.YValues.Count := length(Form_UI.drawTimeX);
+        Form_UI.Series_LineDistance2.YValues.Modified := True;
 
-      Form_UI.Series_Line1Width.Repaint;
-      Form_UI.Series_Line1Height.Repaint;
-      Form_UI.Series_Line2Width.Repaint;
-      Form_UI.Series_Line2Height.Repaint;
-      Form_UI.Series_LineDistance1.Repaint;
-      Form_UI.Series_Line3Width.Repaint;
-      Form_UI.Series_Line3Height.Repaint;
-      Form_UI.Series_Line4Width.Repaint;
-      Form_UI.Series_Line4Height.Repaint;
-      Form_UI.Series_LineDistance2.Repaint;
-
-      Sleep(5);
+        Form_UI.Series_Line1Width.Repaint;
+        Form_UI.Series_Line1Height.Repaint;
+        Form_UI.Series_Line2Width.Repaint;
+        Form_UI.Series_Line2Height.Repaint;
+        Form_UI.Series_LineDistance1.Repaint;
+        Form_UI.Series_Line3Width.Repaint;
+        Form_UI.Series_Line3Height.Repaint;
+        Form_UI.Series_Line4Width.Repaint;
+        Form_UI.Series_Line4Height.Repaint;
+        Form_UI.Series_LineDistance2.Repaint;
           
-      Form_UI.calCounts := 0;
+        Form_UI.calCounts := 0;
+      end;
     end;
+
+    Sleep(5);
 
     LeaveCriticalSection(Form_UI.CS);
   end;
@@ -534,31 +551,34 @@ var
 begin
   if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
   begin
-    Form_UI.m_data := tempData;
-    for I := 0 to 3 do
+    if Form_UI.calCounts < 200 then
     begin
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.m_data.jcx[i].pntLinePos.x;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.m_data.jcx[i].pntLinePos.y;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := Form_UI.m_data.jcxComp[i].pntLinePos.x;
-      Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := Form_UI.m_data.jcxComp[i].pntLinePos.y;
+      Form_UI.m_data := tempData;
+      for I := 0 to 3 do
+      begin
+        Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.m_data.jcx[i].pntLinePos.x;
+        Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.m_data.jcx[i].pntLinePos.y;
+        Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := Form_UI.m_data.jcxComp[i].pntLinePos.x;
+        Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := Form_UI.m_data.jcxComp[i].pntLinePos.y;
 
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth <> 65536 then Form_UI.TempX[i] := Form_UI.m_data.jcx[i].pntLinePos.x;
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight <> 65536 then Form_UI.TempY[i] := Form_UI.m_data.jcx[i].pntLinePos.y;
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth <> 65536 then Form_UI.TempX[i] := Form_UI.m_data.jcx[i].pntLinePos.x;
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight <> 65536 then Form_UI.TempY[i] := Form_UI.m_data.jcx[i].pntLinePos.y;
 
-      //无效数据设为0
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.TempX[i];
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.TempY[i];
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := 0;
-      if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := 0;
+        //无效数据设为0
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidth := Form_UI.TempX[i];
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeight := Form_UI.TempY[i];
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineWidthValue := 0;
+        if Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue = 65536 then Form_UI.data2DArray[i][Form_UI.calCounts].lineHeightValue := 0;
 
-//      //测试数据真实性
-//      if Form_UI.data2DArray[0][Form_UI.calCounts].lineWidth > 60 then
-//      begin
-//        Sleep(5);
-//      end;
+  //      //测试数据真实性
+  //      if Form_UI.data2DArray[0][Form_UI.calCounts].lineWidth > 60 then
+  //      begin
+  //        Sleep(5);
+  //      end;
+      end;
+
+      Inc(Form_UI.calCounts);
     end;
-
-    Inc(Form_UI.calCounts);
   end;
   ReleaseMutex(m_lock);
 end;
@@ -631,42 +651,57 @@ begin
   else MessageBox(Handle, '未发现备份的配置文件。', '恢复设置', MB_OK + MB_ICONQUESTION);
 end;
 
+procedure TForm_UI.Action_StartCalibrateExecute(Sender: TObject);
+begin
+  ;
+end;
+
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
-  case Init2DIP of
-    0:
-    begin
-      case Open2D of
-        0:
-        begin
-          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+  IdUDPServer_UDP.Active := True;
+  UDPStartCollect;
 
-          if not IsRun then
-          begin
-            ResumeThread(Form_UI.PCollectThread);
-            ResumeThread(Form_UI.PProcessThread);
-            ResumeThread(Form_UI.PDrawThread);
-            IsRun := True;
-            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
-          end;
-        end;
-        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
-      end;
-    end;
-    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
-  end;
+//  case Init2DIP of
+//    0:
+//    begin
+//      case Open2D of
+//        0:
+//        begin
+//          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+//
+//          if not IsRun then
+//          begin
+//            ResumeThread(Form_UI.PCollectThread);
+//            ResumeThread(Form_UI.PProcessThread);
+//            ResumeThread(Form_UI.PDrawThread);
+//            IdUDPServer_UDP.Active := True;
+//            IsRun := True;
+//            UDPStartCollect;
+//            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+//          end;
+//        end;
+//        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+//        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+//        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+//        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+//        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+//        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+//        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+//      end;
+//    end;
+//    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+//    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+//    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+//    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+//    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+//    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+//    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+//  end;
+end;
+
+procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
+begin
+  ;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
@@ -676,40 +711,42 @@ var
 begin
   if IsRun then
   begin
+    UDPStopCollect;
     SuspendThread(Form_UI.PCollectThread);
     SuspendThread(Form_UI.PProcessThread);
     SuspendThread(Form_UI.PDrawThread);
+    IdUDPServer_UDP.Active := False;
     IsRun := False;
     dxRibbonStatusBar.Panels[0].Text := '已停止采集。';
-  end;
 
-  //为下次开始做准备
-  calCounts:= 0;
-  drawCounts:= 0;
-  for I := 0 to 4 do
-  begin
-    for J := 0 to 199 do
+    //为下次开始做准备
+    calCounts:= 0;
+    drawCounts:= 0;
+    for I := 0 to 4 do
     begin
-      data2DArray[I][J].lineHeight := 0;
-      data2DArray[I][J].lineWidth := 0;
-      data2DArray[I][J].lineHeightValue := 0;
-      data2DArray[I][J].lineWidthValue := 0;
+      for J := 0 to 199 do
+      begin
+        data2DArray[I][J].lineHeight := 0;
+        data2DArray[I][J].lineWidth := 0;
+        data2DArray[I][J].lineHeightValue := 0;
+        data2DArray[I][J].lineWidthValue := 0;
+      end;
     end;
-  end;
-  for I := 0 to 4 do
-  begin
-    for J := 0 to 999 do
+    for I := 0 to 4 do
     begin
-      draw2DArray[I][J].lineHeight := 0;
-      draw2DArray[I][J].lineWidth := 0;
-      draw2DArray[I][J].lineHeightValue := 0;
-      draw2DArray[I][J].lineWidthValue := 0;
+      for J := 0 to 999 do
+      begin
+        draw2DArray[I][J].lineHeight := 0;
+        draw2DArray[I][J].lineWidth := 0;
+        draw2DArray[I][J].lineHeightValue := 0;
+        draw2DArray[I][J].lineWidthValue := 0;
+      end;
     end;
-  end;
-  for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
+    for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
 
-  Close2D;
-  dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
+    Close2D;
+    dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
+  end;
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -782,6 +819,8 @@ begin
   InitFolder;
   InitConfigurationFile;
 
+  IdUDPServer_UDP.DefaultPort := StrToInt(UDPPort);
+
   FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
 
@@ -833,6 +872,9 @@ begin
   TerminateThread(PCollectThread, 0);
   TerminateThread(PProcessThread, 0);
   TerminateThread(PDrawThread, 0);
+
+  //暂停UDP接收
+  IdUDPServer_UDP.Active := False;
 
   //2D析构
   CloseHandle(m_mutex);
@@ -978,6 +1020,12 @@ begin
   if m_hYEG <> nil then YEG_Disconnect(m_hYEG);
 end;
 
+procedure TForm_UI.IdUDPServer_UDPUDPRead(AThread: TIdUDPListenerThread;
+  const AData: TIdBytes; ABinding: TIdSocketHandle);
+begin
+  Sleep(5);
+end;
+
 function TForm_UI.Init2DIP: Integer;
 begin
   Result := JCWSetIP(TCPIP);
@@ -995,6 +1043,68 @@ begin
   YEGDisconnect;
   Jcw_Stop(m_hjcw);
   YEG_StopGrab(m_hYEG);
+end;
+
+procedure TForm_UI.UDPStartCollect;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 0;
+  Buffer_Send[42] := 0;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+
+  Buffer_Send[2] := 49;
+  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+
+  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
+end;
+
+procedure TForm_UI.UDPStopCollect;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 2;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 0;
+  Buffer_Send[42] := 0;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+
+  Buffer_Send[2] := 49;
+  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+
+  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 end.
