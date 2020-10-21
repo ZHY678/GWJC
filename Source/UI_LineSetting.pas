@@ -34,6 +34,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Button_SetClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     FGlobalpara: TGlobalpara;
@@ -90,48 +91,59 @@ end;
 
 procedure TForm_LineSetting.Button_StartClick(Sender: TObject);
 begin
-  case Form_UI.Init2DIP of
-    0:
-    begin
-      case Form_UI.Open2D of
-        0:
-        begin
-          Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
-
-          if not Form_UI.IsRun then
+  if plus_minus <> 2 then
+  begin
+    case Form_UI.Init2DIP of
+      0:
+      begin
+        case Form_UI.Open2D of
+          0:
           begin
-            ResumeThread(Form_UI.PCollectThread);
-            ResumeThread(Form_UI.PProcessThread);
-            ResumeThread(Form_UI.PDrawThread);
-            Form_UI.IdUDPServer_UDP.Active := True;
-            Form_UI.IsRun := True;
-            Form_UI.UDPStartCollect;
-            Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+            Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+
+            if not Form_UI.IsRun then
+            begin
+              ResumeThread(Form_UI.PCollectThread);
+              ResumeThread(Form_UI.PProcessThread);
+              ResumeThread(Form_UI.PDrawThread);
+              Form_UI.IdUDPServer_Hv.Active := True;
+              Form_UI.IdUDPServer_Lv.Active := True;
+              Form_UI.IdUDPServer_Acying.Active := True;
+              Form_UI.IsRun := True;
+              Form_UI.UDPStartCollect;
+              Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+            end;
           end;
+          -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+          -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+          -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+          -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+          -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+          -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+          -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
         end;
-        -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-        -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-        -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-        -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-        -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-        -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-        -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
       end;
+      -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+      -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+      -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+      -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+      -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+      -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+      -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
     end;
-    -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
-    -2: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
-    -3: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
-    -4: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
-    -5: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
-    -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
-    -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
-  end;
+  end
+  else MessageBox(handle, '未进行相应的线路设置，请检查。', '线路设置', MB_OK);
 end;
 
 procedure TForm_LineSetting.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   Form_UI.Enabled := True;
+end;
+
+procedure TForm_LineSetting.FormCreate(Sender: TObject);
+begin
+  plus_minus := 2;
 end;
 
 procedure TForm_LineSetting.FormShow(Sender: TObject);

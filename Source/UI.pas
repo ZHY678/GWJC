@@ -67,20 +67,28 @@ type
     CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
   end;
 
+  TRecord_OriginalHv = record
+    OHv: array [0..63] of Byte;
+  end;
+
   TRecord_Hv = record
     Power1, Power2, Power3, Power4, HardSpot1, HardSpot2, HardSpot3, HardSpot4, HardSpot5, HardSpot6: Word;
+  end;
+
+  TRecord_OriginalLv = record
+    OLv: array [0..7] of Byte;
   end;
 
   TRecord_Lv = record
     Electric: Word;
     encoder: Integer;
-    Status: Word;
+    Status1, Status2: Byte;
   end;
 
   Record_SaveOriginal = record
     Om_data: JCWJH;
-    OHvData: TRecord_Hv;
-    OLvData: TRecord_Lv;
+    OHvData: TRecord_OriginalHv;
+    OLvData: TRecord_OriginalLv;
   end;
 
   TForm_UI = class(TForm)
@@ -206,13 +214,17 @@ type
     LargeButton_Sensor: TdxBarLargeButton;
     Action_OpenSensorUI: TAction;
     Timer_InitSubGroup: TTimer;
-    IdUDPServer_UDP: TIdUDPServer;
+    IdUDPServer_Hv: TIdUDPServer;
     MenuItem_Calibration: TMenuItem;
     Action_StartCalibrate: TAction;
     Action_StopCalibrate: TAction;
     LargeButton_StartCalibrate: TdxBarLargeButton;
     LargeButton_StopCalibrate: TdxBarLargeButton;
     MenuItem_StopCalibrate: TMenuItem;
+    IdUDPServer_Lv: TIdUDPServer;
+    IdUDPServer_Acying: TIdUDPServer;
+    Action_StartSave: TAction;
+    Action_StopSave: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -233,17 +245,64 @@ type
     procedure Action_StartCollectExecute(Sender: TObject);
     procedure Action_OpenSensorUIExecute(Sender: TObject);
     procedure Timer_InitSubGroupTimer(Sender: TObject);
-    procedure IdUDPServer_UDPUDPRead(AThread: TIdUDPListenerThread;
+    procedure IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
     procedure Action_StartCalibrateExecute(Sender: TObject);
     procedure Action_StopCalibrateExecute(Sender: TObject);
+    procedure IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
+      const AData: TIdBytes; ABinding: TIdSocketHandle);
+    procedure IdUDPServer_AcyingUDPRead(AThread: TIdUDPListenerThread;
+      const AData: TIdBytes; ABinding: TIdSocketHandle);
+    procedure Action_StartSaveExecute(Sender: TObject);
+    procedure Action_StopSaveExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath, savedOriginalDataPath, savedResultDataPath: String;   //各个文件路径
-    LineName, TCPIP, UDPIP, UDPPort: string;
-    IsDebug: Byte;
+    LineName, TCPIP, HvUDPIP, HvUDPPort, LvUDPIP, LvUDPPort, AcyingUDPIP, AcyingUDPPort: string;
+    IsDebug, drawThreshold: Byte;
 
     FGlobalpara: TGlobalpara;
+
+    procedure InitFolder;
+    procedure InitSubGroup;
+    function JCWSetIP(tempTCPIP: string): Integer;
+    function YEGConnect(tempTCPIP: string): Integer;
+    procedure YEGDisconnect;
+  public
+    { Public declarations }
+    //2D数据变量（导高拉出值）
+    m_data: JCWJH;
+//    m_lock: THandle;
+
+    //2D数据变量（点云数据）
+    m_vecPot : array of YEGtagPOINTF;
+    m_dTimeStampLast: Single;
+    m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
+//    m_mutex: THandle;
+
+    m_hjcw: Pointer;
+    m_iDevid: JMDEVID;
+
+    m_hYEG: Pointer;   //指针和Cardinal都可以
+
+    PCollectThread, PProcessThread, PDrawThread: DWORD;   //各个线程
+    configurationFilePath: string;
+
+    CS: TRTLCriticalSection;
+
+//    data2DArray: array[0..4] of array[0..199] of data2D;
+//    draw2DArray: array[0..4] of array[0..999] of data2D;
+//    drawTimeX: array[0..999] of Double;
+    calCounts, drawCounts, counts: Word;
+//    TempX, TempY : array [0..3] of Single;
+
+    IsRun, IsSave, IsPlayback: Boolean;
+
+    Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
+
+    Array_DataDeal: array [0..999] of Record_SaveOriginal;
+
+    Force, Electricity, Power_1, Power_2, Power_3, Power_4, ACC1, ACC2, ACC3, ACC4, ACC5, ACC6: Single;
 
     //低通滤波器
     FirFilter_LowPassPower1: TFirFilter;
@@ -276,51 +335,12 @@ type
     FirFilter_2DAverageXX4: TFirFilter;
     FirFilter_2DAverageYY4: TFirFilter;
 
-    procedure InitFolder;
-    procedure InitConfigurationFile;
-    procedure InitSubGroup;
-    function JCWSetIP(tempTCPIP: string): Integer;
-    function YEGConnect(tempTCPIP: string): Integer;
-    procedure YEGDisconnect;
-  public
-    { Public declarations }
-    //2D数据变量（导高拉出值）
-    m_data: JCWJH;
-//    m_lock: THandle;
-
-    //2D数据变量（点云数据）
-    m_vecPot : array of YEGtagPOINTF;
-    m_dTimeStampLast: Single;
-    m_uiFrameNo, m_uiFrameRecvCount, m_uiPotNum: Cardinal;
-//    m_mutex: THandle;
-
-    m_hjcw: Pointer;
-    m_iDevid: JMDEVID;
-
-    m_hYEG: Pointer;   //指针和Cardinal都可以
-
-    PCollectThread, PProcessThread, PDrawThread: DWORD;   //各个线程
-    configurationFilePath: string;
-
-    CS: TRTLCriticalSection;
-
-//    data2DArray: array[0..4] of array[0..199] of data2D;
-//    draw2DArray: array[0..4] of array[0..999] of data2D;
-//    drawTimeX: array[0..999] of Double;
-    calCounts, drawCounts, counts, calthreshold: Word;
-//    TempX, TempY : array [0..3] of Single;
-
-    IsRun, IsSave, IsPlayback: Boolean;
-
-    Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
-
-    Array_DataDeal: array [0..999] of Record_SaveOriginal;
-
     function Init2DIP: Integer;
     function Open2D: Integer;
     procedure Close2D;
     procedure UDPStartCollect;
     procedure UDPStopCollect;
+    procedure InitConfigurationFile;
   end;
 
 var
@@ -330,7 +350,7 @@ implementation
 
 {$R *.dfm}
 
-function CollectThread(p: Pointer): Integer; stdcall;
+function SaveThread(p: Pointer): Integer; stdcall;
 begin
   while True do
   begin
@@ -341,32 +361,96 @@ end;
 function ProcessThread(p: Pointer): Integer; stdcall;
 var
   I: Word;
-  TempData2D, SaveTempData2D: ^JCWJH;
-  TempData, SaveTempData: JCWJH;
-//  Array_Original: array [0..199] of Record_SaveOriginal;
+  TempData2D: ^JCWJH;
+  TempDataO2D: JCWJH;
+  TempDataHv: ^TRecord_OriginalHv;
+  TempDataOHv: TRecord_OriginalHv;
+  TempDataLv: ^TRecord_OriginalLv;
+  TempDataOLv: TRecord_OriginalLv;
 begin
   while True do
   begin
     //数据取值
     if Form_UI.Data2DCache.count > 200 then
     begin
-      if Form_UI.counts < 800 then
+      if Form_UI.counts < 801 then
       begin
         for I := Form_UI.counts to Form_UI.counts + 199 do
         begin
           TempData2D := Form_UI.Data2DCache.Pop;
-          CopyMemory(@TempData, TempData2D, SizeOf(JCWJH));
+          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
           Dispose(TempData2D);
 
-          Form_UI.Array_DataDeal[I].Om_data := TempData;
+          Form_UI.Array_DataDeal[I].Om_data := TempDataO2D;
         end;
         Form_UI.counts := Form_UI.counts + 200;
       end
       else
       begin
-        ;
+        for I := 0 to 799 do
+        begin
+          Form_UI.Array_DataDeal[I] := Form_UI.Array_DataDeal[I + Form_UI.counts - 800];
+        end;
+        for I := 800 to 999 do
+        begin
+          Form_UI.Array_DataDeal[I].Om_data := TempDataO2D;
+        end;
       end;
+    end;
 
+    if (Form_UI.Data2DCache.count > 200) and (Form_UI.HvUDPCache.count > 200) and (Form_UI.LvUDPCache.count > 200) then
+    begin
+      if Form_UI.counts < 801 then
+      begin
+        for I := Form_UI.counts to Form_UI.counts + 199 do
+        begin
+          TempData2D := Form_UI.Data2DCache.Pop;
+          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+          Dispose(TempData2D);
+          Form_UI.Array_DataDeal[I].Om_data := TempDataO2D;
+
+          TempDataHv := Form_UI.HvUDPCache.Pop;
+          CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
+          Dispose(TempDataHv);
+          Form_UI.Array_DataDeal[I].OHvData := TempDataOHv;
+
+          TempDataLv := Form_UI.LvUDPCache.Pop;
+          CopyMemory(@TempDataOLv, TempDataLv, SizeOf(TRecord_OriginalLv));
+          Dispose(TempDataLv);
+          Form_UI.Array_DataDeal[I].OLvData := TempDataOLv;
+        end;
+        Form_UI.counts := Form_UI.counts + 200;
+      end
+      else
+      begin
+        for I := 0 to 799 do
+        begin
+          Form_UI.Array_DataDeal[I] := Form_UI.Array_DataDeal[I + Form_UI.counts - 800];
+        end;
+        for I := 800 to 999 do
+        begin
+          TempData2D := Form_UI.Data2DCache.Pop;
+          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+          Dispose(TempData2D);
+          Form_UI.Array_DataDeal[I].Om_data := TempDataO2D;
+
+          TempDataHv := Form_UI.HvUDPCache.Pop;
+          CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
+          Dispose(TempDataHv);
+          Form_UI.Array_DataDeal[I].OHvData := TempDataOHv;
+
+          TempDataLv := Form_UI.LvUDPCache.Pop;
+          CopyMemory(@TempDataOLv, TempDataLv, SizeOf(TRecord_OriginalLv));
+          Dispose(TempDataLv);
+          Form_UI.Array_DataDeal[I].OLvData := TempDataOLv;
+        end;
+      end;
+    end;
+
+    //原始数据存储
+    if Form_UI.IsSave then
+    begin
+      ;
     end;
   end;
 end;
@@ -756,7 +840,9 @@ begin
             ResumeThread(Form_UI.PCollectThread);
             ResumeThread(Form_UI.PProcessThread);
             ResumeThread(Form_UI.PDrawThread);
-            IdUDPServer_UDP.Active := True;
+            IdUDPServer_Hv.Active := True;
+            IdUDPServer_Lv.Active := True;
+            IdUDPServer_Acying.Active := True;
             IsRun := True;
             UDPStartCollect;
             dxRibbonStatusBar.Panels[0].Text := '正在采集。';
@@ -781,6 +867,11 @@ begin
   end;
 end;
 
+procedure TForm_UI.Action_StartSaveExecute(Sender: TObject);
+begin
+  IsSave := True;
+end;
+
 procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
 begin
   ;
@@ -797,7 +888,10 @@ begin
     SuspendThread(Form_UI.PCollectThread);
     SuspendThread(Form_UI.PProcessThread);
     SuspendThread(Form_UI.PDrawThread);
-    IdUDPServer_UDP.Active := False;
+
+    IdUDPServer_Hv.Active := False;
+    IdUDPServer_Lv.Active := False;
+    IdUDPServer_Acying.Active := False;
 
     Data2DCache.clear;
     HvUDPCache.clear;
@@ -839,6 +933,11 @@ begin
     Close2D;
     dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
   end;
+end;
+
+procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
+begin
+  IsSave := False;
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -883,7 +982,7 @@ end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
 var
-  FCollectThreadID, FProcessThreadID, FDrawThreadID: DWORD;   //各个线程ID,THandle不行
+  FSaveThreadID, FProcessThreadID, FDrawThreadID: DWORD;   //各个线程ID,THandle不行
 //  I: Byte;
 //  J: Word;
   I: Word;
@@ -914,7 +1013,9 @@ begin
   InitFolder;
   InitConfigurationFile;
 
-  IdUDPServer_UDP.DefaultPort := StrToInt(UDPPort);
+  IdUDPServer_Hv.DefaultPort := StrToInt(HvUDPPort);
+  IdUDPServer_Lv.DefaultPort := StrToInt(LvUDPPort);
+  IdUDPServer_Acying.DefaultPort := StrToInt(AcyingUDPPort);
 
   FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
@@ -930,8 +1031,8 @@ begin
   ResultCache := TsfQueue.Create;
 
   //滤波器初始化
-  W[0] := 200;
-  W[1] := 205;
+  W[0] := 95;
+  W[1] := 100;
   FirFilter_LowPassPower1 := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
   FirFilter_LowPassPower2 := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
   FirFilter_LowPassPower3 := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
@@ -962,7 +1063,7 @@ begin
   FirFilter_2DAverageYY4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
 
   //创建线程
-  PCollectThread := CreateThread(nil, 0, @CollectThread, nil, 4, FCollectThreadID);
+  PCollectThread := CreateThread(nil, 0, @SaveThread, nil, 4, FSaveThreadID);
   PProcessThread := CreateThread(nil, 0, @ProcessThread, nil, 4, FProcessThreadID);
   PDrawThread := CreateThread(nil, 0, @DrawThread, nil, 4, FDrawThreadID);
 
@@ -1002,7 +1103,7 @@ begin
 //  for J := 0 to 999 do drawTimeX[J] := (J + 1) * 0.005;
 
   //计算绘图技术点初始化
-  calthreshold := 20;
+//  drawThreshold := 20;
   counts:= 0;
   calCounts:= 0;
   drawCounts:= 0;
@@ -1016,7 +1117,9 @@ begin
   TerminateThread(PDrawThread, 0);
 
   //暂停UDP接收
-  IdUDPServer_UDP.Active := False;
+  IdUDPServer_Hv.Active := False;
+  IdUDPServer_Lv.Active := False;
+  IdUDPServer_Acying.Active := False;
 
   Data2DCache.Free;
   HvUDPCache.Free;
@@ -1025,6 +1128,35 @@ begin
   DrawCache.Free;
   OriginalCache.Free;
   ResultCache.Free;
+
+  //滤波器析构
+  FirFilter_LowPassPower1.Free;
+  FirFilter_LowPassPower2.Free;
+  FirFilter_LowPassPower3.Free;
+  FirFilter_LowPassPower4.Free;
+  FirFilter_LowPassHardSpot1.Free;
+  FirFilter_LowPassHardSpot2.Free;
+  FirFilter_LowPassHardSpot3.Free;
+  FirFilter_LowPassHardSpot4.Free;
+  FirFilter_LowPassHardSpot5.Free;
+  FirFilter_LowPassHardSpot6.Free;
+  FirFilter_LowPassHardElectric.Free;
+  FirFilter_2DAverageX1.Free;
+  FirFilter_2DAverageY1.Free;
+  FirFilter_2DAverageXX1.Free;
+  FirFilter_2DAverageYY1.Free;
+  FirFilter_2DAverageX2.Free;
+  FirFilter_2DAverageY2.Free;
+  FirFilter_2DAverageXX2.Free;
+  FirFilter_2DAverageYY2.Free;
+  FirFilter_2DAverageX3.Free;
+  FirFilter_2DAverageY3.Free;
+  FirFilter_2DAverageXX3.Free;
+  FirFilter_2DAverageYY3.Free;
+  FirFilter_2DAverageX4.Free;
+  FirFilter_2DAverageY4.Free;
+  FirFilter_2DAverageXX4.Free;
+  FirFilter_2DAverageYY4.Free;
 
   //2D析构
   CloseHandle(m_mutex);
@@ -1068,12 +1200,32 @@ begin
 
       Writeln(ConfigurationTextFile, '[传感器设置]');
       Writeln(ConfigurationTextFile, '2DIP = 192.168.100.100');
-      Writeln(ConfigurationTextFile, 'UDPIP = 10.10.10.11');
-      Writeln(ConfigurationTextFile, 'UDPPort = 1025');
+      Writeln(ConfigurationTextFile, 'HvUDPIP = 10.10.10.2');
+      Writeln(ConfigurationTextFile, 'HvUDPPort = 1025');
+      Writeln(ConfigurationTextFile, 'LvUDPIP = 10.10.10.3');
+      Writeln(ConfigurationTextFile, 'LvUDPPort = 1025');
+      Writeln(ConfigurationTextFile, 'AcyingUDPIP = 10.10.10.4');
+      Writeln(ConfigurationTextFile, 'AcyingUDPPort = 1025');
+      Writeln(ConfigurationTextFile, '');
+
+      Writeln(ConfigurationTextFile, '[标定]');
+      Writeln(ConfigurationTextFile, 'Force = 0');
+      Writeln(ConfigurationTextFile, 'Electricity = 0');
+      Writeln(ConfigurationTextFile, 'Power1 = 0');
+      Writeln(ConfigurationTextFile, 'Power2 = 0');
+      Writeln(ConfigurationTextFile, 'Power3 = 0');
+      Writeln(ConfigurationTextFile, 'Power4 = 0');
+      Writeln(ConfigurationTextFile, 'ACC1 = 0');
+      Writeln(ConfigurationTextFile, 'ACC2 = 0');
+      Writeln(ConfigurationTextFile, 'ACC3 = 0');
+      Writeln(ConfigurationTextFile, 'ACC4 = 0');
+      Writeln(ConfigurationTextFile, 'ACC5 = 0');
+      Writeln(ConfigurationTextFile, 'ACC6 = 0');
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[调试]');
       Writeln(ConfigurationTextFile, '调试 = 0');
+      Writeln(ConfigurationTextFile, '点数 = 20');
       Writeln(ConfigurationTextFile, '');
 
       CloseFile(ConfigurationTextFile);
@@ -1081,13 +1233,31 @@ begin
 
     IniFile := TIniFile.Create(ConfigurationFilePath);
 
-    LineName := IniFile.ReadString('基础设置', '线路名称', '');
+    LineName := IniFile.ReadString('基础设置', '线路名称', '未知线路');
 
-    TCPIP := IniFile.ReadString('传感器设置', '2DIP', '');
-    UDPIP := IniFile.ReadString('传感器设置', 'UDPIP', '');
-    UDPPort := IniFile.ReadString('传感器设置', 'UDPPort', '');
+    TCPIP := IniFile.ReadString('传感器设置', '2DIP', '192.168.100.100');
+    HvUDPIP := IniFile.ReadString('传感器设置', 'HvUDPIP', '10.10.10.2');
+    HvUDPPort := IniFile.ReadString('传感器设置', 'HvUDPPort', '1025');
+    LvUDPIP := IniFile.ReadString('传感器设置', 'LvUDPIP', '10.10.10.3');
+    LvUDPPort := IniFile.ReadString('传感器设置', 'LvUDPPort', '1025');
+    AcyingUDPIP := IniFile.ReadString('传感器设置', 'AcyingUDPIP', '10.10.10.4');
+    AcyingUDPPort := IniFile.ReadString('传感器设置', 'AcyingUDPPort', '1025');
 
-    IsDebug := IniFile.ReadInteger('调试', '调试', 0);
+    Force := IniFile.ReadFloat('标定', 'Force', '0');
+    Electricity := IniFile.ReadFloat('标定', 'Electricity', '0');
+    Power_1 := IniFile.ReadFloat('标定', 'Power1', '0');
+    Power_2 := IniFile.ReadFloat('标定', 'Power2', '0');
+    Power_3 := IniFile.ReadFloat('标定', 'Power3', '0');
+    Power_4 := IniFile.ReadFloat('标定', 'Power4', '0');
+    ACC1 := IniFile.ReadFloat('标定', 'ACC1', '0');
+    ACC2 := IniFile.ReadFloat('标定', 'ACC2', '0');
+    ACC3 := IniFile.ReadFloat('标定', 'ACC3', '0');
+    ACC4 := IniFile.ReadFloat('标定', 'ACC4', '0');
+    ACC5 := IniFile.ReadFloat('标定', 'ACC5', '0');
+    ACC6 := IniFile.ReadFloat('标定', 'ACC6', '0');
+
+    IsDebug := IniFile.ReadInteger('调试', '调试', 1);
+    drawThreshold := IniFile.ReadInteger('调试', '点数', 20);
 
     IniFile.Free;
 
@@ -1141,18 +1311,41 @@ begin
     end;
   end;
 
-  division := UDPIP.Split(['.']);
+  division := HvUDPIP.Split(['.']);
   for i := 0 to 3 do
   begin
     case i of
-      0: Form_Sensor.Edit_UDPIP1.Text := division[i];
-      1: Form_Sensor.Edit_UDPIP2.Text := division[i];
-      2: Form_Sensor.Edit_UDPIP3.Text := division[i];
-      3: Form_Sensor.Edit_UDPIP4.Text := division[i];
+      0: Form_Sensor.Edit_UDPHvIP1.Text := division[i];
+      1: Form_Sensor.Edit_UDPHvIP2.Text := division[i];
+      2: Form_Sensor.Edit_UDPHvIP3.Text := division[i];
+      3: Form_Sensor.Edit_UDPHvIP4.Text := division[i];
     end;
   end;
+  Form_Sensor.Edit_UDPHvPort.Text := HvUDPPort;
 
-  Form_Sensor.Edit_UDPPort.Text := UDPPort;
+  division := LvUDPIP.Split(['.']);
+  for i := 0 to 3 do
+  begin
+    case i of
+      0: Form_Sensor.Edit_UDPLvIP1.Text := division[i];
+      1: Form_Sensor.Edit_UDPLvIP2.Text := division[i];
+      2: Form_Sensor.Edit_UDPLvIP3.Text := division[i];
+      3: Form_Sensor.Edit_UDPLvIP4.Text := division[i];
+    end;
+  end;
+  Form_Sensor.Edit_UDPLvPort.Text := LvUDPPort;
+
+  division := AcyingUDPIP.Split(['.']);
+  for i := 0 to 3 do
+  begin
+    case i of
+      0: Form_Sensor.Edit_UDPAcyingIP1.Text := division[i];
+      1: Form_Sensor.Edit_UDPAcyingIP2.Text := division[i];
+      2: Form_Sensor.Edit_UDPAcyingIP3.Text := division[i];
+      3: Form_Sensor.Edit_UDPAcyingIP4.Text := division[i];
+    end;
+  end;
+  Form_Sensor.Edit_UDPAcyingPort.Text := AcyingUDPPort;
 end;
 
 function TForm_UI.JCWSetIP(tempTCPIP: string) : Integer;
@@ -1170,10 +1363,30 @@ begin
   if m_hYEG <> nil then YEG_Disconnect(m_hYEG);
 end;
 
-procedure TForm_UI.IdUDPServer_UDPUDPRead(AThread: TIdUDPListenerThread;
+procedure TForm_UI.IdUDPServer_AcyingUDPRead(AThread: TIdUDPListenerThread;
   const AData: TIdBytes; ABinding: TIdSocketHandle);
 begin
-  Sleep(5);
+  Sleep(52);
+end;
+
+procedure TForm_UI.IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
+  const AData: TIdBytes; ABinding: TIdSocketHandle);
+var
+  TempDataHv: ^TRecord_OriginalHv;
+begin
+  New(TempDataHv);
+  CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
+  Form_UI.HvUDPCache.Push(TempDataHv);
+end;
+
+procedure TForm_UI.IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
+  const AData: TIdBytes; ABinding: TIdSocketHandle);
+var
+  TempDataLv: ^TRecord_OriginalLv;
+begin
+  New(TempDataLv);
+  CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
+  Form_UI.LvUDPCache.Push(TempDataLv);
 end;
 
 function TForm_UI.Init2DIP: Integer;
@@ -1218,12 +1431,15 @@ begin
   Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
   Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
   Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
 
   Buffer_Send[2] := 49;
-  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+  IdUDPServer_Lv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 
-  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
+  Buffer_Send[2] := 50;
+  IdUDPServer_Acying.SendBuffer('10.10.10.4', 1025, Buffer_Send);
+
+  IdUDPServer_Hv.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 procedure TForm_UI.UDPStopCollect;
@@ -1249,12 +1465,15 @@ begin
   Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
   Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
   Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-  IdUDPServer_UDP.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
 
   Buffer_Send[2] := 49;
-  IdUDPServer_UDP.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+  IdUDPServer_Lv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 
-  IdUDPServer_UDP.SendBuffer('192.168.3.100', 1025, Buffer_Send);
+  Buffer_Send[2] := 50;
+  IdUDPServer_Acying.SendBuffer('10.10.10.4', 1025, Buffer_Send);
+
+  IdUDPServer_Hv.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 end.
