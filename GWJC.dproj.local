@@ -20,7 +20,7 @@
     <Transaction>2020/09/25 16:43:47.000.030,=F:\弓网检测\Unit1.pas</Transaction>
     <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Unit1.pas=F:\弓网检测\Source\UI_SensorSetting.pas</Transaction>
     <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Unit1.dfm=F:\弓网检测\Source\UI_SensorSetting.dfm</Transaction>
-    <Transaction>2020/10/20 15:57:04.475,=F:\弓网检测\Unit1.pas</Transaction>
-    <Transaction>2020/10/20 15:59:14.631,F:\弓网检测\Source\UFirFilter.pas=F:\弓网检测\Unit1.pas</Transaction>
+    <Transaction>2020/10/20 15:57:04.000.475,=F:\弓网检测\Unit1.pas</Transaction>
+    <Transaction>2020/10/20 15:59:14.000.631,F:\弓网检测\Source\UFirFilter.pas=F:\弓网检测\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

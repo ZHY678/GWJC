@@ -87,6 +87,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -100,6 +101,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -113,6 +115,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -126,6 +129,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -218,6 +222,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -231,6 +236,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -244,6 +250,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -257,6 +264,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -270,6 +278,7 @@ object Form_Sensor: TForm_Sensor
       Top = 80
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -362,6 +371,7 @@ object Form_Sensor: TForm_Sensor
       Top = 24
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -375,6 +385,7 @@ object Form_Sensor: TForm_Sensor
       Top = 24
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -388,6 +399,7 @@ object Form_Sensor: TForm_Sensor
       Top = 24
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -401,6 +413,7 @@ object Form_Sensor: TForm_Sensor
       Top = 24
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -414,6 +427,7 @@ object Form_Sensor: TForm_Sensor
       Top = 70
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -521,6 +535,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -534,6 +549,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -547,6 +563,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -560,6 +577,7 @@ object Form_Sensor: TForm_Sensor
       Top = 32
       Width = 33
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -573,6 +591,7 @@ object Form_Sensor: TForm_Sensor
       Top = 80
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -598,9 +617,9 @@ object Form_Sensor: TForm_Sensor
     object Label_CalCounts: TLabel
       Left = 17
       Top = 33
-      Width = 96
+      Width = 80
       Height = 19
-      Caption = #35774#22791#31471#21475#21495#65306
+      Caption = #32472#22270#28857#25968#65306
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -613,6 +632,7 @@ object Form_Sensor: TForm_Sensor
       Top = 33
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -635,7 +655,7 @@ object Form_Sensor: TForm_Sensor
     Font.Style = []
     ParentFont = False
     TabOrder = 6
-    object Label_1: TLabel
+    object Label_Force: TLabel
       Left = 16
       Top = 32
       Width = 112
@@ -648,7 +668,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_11: TLabel
+    object Label_Electricity: TLabel
       Left = 16
       Top = 65
       Width = 80
@@ -661,7 +681,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_12: TLabel
+    object Label_Power2: TLabel
       Left = 16
       Top = 131
       Width = 105
@@ -674,7 +694,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_13: TLabel
+    object Label_Power1: TLabel
       Left = 16
       Top = 98
       Width = 105
@@ -687,7 +707,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_14: TLabel
+    object Label_ACC2: TLabel
       Left = 16
       Top = 267
       Width = 121
@@ -700,7 +720,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_15: TLabel
+    object Label_ACC1: TLabel
       Left = 16
       Top = 234
       Width = 121
@@ -713,7 +733,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_16: TLabel
+    object Label_Power4: TLabel
       Left = 16
       Top = 201
       Width = 105
@@ -726,7 +746,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_17: TLabel
+    object Label_Power3: TLabel
       Left = 16
       Top = 168
       Width = 105
@@ -739,7 +759,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_112: TLabel
+    object Label_ACC6: TLabel
       Left = 16
       Top = 403
       Width = 121
@@ -752,7 +772,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_113: TLabel
+    object Label_ACC5: TLabel
       Left = 16
       Top = 370
       Width = 121
@@ -765,7 +785,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_114: TLabel
+    object Label_ACC4: TLabel
       Left = 16
       Top = 337
       Width = 121
@@ -778,7 +798,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_115: TLabel
+    object Label_ACC3: TLabel
       Left = 16
       Top = 304
       Width = 121
@@ -791,160 +811,184 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Edit_1: TEdit
+    object Edit_Force: TEdit
       Left = 134
       Top = 29
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 0
     end
-    object Edit_11: TEdit
+    object Edit_Electricity: TEdit
       Left = 134
       Top = 62
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 1
     end
-    object Edit_12: TEdit
+    object Edit_Power2: TEdit
       Left = 134
       Top = 128
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 2
     end
-    object Edit_13: TEdit
+    object Edit_Power1: TEdit
       Left = 134
       Top = 95
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 3
     end
-    object Edit_14: TEdit
+    object Edit_ACC1: TEdit
       Left = 134
       Top = 231
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 4
     end
-    object Edit_15: TEdit
+    object Edit_ACC2: TEdit
       Left = 134
       Top = 264
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 5
     end
-    object Edit_16: TEdit
+    object Edit_Power4: TEdit
       Left = 134
       Top = 198
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 6
     end
-    object Edit_17: TEdit
+    object Edit_Power3: TEdit
       Left = 134
       Top = 165
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 7
     end
-    object Edit_112: TEdit
+    object Edit_ACC5: TEdit
       Left = 134
       Top = 367
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 8
     end
-    object Edit_113: TEdit
+    object Edit_ACC6: TEdit
       Left = 134
       Top = 400
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 9
     end
-    object Edit_114: TEdit
+    object Edit_ACC4: TEdit
       Left = 134
       Top = 334
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 10
     end
-    object Edit_115: TEdit
+    object Edit_ACC3: TEdit
       Left = 134
       Top = 301
       Width = 88
       Height = 27
+      Alignment = taCenter
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
       TabOrder = 11
     end
   end

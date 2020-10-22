@@ -103,15 +103,18 @@ begin
 
             if not Form_UI.IsRun then
             begin
-              ResumeThread(Form_UI.PCollectThread);
+              ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
               ResumeThread(Form_UI.PDrawThread);
               Form_UI.IdUDPServer_Hv.Active := True;
               Form_UI.IdUDPServer_Lv.Active := True;
               Form_UI.IdUDPServer_Acying.Active := True;
+              if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
+              Form_UI.IsSave := True;
               Form_UI.IsRun := True;
               Form_UI.UDPStartCollect;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+              Form_UI.dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
             end;
           end;
           -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
