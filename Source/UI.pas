@@ -511,43 +511,44 @@ begin
   end;
 end;
 
-//procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
-//var
-//  i : cardinal;
-//begin
-//  if WaitForSingleObject(m_mutex, INFINITE) = WAIT_OBJECT_0 then
-//  begin
-//    if uiPotNum > 5 then
-//    begin
-//      Setlength(Form_UI.m_vecPot, uiPotNum);
-//      for i := 0 to uiPotNum - 1 do
-//      begin
-//        Form_UI.m_vecPot[i] := potArray[i];
-//      end;
-//    end;
-//    Form_UI.m_dTimeStampLast := dtimestamp;
-//    Form_UI.m_uiFrameNo := uiframeNo;
-//    Form_UI.m_uiFrameRecvCount := Form_UI.m_uiFrameRecvCount + 1;
-//    Form_UI.m_uiPotNum := uiPotNum;
-//  end;
-//  ReleaseMutex(m_mutex);
-//end;
+procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
+var
+  i : cardinal;
+begin
+  if WaitForSingleObject(m_mutex, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    if uiPotNum > 5 then
+    begin
+      Setlength(Form_UI.m_vecPot, uiPotNum);
+      for i := 0 to uiPotNum - 1 do
+      begin
+        Form_UI.m_vecPot[i] := potArray[i];
+      end;
+    end;
+    Form_UI.m_dTimeStampLast := dtimestamp;
+    Form_UI.m_uiFrameNo := uiframeNo;
+    Form_UI.m_uiFrameRecvCount := Form_UI.m_uiFrameRecvCount + 1;
+    Form_UI.m_uiPotNum := uiPotNum;
+  end;
+  ReleaseMutex(m_mutex);
+end;
 
 procedure fnResultCallback(const pTag: Pointer; const tempData: JCWJH); cdecl;
-//var
-//  TempData2D: ^JCWJH;
+var
+  TempData2D: ^JCWJH;
 begin
-//  if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
-//  begin
-//    Form_UI.m_data := tempData;
-//    New(TempData2D);
-//    CopyMemory(TempData2D, @tempData, SizeOf(JCWJH));
-//    Form_UI.Data2DCache.Push(TempData2D);
+  if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    Form_UI.m_data := tempData;
+    New(TempData2D);
+    CopyMemory(TempData2D, @tempData, SizeOf(JCWJH));
+    Form_UI.Data2DCache.Push(TempData2D);
+
 //    Dispose(TempData2D);
-//
-//    Sleep(2);
-//  end;
-//  ReleaseMutex(m_lock);
+
+    Sleep(1);
+  end;
+  ReleaseMutex(m_lock);
 end;
 
 procedure TForm_UI.Action_AcyingDisplayExecute(Sender: TObject);
@@ -779,7 +780,7 @@ begin
   SavedResultDataPath := ExtractFilePath(Application.ExeName) + AnsiString('DATA\');
 
   //2D初始化（导高拉出值）
-  Set8087CW(DWord($133f));   //屏蔽错误用
+//  Set8087CW(DWord($133f));   //屏蔽错误用
   m_lock := CreateMutex(nil, False, nil);
   m_hjcw := Jcw_InitInstance();
   m_iDevid := JMID_GEO_DEV0;
