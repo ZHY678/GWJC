@@ -12,7 +12,7 @@ uses
   dxRibbonStatusBar, RzTabs, VclTee.TeeGDIPlus, VCLTee.TeEngine, VCLTee.Series,
   VCLTee.TeeProcs, VCLTee.Chart, UGlobalpara, JCWMesh, JCWDataDef, YEGinc,
   UI_SensorSetting, System.IniFiles, IdBaseComponent, IdComponent, IdUDPBase,
-  IdUDPServer, IdSocketHandle, IdGlobal, sfContnrs, UFirFilter;
+  IdUDPServer, IdSocketHandle, IdGlobal, sfContnrs, UFirFilter, MtxExpr;
 
 type
   data2D = record
@@ -72,7 +72,7 @@ type
   end;
 
   TRecord_Hv = record
-    Power1, Power2, Power3, Power4, HardSpot1, HardSpot2, HardSpot3, HardSpot4, HardSpot5, HardSpot6: Word;
+    Power1, Power2, Power3, Power4, HardSpot1, HardSpot2, HardSpot3, HardSpot4, HardSpot5, HardSpot6: Single;
   end;
 
   TRecord_OriginalLv = record
@@ -80,7 +80,7 @@ type
   end;
 
   TRecord_Lv = record
-    Electric: Word;
+    Electric: Single;
     encoder: Integer;
     Status1, Status2: Byte;
   end;
@@ -101,6 +101,26 @@ type
 
   TData_Lv = record
     Data_Lv: array [0..199] of TRecord_OriginalLv;
+  end;
+
+  TData_Extra = record
+    LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
+    LCZSP2_value: Single;                //接触线2水平距离（柔性双线时），mm
+    SPJL_value: Single;                  //锚段或线叉处接触线水平距离，mm
+    SPGC_value: Single;                  //锚段或线叉处接触线高差，mm
+    DGBHL_value: Single;                 //导高变化率
+    DWDGC_value: Single;                 //定位点高差，mm
+    ghNumb: Integer;                     //杆号
+    myspeed: Single;                     //速度，单位km/h
+    mykilo: Double;                      //公里标，单位m
+    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
+    CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
+  end;
+
+  TData_Dealing = record
+    TempJCWJH: JCWJH;
+    TempHv: TRecord_Hv;
+    TempLv: TRecord_Lv;
   end;
 
   TForm_UI = class(TForm)
@@ -237,6 +257,9 @@ type
     IdUDPServer_Acying: TIdUDPServer;
     Action_StartSave: TAction;
     Action_StopSave: TAction;
+    Action_OpenFile: TAction;
+    Action_StartPlayback: TAction;
+    Action_StopPlayback: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -267,6 +290,9 @@ type
       const AData: TIdBytes; ABinding: TIdSocketHandle);
     procedure Action_StartSaveExecute(Sender: TObject);
     procedure Action_StopSaveExecute(Sender: TObject);
+    procedure Action_OpenFileExecute(Sender: TObject);
+    procedure Action_StartPlaybackExecute(Sender: TObject);
+    procedure Action_StopPlaybackExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
@@ -279,6 +305,7 @@ type
     function JCWSetIP(tempTCPIP: string): Integer;
     function YEGConnect(tempTCPIP: string): Integer;
     procedure YEGDisconnect;
+    procedure LoadOriginalData(TempLoadOriginalPath: string);
   public
     { Public declarations }
     //2D数据变量（导高拉出值）
@@ -296,23 +323,28 @@ type
 
     m_hYEG: Pointer;   //指针和Cardinal都可以
 
-    PSaveThread, PProcessThread, PDrawThread: DWORD;   //各个线程
+    pSaveThread, pProcessThread, pDrawThread: DWORD;   //各个线程
+    startMs, nowMs: DWORD;
+    startTime: string;
     configurationFilePath, TempOrignalDataPath, TempResultDataPath, savedOriginalDataPath, savedResultDataPath: string;
 
     CS: TRTLCriticalSection;
 
-    TempData_2D: TData_2D;
-    TempData_Hv: TData_Hv;
-    TempData_Lv: TData_Lv;
+    tempData_2D: TData_2D;
+    tempData_Hv: TData_Hv;
+    tempData_Lv: TData_Lv;
     calCounts, drawCounts, counts: Word;
 
     IsRun, IsSave, IsPlayback, IsCalibrating: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
 
-    Array_DataDeal: array [0..999] of Record_SaveOriginal;
+    array_DataDeal: array [0..999] of Record_SaveOriginal;    //最原始数据数组
+    array_DataDealing: array[0..999] of TData_Dealing;   //处理过程中的数组，包括滤波、计算等
+    array_ResultDeal: array[0..999] of sDataFrame;   //计算后的结果数据
+    temp_X, temp_Y: array[0..3] of Single;   //2D错误值取前一个值数组
 
-    Calibrate_Force, Calibrate_Electricity, Calibrate_Power1, Calibrate_Power2, Calibrate_Power3, Calibrate_Power4, Calibrate_ACC1, Calibrate_ACC2, Calibrate_ACC3, Calibrate_ACC4, Calibrate_ACC5, Calibrate_ACC6: Single;
+    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6: Single;
 
     //低通滤波器
     FirFilter_LowPassPower1: TFirFilter;
@@ -354,6 +386,7 @@ type
     procedure InitSubGroup;
     procedure SaveOriginalData(TempData: Record_SaveOriginal);
     procedure SaveResultData(TempData: sDataFrame);
+    function AToV(kind_V: Byte; temp_A: Word): Single;
   end;
 
 var
@@ -395,6 +428,9 @@ end;
 function ProcessThread(p: Pointer): Integer; stdcall;
 var
   I: Word;
+  J: Byte;
+  TempWord: array [0..1] of Byte;
+  TempInteger: array [0..3] of Byte;
   TempData2D: ^JCWJH;
   TempDataO2D: JCWJH;
   TempDataHv: ^TRecord_OriginalHv;
@@ -402,6 +438,8 @@ var
   TempDataLv: ^TRecord_OriginalLv;
   TempDataOLv: TRecord_OriginalLv;
   TempDataSO: ^Record_SaveOriginal;
+  vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
+  vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
 begin
   while True do
   begin
@@ -497,6 +535,172 @@ begin
         end;
       end;
 
+      //数据处理
+      for I := Form_UI.counts - 200 to Form_UI.counts - 1 do
+      begin
+        //数据处理数组赋值（初步）
+        Form_UI.array_DataDealing[I].TempJCWJH := Form_UI.array_DataDeal[I].Om_data;
+
+        //2D数据错误值取前一个值
+        for J := 0 to 3 do
+        begin
+          if Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x = 65536 then
+          begin
+            if Form_UI.temp_X[J] <> 65537 then
+            begin
+              Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := Form_UI.temp_X[J];
+            end
+            else Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := 0;
+          end
+          else Form_UI.temp_X[J] := Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x;
+
+          if Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y = 65536 then
+          begin
+            if Form_UI.temp_Y[J] <> 65537 then
+            begin
+              Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := Form_UI.temp_Y[J];
+            end
+            else Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := 0;
+          end
+          else Form_UI.temp_Y[J] := Form_UI.array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y;
+        end;
+
+        //高压结构体电压赋值
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[44];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[45];
+        Form_UI.array_DataDealing[I].TempHv.Power1 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[46];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[47];
+        Form_UI.array_DataDealing[I].TempHv.Power2 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[48];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[49];
+        Form_UI.array_DataDealing[I].TempHv.Power3 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[50];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[51];
+        Form_UI.array_DataDealing[I].TempHv.Power4 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[52];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[53];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot1 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[54];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[55];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot2 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[56];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[57];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot3 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[58];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[59];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot4 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[60];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[61];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot5 := Form_UI.AToV(14, Word(TempWord));
+
+        TempWord[0] := Form_UI.array_DataDeal[I].OHvData.OHv[62];
+        TempWord[1] := Form_UI.array_DataDeal[I].OHvData.OHv[63];
+        Form_UI.array_DataDealing[I].TempHv.HardSpot6 := Form_UI.AToV(14, Word(TempWord));
+
+        //低压结构体电压赋值
+        TempWord[0] := Form_UI.array_DataDeal[I].OLvData.OLv[0];
+        TempWord[1] := Form_UI.array_DataDeal[I].OLvData.OLv[1];
+        Form_UI.array_DataDealing[I].TempLv.Electric := Form_UI.AToV(14, Word(TempWord));
+
+        TempInteger[0] := Form_UI.array_DataDeal[I].OLvData.OLv[2];
+        TempInteger[1] := Form_UI.array_DataDeal[I].OLvData.OLv[3];
+        TempInteger[2] := Form_UI.array_DataDeal[I].OLvData.OLv[4];
+        TempInteger[3] := Form_UI.array_DataDeal[I].OLvData.OLv[5];
+        Form_UI.array_DataDealing[I].TempLv.encoder := Integer(TempInteger);
+
+        Form_UI.array_DataDealing[I].TempLv.Status1 := Form_UI.array_DataDeal[I].OLvData.OLv[6];
+
+        Form_UI.array_DataDealing[I].TempLv.Status2 := Form_UI.array_DataDeal[I].OLvData.OLv[7];
+      end;
+
+      //滤波前vector赋值
+      vector_X1.Size(200); vector_Y1.Size(200); vector_X2.Size(200); vector_Y2.Size(200); vector_X3.Size(200); vector_Y3.Size(200); vector_X4.Size(200); vector_Y4.Size(200);
+      vector_Power1.Size(200); vector_Power2.Size(200); vector_Power3.Size(200); vector_Power4.Size(200); vector_Electricity.Size(200);
+      vector_HardSpot1.Size(200); vector_HardSpot2.Size(200); vector_HardSpot3.Size(200); vector_HardSpot4.Size(200); vector_HardSpot5.Size(200); vector_HardSpot6.Size(200);
+
+      for I := 0 to 199 do
+      begin
+        vector_X1[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[0].pntLinePos.x;
+        vector_Y1[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[0].pntLinePos.y;
+        vector_X2[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[1].pntLinePos.x;
+        vector_Y2[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[1].pntLinePos.y;
+        vector_X3[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[2].pntLinePos.x;
+        vector_Y3[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[2].pntLinePos.y;
+        vector_X4[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[3].pntLinePos.x;
+        vector_Y4[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempJCWJH.jcx[3].pntLinePos.y;
+
+        vector_Power1[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.Power1;
+        vector_Power2[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.Power2;
+        vector_Power3[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.Power3;
+        vector_Power4[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.Power4;
+        vector_HardSpot1[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot1;
+        vector_HardSpot2[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot2;
+        vector_HardSpot3[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot3;
+        vector_HardSpot4[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot4;
+        vector_HardSpot5[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot5;
+        vector_HardSpot6[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempHv.HardSpot6;
+
+        vector_Electricity[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempLv.Electric;
+      end;
+
+
+      //数据滤波
+      Form_UI.FirFilter_2DAverageX1.filter(vector_X1, vector_X1);
+      Form_UI.FirFilter_2DAverageY1.filter(vector_Y1, vector_Y1);
+      Form_UI.FirFilter_2DAverageX2.filter(vector_X2, vector_X2);
+      Form_UI.FirFilter_2DAverageY2.filter(vector_Y2, vector_Y2);
+      Form_UI.FirFilter_2DAverageX3.filter(vector_X3, vector_X3);
+      Form_UI.FirFilter_2DAverageY3.filter(vector_Y3, vector_Y3);
+      Form_UI.FirFilter_2DAverageX4.filter(vector_X4, vector_X4);
+      Form_UI.FirFilter_2DAverageY4.filter(vector_Y4, vector_Y4);
+
+      Form_UI.FirFilter_LowPassPower1.filter(vector_Power1, vector_Power1);
+      Form_UI.FirFilter_LowPassPower2.filter(vector_Power2, vector_Power2);
+      Form_UI.FirFilter_LowPassPower3.filter(vector_Power3, vector_Power3);
+      Form_UI.FirFilter_LowPassPower4.filter(vector_Power4, vector_Power4);
+
+      Form_UI.FirFilter_LowPassHardSpot1.filter(vector_HardSpot1, vector_HardSpot1);
+      Form_UI.FirFilter_LowPassHardSpot2.filter(vector_HardSpot2, vector_HardSpot2);
+      Form_UI.FirFilter_LowPassHardSpot3.filter(vector_HardSpot3, vector_HardSpot3);
+      Form_UI.FirFilter_LowPassHardSpot4.filter(vector_HardSpot4, vector_HardSpot4);
+      Form_UI.FirFilter_LowPassHardSpot5.filter(vector_HardSpot5, vector_HardSpot5);
+      Form_UI.FirFilter_LowPassHardSpot6.filter(vector_HardSpot6, vector_HardSpot6);
+
+      Form_UI.FirFilter_LowPassHardElectric.filter(vector_Electricity, vector_Electricity);
+
+      //滤波后赋值并做初步简单计算
+      for I := Form_UI.counts - 200 to Form_UI.counts - 1 do
+      begin
+        case Form_UI.array_DataDealing[I].TempJCWJH.uiLineNum of
+          0:
+          begin
+            ;
+          end;
+          1:
+          begin
+            ;
+          end;
+          2:
+          begin
+            ;
+          end;
+          3:
+          begin
+            ;
+          end;
+        end;
+        Form_UI.array_ResultDeal[I].LCZ11_value
+      end;
+
     end;
     Sleep(1);
   end;
@@ -507,6 +711,8 @@ begin
 //  Synchronize();
   while True do
   begin
+
+
     Sleep(1);
   end;
 end;
@@ -586,6 +792,22 @@ begin
   RzPageControl.ActivePage := TabSheet_Hardspot;
 end;
 
+procedure TForm_UI.Action_OpenFileExecute(Sender: TObject);
+begin
+  LargeButton_StartPlayback.Enabled := False;
+  LargeButton_StopPlayback.Enabled := False;
+  if IsRun then Action_StopCollectExecute(Sender);
+
+  if OpenDialog.Execute then
+  begin
+    LargeButton_InitSetting.Enabled := False;
+    LargeButton_Pause.Enabled := False;
+    LargeButton_StartCollect.Enabled := False;
+    LargeButton_StopCollect.Enabled := False;
+    LoadOriginalData(OpenDialog.FileName);
+  end;
+end;
+
 procedure TForm_UI.Action_OpenLineUIExecute(Sender: TObject);
 begin
   Form_LineSetting.Show;
@@ -639,6 +861,8 @@ begin
 
           if not IsRun then
           begin
+            StartMs := GetTickCount;
+            startTime := FormatDateTime('yymmddhhnnss', Now);
             ResumeThread(PSaveThread);
             ResumeThread(PProcessThread);
             ResumeThread(PDrawThread);
@@ -648,6 +872,8 @@ begin
             IsRun := True;
             UDPStartCollect;
             dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+            dxRibbonStatusBar.Panels[4].Text := '线路状况：' + Form_LineSetting.shangxiaxing + Form_LineSetting.direction + '。';
+            dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(Form_LineSetting.kilometer) + 'km';
           end;
         end;
         -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
@@ -669,6 +895,14 @@ begin
   end;
 end;
 
+procedure TForm_UI.Action_StartPlaybackExecute(Sender: TObject);
+begin
+  IsPlayback := True;
+  ResumeThread(PSaveThread);
+  ResumeThread(PProcessThread);
+  ResumeThread(PDrawThread);
+end;
+
 procedure TForm_UI.Action_StartSaveExecute(Sender: TObject);
 begin
   if not IsSave then TempOrignalDataPath := SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
@@ -683,6 +917,8 @@ begin
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
+var
+  I: Byte;
 begin
   if IsRun then
   begin
@@ -713,9 +949,28 @@ begin
     calCounts:= 0;
     drawCounts:= 0;
 
+    //2D错误值取前一个值数组初始化
+    for I := 0 to 3 do
+    begin
+      temp_X[I] := 65537;
+      temp_Y[I] := 65537;
+    end;
+
     Close2D;
     dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
   end;
+end;
+
+procedure TForm_UI.Action_StopPlaybackExecute(Sender: TObject);
+begin
+  SuspendThread(PSaveThread);
+  SuspendThread(PProcessThread);
+  SuspendThread(PDrawThread);
+  IsCalibrating := False;
+  LargeButton_InitSetting.Enabled := True;
+  LargeButton_Pause.Enabled := True;
+  LargeButton_StartCollect.Enabled := True;
+  LargeButton_StopCollect.Enabled := True;
 end;
 
 procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
@@ -769,6 +1024,8 @@ var
   FSaveThreadID, FProcessThreadID, FDrawThreadID: DWORD;   //各个线程ID,THandle不行
   W: array [0..1] of Double;
   FirOrder: Integer;
+  I: Byte;
+//  TempWord: array [0..1] of Byte;
 begin
   RzPageControl.ActivePage := TabSheet_Conductor;
 
@@ -860,6 +1117,18 @@ begin
   counts := 0;
   calCounts := 0;
   drawCounts := 0;
+
+  //2D错误值取前一个值数组初始化
+  for I := 0 to 3 do
+  begin
+    temp_X[I] := 65537;
+    temp_Y[I] := 65537;
+  end;
+
+  //测试
+//  TempWord[0] := 254;
+//  TempWord[1] := 255;
+//  counts := Word(TempWord);
 end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
@@ -1288,5 +1557,71 @@ begin
   FileStream.Seek(WritePosition, 0);
   LengthNumber := FileStream.Write(TempData, SizeOf(sDataFrame));
   FileStream.Destroy;
+end;
+
+procedure TForm_UI.LoadOriginalData(TempLoadOriginalPath: string);
+var
+  FileStream : TFileStream;
+  LoadDataSize : Int64;
+  InputDataSize : LongWord;
+  TempPlayBackData : Record_SaveOriginal;
+  TempDataO2D: JCWJH;
+  TempDataOHv: TRecord_OriginalHv;
+  TempDataOLv: TRecord_OriginalLv;
+  TempData2D: ^JCWJH;
+  TempDataHv: ^TRecord_OriginalHv;
+  TempDataLv: ^TRecord_OriginalLv;
+begin
+  FileStream := TFileStream.Create(TempLoadOriginalPath, 2);
+  LoadDataSize := FileStream.Size;
+  FileStream.Seek(0, soBeginning);
+  InputDataSize := 0;
+
+  Data2DCache.clear;
+  HvUDPCache.clear;
+  LvUDPCache.clear;
+  AcyingCache.clear;
+  DrawCache.clear;
+  OriginalCache.clear;
+  ResultCache.clear;
+
+  while InputDataSize < LoadDataSize do
+  begin
+    Application.ProcessMessages;
+    dxRibbonStatusBar.Panels[1].Text := '正在读取数据，请稍后。';
+    FileStream.ReadBuffer(TempPlayBackData, SizeOf(Record_SaveOriginal));
+
+    TempDataO2D := TempPlayBackData.Om_data;
+    TempDataOHv := TempPlayBackData.OHvData;
+    TempDataOLv := TempPlayBackData.OLvData;
+
+    New(TempData2D);
+    CopyMemory(TempData2D, @TempDataO2D, SizeOf(JCWJH));
+    Data2DCache.Push(TempData2D);
+
+    New(TempDataHv);
+    CopyMemory(TempDataHv, @TempDataOHv, SizeOf(TRecord_OriginalHv));
+    HvUDPCache.Push(TempDataHv);
+
+    New(TempDataLv);
+    CopyMemory(TempDataLv, @TempDataOLv, SizeOf(TRecord_OriginalLv));
+    LvUDPCache.Push(TempDataLv);
+
+    InputDataSize := InputDataSize + SizeOf(Record_SaveOriginal);
+  end;
+  dxRibbonStatusBar.Panels[1].Text := '数据读取完毕，可以开始回放。';
+  FileStream.Free;
+end;
+
+function TForm_UI.AToV(kind_V: Byte; temp_A: Word): Single;
+begin
+  case kind_V of
+    10:Result := temp_A * 2.5 / 65535;
+    11:Result := temp_A * 5 / 65535;
+    12:Result := temp_A * 10 / 65535;
+    13:Result := temp_A * 5 / 65535 - 2.5;
+    14:Result := temp_A * 10 / 65535 - 5;
+    15:Result := temp_A * 20 / 65535 - 10;
+  end;
 end;
 end.
