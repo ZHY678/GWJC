@@ -2,9 +2,28 @@
 线路名称 = 未知线路
 
 [传感器设置]
-2DIP = 192.168.100.100
-UDPIP = 10.10.10.11
-UDPPort = 1025
+2DIP =192.168.100.100
+HvUDPIP =10.10.10.2
+HvUDPPort =1025
+LvUDPIP =10.10.10.3
+LvUDPPort =1025
+AcyingUDPIP =10.10.10.4
+AcyingUDPPort =1025
+
+[标定]
+Force = 0
+Electricity = 0
+Power1 = 0
+Power2 = 0
+Power3 = 0
+Power4 = 0
+ACC1 = 0
+ACC2 = 0
+ACC3 = 0
+ACC4 = 0
+ACC5 = 0
+ACC6 = 0
 
 [调试]
 调试 = 1
+点数 = 20

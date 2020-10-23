@@ -9,7 +9,8 @@ uses
   JCWMesh in 'Source\JCWMesh.pas',
   YEGinc in 'Source\YEGinc.pas',
   UGlobalpara in 'Source\UGlobalpara.pas',
-  UI_SensorSetting in 'Source\UI_SensorSetting.pas' {Form_Sensor};
+  UI_SensorSetting in 'Source\UI_SensorSetting.pas' {Form_Sensor},
+  UFirFilter in 'Source\UFirFilter.pas';
 
 {$R *.res}
 
