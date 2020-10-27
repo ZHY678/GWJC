@@ -307,6 +307,7 @@ type
     function YEGConnect(tempTCPIP: string): Integer;
     procedure YEGDisconnect;
     procedure LoadOriginalData(TempLoadOriginalPath: string);
+    procedure SaveResultHead(tempPath, tempLineName: string; initDis: Double; shangxia, rundir: string; initzengjian: Byte);
   public
     { Public declarations }
     //2D数据变量（导高拉出值）
@@ -680,7 +681,6 @@ begin
 
         vector_Electricity[I] := Form_UI.array_DataDealing[I + Form_UI.counts - 200].TempLv.Electric;
       end;
-
 
       //数据滤波
       Form_UI.FirFilter_2DAverageX1.filter(vector_X1, vector_X1);
@@ -1474,8 +1474,14 @@ end;
 
 procedure TForm_UI.Action_StartSaveExecute(Sender: TObject);
 begin
-  if not IsSave then TempOrignalDataPath := SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
-  IsSave := True;
+  if not IsSave then
+  begin
+    TempOrignalDataPath := SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
+    TempResultDataPath := SavedResultDataPath + Form_LineSetting.line_name + '_' + FormatDateTime('yymmddhhnnss', Now) + '\GWResult.dat';
+    if not DirectoryExists(ExtractFilePath(TempResultDataPath)) then ForceDirectories(ExtractFilePath(TempResultDataPath));
+    SaveResultHead(TempResultDataPath, Form_LineSetting.line_name, Form_LineSetting.kilometer, Form_LineSetting.shangxiaxing, Form_LineSetting.direction, Form_LineSetting.plus_minus);
+    IsSave := True;
+  end;
   dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
 end;
 
@@ -2129,6 +2135,52 @@ begin
 //  IdUDPServer_Acying.SendBuffer('10.10.10.4', 1025, Buffer_Send);
 
 //  IdUDPServer_Hv.SendBuffer('192.168.3.100', 1025, Buffer_Send);
+end;
+
+procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte);
+var
+  SaveResultlFile : file;
+  FileStream : TFileStream;
+  WritePosition : Int64;
+  LengthNumber : Integer;
+  TempData: sResultDataPara;
+  I: Word;
+  tempString: string;
+begin
+  if not FileExists(TempResultDataPath) then
+  begin
+    AssignFile(SaveResultlFile, TempResultDataPath);
+    Rewrite(SaveResultlFile, 1);
+    CloseFile(SaveResultlFile);
+  end;
+  FileStream := TFileStream.Create(TempResultDataPath, 2);
+  WritePosition := FileStream.Size;
+  FileStream.Seek(WritePosition, 0);
+
+  if Length(tempLineName) > 0 then
+  begin
+    for I := 0 to Length(tempLineName) - 1 do
+    begin
+      TempData.lineName[I] := tempLineName[I];
+    end;
+  end;
+  TempData.Version := 1;
+  for I := 0 to 394 do TempData.reserved[I] := 0;
+  TempData.inight := 0;
+  TempData.inidis := Round(initDis * 1000);
+  TempData.Buchang := 0;
+  if shangxia = '上行' then TempData.shangxia := 1
+  else TempData.shangxia := 2;
+  if rundir = '正向' then TempData.rundir := 1
+  else TempData.rundir := 0;
+  if initzengjian = 1 then TempData.initzengjian := 1
+  else TempData.initzengjian := 0;
+
+  tempString := FormatDateTime('yymmddhhnnss', Now);
+  for I := 0 to 11 do TempData.DataTime[I] := tempString[I];
+
+  LengthNumber := FileStream.Write(TempData, SizeOf(sResultDataPara));
+  FileStream.Destroy;
 end;
 
 procedure TForm_UI.SaveOriginalData(TempData: Record_SaveOriginal);

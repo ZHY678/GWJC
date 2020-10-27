@@ -112,7 +112,7 @@ begin
               Form_UI.IdUDPServer_Lv.Active := True;
               Form_UI.IdUDPServer_Acying.Active := True;
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
-              Form_UI.IsSave := True;
+              Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;
               Form_UI.UDPStartCollect;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
