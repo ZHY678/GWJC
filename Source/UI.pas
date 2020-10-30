@@ -91,8 +91,8 @@ type
   end;
 
   TRecord_Acying = record
-    pluseTime, pluseCounts: Cardinal;
-    pluseStatus: Byte;
+    pluseTime, pluseCounts: Word;
+    pluseNumber, pluseStatus: Byte;
   end;
 
   Record_SaveOriginal = record
@@ -132,6 +132,7 @@ type
     TempJCWJH: JCWJH;
     TempHv: TRecord_Hv;
     TempLv: TRecord_Lv;
+    TempAcying: TRecord_Acying;
   end;
 
   TForm_UI = class(TForm)
@@ -351,14 +352,14 @@ type
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和399有关
     calCounts, drawCounts, counts, calingCounts: Word;
 
-
-    IsRun, IsSave, IsPlayback, IsCalibrating, IsFirstCal, IsGJD: Boolean;
+    IsRun, IsSave, IsPlayback, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
     drawThreshold, poleCounts: Byte;   //绘图点数和支柱计算高差计数
     noPlusCounts, calHCounts, calMaoCounts: Word;   //无脉冲的数据计数和检测到柱和锚段的计数
     temp_X, temp_Y: array[0..3] of Single;   //2D错误值取前一个值数组
-
+    time_Electricity: Single;   //电流大于标准值百分之30开始时间
+    time_CalSpeed: Single;
 
     //这些暂时注释，因为可以作为局部变量定义
 //    startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus: Double;   //最开始的脉冲数
@@ -432,6 +433,9 @@ type
 var
   Form_UI: TForm_UI;
 
+  const
+    ESV = 5.0;   //电流标准值
+
 implementation
 
 {$R *.dfm}
@@ -477,12 +481,15 @@ var
   TempDataOHv: TRecord_OriginalHv;
   TempDataLv: ^TRecord_OriginalLv;
   TempDataOLv: TRecord_OriginalLv;
+  TempDataAcying: ^TRecord_OriginalAcying;
+  TempDataOAcying: TRecord_OriginalAcying;
   TempDataSO: ^Record_SaveOriginal;
   TempDataSR: ^sDataFrame;
   vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
   vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
   array_PlusData: array of sDataFrame;
   IniFile : TIniFile;
+  temp_time: Single;   //记录速度起始时间
 
   startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus: Double;   //最开始的脉冲数
   array_DataDeal: array [0..999] of Record_SaveOriginal;    //最原始数据数组
@@ -553,6 +560,29 @@ begin
           Dispose(TempDataLv);
           Array_DataDeal[I].OLvData := TempDataOLv;
         end;
+
+        //燃弧数据从500个点抽200个点赋值
+        J := 0;
+        tempCounts := Form_UI.counts;
+        for I := 0 to 499 do
+        begin
+          TempDataAcying := Form_UI.AcyingCache.Pop;
+          CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
+          Dispose(TempDataAcying);
+
+          if I = J + 1 then
+          begin
+            array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+            tempCounts := tempCounts + 1;
+          end;
+          if I = J + 4 then
+          begin
+            array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+            tempCounts := tempCounts + 1;
+            J := J + 5;
+          end;
+        end;
+
         Form_UI.counts := Form_UI.counts + 200;
       end
       else
@@ -578,6 +608,29 @@ begin
           Dispose(TempDataLv);
           Array_DataDeal[I].OLvData := TempDataOLv;
         end;
+
+        //燃弧数据从500个点抽200个点赋值
+        J := 0;
+        tempCounts := 800;
+        for I := 0 to 499 do
+        begin
+          TempDataAcying := Form_UI.AcyingCache.Pop;
+          CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
+          Dispose(TempDataAcying);
+
+          if I = J + 1 then
+          begin
+            array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+            tempCounts := tempCounts + 1;
+          end;
+          if I = J + 4 then
+          begin
+            array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+            tempCounts := tempCounts + 1;
+            J := J + 5;
+          end;
+        end;
+
         Form_UI.counts := 1000;
       end;
 
@@ -677,6 +730,18 @@ begin
         array_DataDealing[I].TempLv.Status1 := array_DataDeal[I].OLvData.OLv[6];
 
         array_DataDealing[I].TempLv.Status2 := array_DataDeal[I].OLvData.OLv[7];
+
+        //燃弧结构体赋值
+        TempWord[0] := array_DataDeal[I].AcyingData.Acying[3];
+        TempWord[1] := array_DataDeal[I].AcyingData.Acying[4];
+        array_DataDealing[I].TempAcying.pluseTime := Word(TempWord);
+
+        TempWord[0] := array_DataDeal[I].AcyingData.Acying[5];
+        TempWord[1] := array_DataDeal[I].AcyingData.Acying[6];
+        array_DataDealing[I].TempAcying.pluseCounts := Word(TempWord);
+
+        array_DataDealing[I].TempAcying.pluseNumber := array_DataDeal[I].AcyingData.Acying[7];
+        array_DataDealing[I].TempAcying.pluseStatus := array_DataDeal[I].AcyingData.Acying[8];
       end;
 
       //滤波前vector赋值
@@ -832,10 +897,11 @@ begin
 
          //电流赋值
          array_ResultDeal[I + Form_UI.counts - 200].DL_value := Form_UI.CalDL(vector_Electricity[I]);
-
          array_ResultDeal[I + Form_UI.counts - 200].RH_value := 0;
-         array_ResultDeal[I + Form_UI.counts - 200].RH_time := 0;
-         array_ResultDeal[I + Form_UI.counts - 200].RH_numb := 0;
+
+         //燃弧赋值
+         array_ResultDeal[I + Form_UI.counts - 200].RH_time := array_DataDealing[I + Form_UI.counts - 200].TempAcying.pluseTime;
+         array_ResultDeal[I + Form_UI.counts - 200].RH_numb := array_DataDealing[I + Form_UI.counts - 200].TempAcying.pluseCounts;
 
          for J := 0 to 6 do array_ResultDeal[I + Form_UI.counts - 200].reserved[J] := 0;
 
@@ -939,8 +1005,20 @@ begin
             array_PlusResult[Form_UI.calingCounts - 1] := array_ResultDeal[I];
           end;
 
+          //速度、公里标赋值
           tempKm := (tempPlus - startPlus) * 0.000013 + startKm;
           array_PlusResult[Form_UI.calingCounts - 1].mykilo := tempKm;
+          if Form_UI.time_CalSpeed = 0 then
+          begin
+            array_PlusResult[Form_UI.calingCounts - 1].myspeed := 0;
+            Form_UI.time_CalSpeed := GetTickCount;
+          end
+          else
+          begin
+            temp_time := GetTickCount;
+            array_PlusResult[Form_UI.calingCounts - 1].myspeed := ((tempPlus - startPlus) * 13 / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
+            Form_UI.time_CalSpeed := temp_time;
+          end;
           startPlus := tempPlus;
           startKm := tempKm;
 
@@ -1025,6 +1103,20 @@ begin
           array_PlusResult[Form_UI.calingCounts - 1].DL_value := Form_UI.CalMean(temp_arrayDL) - Form_UI.calibrate_Electricity;
           array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC2;
           array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC5;
+          if array_PlusData[Form_UI.calingCounts - 1].DL_value > ESV then
+          begin
+            if Form_UI.IsJCDL = True then
+            begin
+              Form_UI.time_Electricity := GetTickCount;
+              Form_UI.IsJCDL := False
+            end;
+            array_PlusResult[Form_UI.calingCounts - 1].RH_value := GetTickCount - Form_UI.time_Electricity;
+          end
+          else
+          begin
+            Form_UI.IsJCDL = True;
+            array_PlusResult[Form_UI.calingCounts - 1].RH_value := 0;
+          end;
 
           //标定值同时计算
           SetLength(temp_arraycalibYL1, Form_UI.noPlusCounts);
@@ -1293,6 +1385,7 @@ begin
       end;
 
     end;
+
     Sleep(1);
   end;
 end;
@@ -1549,6 +1642,7 @@ begin
 
     //为下次开始做准备
     IsFirstCal := True;
+    IsJCDL := True;
     IsGJD := False;
     counts:= 0;
     calCounts:= 0;    
@@ -1571,6 +1665,8 @@ begin
     YD4 := 0;
     YD5 := 0;
     YD6 := 0;
+    time_Electricity := 0;
+    time_CalSpeed := 0;
 
     //2D错误值取前一个值数组初始化
     for I := 0 to 3 do
@@ -1736,6 +1832,7 @@ begin
   IsPlayback := False;
   IsCalibrating := False;
   IsFirstCal := True;
+  IsJCDL := True;
   IsGJD := False;
 
   //计算绘图技术点初始化
@@ -1760,6 +1857,8 @@ begin
   YD4 := 0;
   YD5 := 0;
   YD6 := 0;
+  time_Electricity := 0;
+  time_CalSpeed := 0;
 
   //2D错误值取前一个值数组初始化
   for I := 0 to 3 do
