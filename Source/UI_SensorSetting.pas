@@ -52,8 +52,8 @@ type
     Edit_UDPAcyingIP4: TEdit;
     Edit_UDPAcyingPort: TEdit;
     GroupBox_CalCount: TGroupBox;
-    Label_CalCounts: TLabel;
-    Edit_CalCounts: TEdit;
+    Label_DrawCounts: TLabel;
+    Edit_DrawCounts: TEdit;
     GroupBox_Calibration: TGroupBox;
     Label_Force: TLabel;
     Edit_Force: TEdit;
@@ -79,6 +79,8 @@ type
     Edit_ACC4: TEdit;
     Edit_ACC3: TEdit;
     Label_ACC3: TLabel;
+    Edit_CalCounts: TEdit;
+    Label_CalCounts: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure Button_ComfirmClick(Sender: TObject);
@@ -109,7 +111,8 @@ begin
   (FGlobalpara.IsNumberType(Edit_UDPLvIP1.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPLvIP2.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_UDPLvIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPLvIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPLvPort.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_UDPAcyingIP1.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingIP2.Text) = 1) and
-  (FGlobalpara.IsNumberType(Edit_UDPAcyingIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingPort.Text) = 1) then
+  (FGlobalpara.IsNumberType(Edit_UDPAcyingIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingPort.Text) = 1) and
+  (FGlobalpara.IsNumberType(Edit_DrawCounts.Text) = 1) and (FGlobalpara.IsNumberType(Edit_CalCounts.Text) = 1) then
   begin
     if (StrToInt(Edit_IP1.Text) <= 255) and (StrToInt(Edit_IP2.Text) <= 255) and (StrToInt(Edit_IP3.Text) <= 255) and
     (StrToInt(Edit_IP4.Text) <= 255) and (StrToInt(Edit_UDPHvIP1.Text) <= 255) and (StrToInt(Edit_UDPHvIP2.Text) <= 255) and
@@ -124,7 +127,8 @@ begin
     (StrToInt(Edit_UDPAcyingIP1.Text) <= 255) and (StrToInt(Edit_UDPAcyingIP2.Text) <= 255) and
     (StrToInt(Edit_UDPAcyingIP3.Text) <= 255) and (StrToInt(Edit_UDPAcyingIP4.Text) <= 255) and (StrToInt(Edit_UDPAcyingPort.Text) < 65536) and
     (StrToInt(Edit_UDPAcyingIP1.Text) >= 0) and (StrToInt(Edit_UDPAcyingIP2.Text) >= 0) and
-    (StrToInt(Edit_UDPAcyingIP3.Text) >= 0) and (StrToInt(Edit_UDPAcyingIP4.Text) >= 0) and (StrToInt(Edit_UDPAcyingPort.Text) >= 0) then
+    (StrToInt(Edit_UDPAcyingIP3.Text) >= 0) and (StrToInt(Edit_UDPAcyingIP4.Text) >= 0) and (StrToInt(Edit_UDPAcyingPort.Text) >= 0) and
+    (StrToInt(Edit_DrawCounts.Text) >= 10) and (StrToInt(Edit_CalCounts.Text) >= 50) then
     begin
       if FileExists(Form_UI.ConfigurationFilePath) then
       begin
@@ -136,12 +140,15 @@ begin
           Inifile.WriteString('传感器设置', 'HvUDPPort',  Edit_UDPHvPort.Text);
           Inifile.WriteString('传感器设置', 'LvUDPIP',  Edit_UDPLvIP1.Text + '.' + Edit_UDPLvIP2.Text + '.' + Edit_UDPLvIP3.Text + '.' + Edit_UDPLvIP4.Text);
           Inifile.WriteString('传感器设置', 'LvUDPPort',  Edit_UDPLvPort.Text);
-          Inifile.WriteString('传感器设置', 'LvUDPIP',  Edit_UDPAcyingIP1.Text + '.' + Edit_UDPAcyingIP2.Text + '.' + Edit_UDPAcyingIP3.Text + '.' + Edit_UDPAcyingIP4.Text);
-          Inifile.WriteString('传感器设置', 'LvUDPPort',  Edit_UDPAcyingPort.Text);
+          Inifile.WriteString('传感器设置', 'AcyingUDPIP',  Edit_UDPAcyingIP1.Text + '.' + Edit_UDPAcyingIP2.Text + '.' + Edit_UDPAcyingIP3.Text + '.' + Edit_UDPAcyingIP4.Text);
+          Inifile.WriteString('传感器设置', 'AcyingUDPPort',  Edit_UDPAcyingPort.Text);
+          Inifile.WriteString('调试', '绘图点数',  Edit_DrawCounts.Text);
+          Inifile.WriteString('调试', '计算点数',  Edit_CalCounts.Text);
           IniFile.Free;
           MessageBox(Handle, '设置已恢复。', '传感器设置', MB_OK + MB_ICONQUESTION);
           Close;
           Form_UI.InitConfigurationFile;
+          Form_UI.InitSubGroup;
         end;
       end
       else MessageBox(Handle, '配置文件不存在，请检查。', '传感器设置', MB_OK);
