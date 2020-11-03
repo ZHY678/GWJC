@@ -4,7 +4,7 @@ object Form_Sensor: TForm_Sensor
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = #20256#24863#22120#35774#32622
-  ClientHeight = 586
+  ClientHeight = 635
   ClientWidth = 569
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -438,8 +438,8 @@ object Form_Sensor: TForm_Sensor
     end
   end
   object Button_Comfirm: TButton
-    Left = 107
-    Top = 545
+    Left = 235
+    Top = 594
     Width = 104
     Height = 33
     Caption = #30830#35748
@@ -605,7 +605,7 @@ object Form_Sensor: TForm_Sensor
     Left = 8
     Top = 455
     Width = 305
-    Height = 84
+    Height = 123
     Caption = #35745#31639#35774#32622
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -614,7 +614,7 @@ object Form_Sensor: TForm_Sensor
     Font.Style = []
     ParentFont = False
     TabOrder = 5
-    object Label_CalCounts: TLabel
+    object Label_DrawCounts: TLabel
       Left = 17
       Top = 33
       Width = 80
@@ -627,7 +627,20 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Edit_CalCounts: TEdit
+    object Label_CalCounts: TLabel
+      Left = 17
+      Top = 73
+      Width = 80
+      Height = 19
+      Caption = #35745#31639#28857#25968#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Edit_DrawCounts: TEdit
       Left = 105
       Top = 33
       Width = 88
@@ -640,6 +653,20 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 0
+    end
+    object Edit_CalCounts: TEdit
+      Left = 105
+      Top = 73
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
     end
   end
   object GroupBox_Calibration: TGroupBox

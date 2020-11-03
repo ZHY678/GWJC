@@ -103,6 +103,8 @@ begin
 
             if not Form_UI.IsRun then
             begin
+              Form_UI.StartMs := GetTickCount;
+              Form_UI.startTime := FormatDateTime('yymmddhhnnss', Now);
               ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
               ResumeThread(Form_UI.PDrawThread);
@@ -110,11 +112,13 @@ begin
               Form_UI.IdUDPServer_Lv.Active := True;
               Form_UI.IdUDPServer_Acying.Active := True;
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
-              Form_UI.IsSave := True;
+              Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;
               Form_UI.UDPStartCollect;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
               Form_UI.dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
+              Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
+              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
             end;
           end;
           -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
@@ -146,7 +150,11 @@ end;
 
 procedure TForm_LineSetting.FormCreate(Sender: TObject);
 begin
-  plus_minus := 2;
+  kilometer := 0;
+  line_name := '未知线路';
+  shangxiaxing := '上行';
+  direction := '正向';
+  plus_minus := 1;
 end;
 
 procedure TForm_LineSetting.FormShow(Sender: TObject);
