@@ -350,6 +350,7 @@ type
     //drawCounts 一次性绘图的点数
     //calCounts 计算均值、最大值、最小值、均方根值的点数多少
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和399有关
+    paintCounts: Byte;
     calCounts, drawCounts, counts, calingCounts: Word;
 
     IsRun, IsSave, IsPlayback, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
@@ -360,6 +361,8 @@ type
     temp_X, temp_Y: array[0..3] of Single;   //2D错误值取前一个值数组
     time_Electricity: Single;   //电流大于标准值百分之30开始时间
     time_CalSpeed: Single;
+
+    DrawData: array [0..24, 0..4999] of Single;   //绘图数据数组
 
     //这些暂时注释，因为可以作为局部变量定义
 //    startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus: Double;   //最开始的脉冲数
@@ -1114,7 +1117,7 @@ begin
           end
           else
           begin
-            Form_UI.IsJCDL = True;
+            Form_UI.IsJCDL := True;
             array_PlusResult[Form_UI.calingCounts - 1].RH_value := 0;
           end;
 
@@ -1394,15 +1397,47 @@ function DrawThread(p: Pointer): Integer; stdcall;
 var
   TempResultData: ^sDataFrame;
   TempRData: sDataFrame;
+  I: Byte;
 begin
   //  Synchronize();
   while True do
   begin
     if Form_UI.ResultCache.count > Form_UI.drawThreshold then
     begin
-      TempResultData := Form_UI.ResultCache.Pop;
-      CopyMemory(@TempRData, TempResultData, SizeOf(sDataFrame));
-      Dispose(TempResultData);
+      for I := 0 to Form_UI.drawThreshold - 1 do
+      begin
+        TempResultData := Form_UI.ResultCache.Pop;
+        CopyMemory(@TempRData, TempResultData, SizeOf(sDataFrame));
+        Dispose(TempResultData);
+
+
+      end;
+      Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
+    end;
+
+    if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Conductor then
+    begin
+      ;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Parameter then
+    begin
+      ;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_ContactForce then
+    begin
+      ;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Hardspot then
+    begin
+      ;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Electric then
+    begin
+      ;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Acying then
+    begin
+      ;
     end;
 
     Sleep(1);
@@ -1615,6 +1650,7 @@ end;
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
 var
   I: Byte;
+  J: Word;
 begin
   if IsRun then
   begin
@@ -1652,6 +1688,7 @@ begin
     calHCounts := 0;
     calMaoCounts := 0;
     poleCounts := 0;
+    paintCounts := 0;
 
     JCL := 0;
     Calib_DY := 0;
@@ -1673,6 +1710,15 @@ begin
     begin
       temp_X[I] := 65537;
       temp_Y[I] := 65537;
+    end;
+
+    //绘图数据数组初始化
+    for I := 0 to 24 do
+    begin
+      for J := 0 to 4999 do
+      begin
+        DrawData[I][J] := 0;
+      end;
     end;
 
     Close2D;
@@ -1744,6 +1790,7 @@ var
   W: array [0..1] of Double;
   FirOrder: Integer;
   I: Byte;
+  J: Word;
 //  TempWord: array [0..1] of Byte;
 begin
   RzPageControl.ActivePage := TabSheet_Conductor;
@@ -1844,6 +1891,7 @@ begin
   calHCounts := 0;
   calMaoCounts := 0;
   poleCounts := 0;
+  paintCounts := 0;
 
   JCL := 0;
   Calib_DY := 0;
@@ -1865,6 +1913,15 @@ begin
   begin
     temp_X[I] := 65537;
     temp_Y[I] := 65537;
+  end;
+
+  //绘图数据数组初始化
+  for I := 0 to 24 do
+  begin
+    for J := 0 to 4999 do
+    begin
+      DrawData[I][J] := 0;
+    end;
   end;
 
   //测试
