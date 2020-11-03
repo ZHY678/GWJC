@@ -523,49 +523,52 @@ object Form_UI: TForm_UI
         TabOrder = 0
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
-        object Series_Width: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_Width: TPointSeries
+          Marks.Callout.Length = 8
           Title = #25509#35302#23548#32447#38388#27700#24179#36317#31163
           VertAxis = aCustomVertAxis
-          IgnoreNulls = False
-          LinePen.Color = 10708548
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 0
         end
-        object Series_Height: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_Height: TPointSeries
+          Marks.Callout.Length = 8
           Title = #25509#35302#23548#32447#38388#22402#30452#36317#31163
           VertAxis = aCustomVertAxis
-          LinePen.Color = 3513587
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 1
         end
-        object Series_Changerate: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_Changerate: TPointSeries
+          Marks.Callout.Length = 8
           Title = #23548#39640#21464#21270#29575
           VertAxis = aCustomVertAxis
-          LinePen.Color = 1330417
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 2
         end
-        object Series_Elevation: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_Elevation: TPointSeries
+          Marks.Callout.Length = 8
           Title = #23450#20301#28857#39640#24046
           VertAxis = aCustomVertAxis
-          LinePen.Color = 11048782
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -974,12 +977,13 @@ object Form_UI: TForm_UI
           YValues.Order = loNone
           CustomVertAxis = 0
         end
-        object Series_ElectricTime: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_ElectricTime: TPointSeries
+          Marks.Callout.Length = 8
           Title = #30005#27969#26102#38388
           VertAxis = aCustomVertAxis
-          LinePen.Color = 3513587
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1077,24 +1081,26 @@ object Form_UI: TForm_UI
         TabOrder = 0
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
-        object Series_AcyingTime: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_AcyingTime: TPointSeries
+          Marks.Callout.Length = 8
           Title = #29123#24359#25345#32493#26102#38388
           VertAxis = aCustomVertAxis
-          LinePen.Color = 10708548
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 0
         end
-        object Series_AcyingCount: TFastLineSeries
-          Selected.Hover.Visible = True
+        object PointSeries_AcyingCount: TPointSeries
+          Marks.Callout.Length = 8
           Title = #29123#24359#27425#25968
           VertAxis = aCustomVertAxis
-          LinePen.Color = 3513587
-          TreatNulls = tnDontPaint
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'

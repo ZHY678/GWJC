@@ -231,10 +231,6 @@ type
     Series_Line4Width: TFastLineSeries;
     Series_Line4Height: TFastLineSeries;
     Series_LineDistance2: TFastLineSeries;
-    Series_Width: TFastLineSeries;
-    Series_Height: TFastLineSeries;
-    Series_Changerate: TFastLineSeries;
-    Series_Elevation: TFastLineSeries;
     Series_Force: TFastLineSeries;
     Series_ForceAve: TFastLineSeries;
     Series_ForceMax: TFastLineSeries;
@@ -243,9 +239,6 @@ type
     Series_Vacc1: TFastLineSeries;
     Series_Vacc2: TFastLineSeries;
     Series_ElectricValue: TFastLineSeries;
-    Series_ElectricTime: TFastLineSeries;
-    Series_AcyingTime: TFastLineSeries;
-    Series_AcyingCount: TFastLineSeries;
     Action_ConductorDisplay: TAction;
     Action_ParameterDisplay: TAction;
     Action_ForceDisplay: TAction;
@@ -272,6 +265,13 @@ type
     Action_OpenFile: TAction;
     Action_StartPlayback: TAction;
     Action_StopPlayback: TAction;
+    PointSeries_Width: TPointSeries;
+    PointSeries_Height: TPointSeries;
+    PointSeries_Changerate: TPointSeries;
+    PointSeries_Elevation: TPointSeries;
+    PointSeries_ElectricTime: TPointSeries;
+    PointSeries_AcyingTime: TPointSeries;
+    PointSeries_AcyingCount: TPointSeries;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -350,8 +350,7 @@ type
     //drawCounts 一次性绘图的点数
     //calCounts 计算均值、最大值、最小值、均方根值的点数多少
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和399有关
-    paintCounts: Byte;
-    calCounts, drawCounts, counts, calingCounts: Word;
+    calCounts, drawCounts, counts, calingCounts, paintCounts: Word;
 
     IsRun, IsSave, IsPlayback, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
 
@@ -362,7 +361,7 @@ type
     time_Electricity: Single;   //电流大于标准值百分之30开始时间
     time_CalSpeed: Single;
 
-    DrawData: array [0..24, 0..4999] of Single;   //绘图数据数组
+    DrawData: array [0..25, 0..4999] of Single;   //绘图数据数组
 
     //这些暂时注释，因为可以作为局部变量定义
 //    startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus: Double;   //最开始的脉冲数
@@ -472,6 +471,467 @@ begin
   end;
 end;
 
+function DrawThread(p: Pointer): Integer; stdcall;
+var
+  TempResultData: ^sDataFrame;
+  TempRData: sDataFrame;
+  I: Word;
+  tmp0ChartValues, tmp1ChartValues, tmp2ChartValues, tmp3ChartValues, tmp4ChartValues, tmp5ChartValues, tmp6ChartValues, tmp7ChartValues, tmp8ChartValues, tmp9ChartValues, tmp10ChartValues: TChartValues;
+begin
+  //  Synchronize();
+  while True do
+  begin
+    if Form_UI.DrawCache.count > Form_UI.drawThreshold then
+    begin
+      if Form_UI.paintCounts + Form_UI.drawThreshold < 5000 then
+      begin
+        for I := 0 to Form_UI.drawThreshold - 1 do
+        begin
+          TempResultData := Form_UI.DrawCache.Pop;
+          CopyMemory(@TempRData, TempResultData, SizeOf(sDataFrame));
+          Dispose(TempResultData);
+
+          Form_UI.DrawData[0][I + Form_UI.paintCounts] := TempRData.LCZ11_value;
+          Form_UI.DrawData[1][I + Form_UI.paintCounts] := TempRData.LCZ12_value;
+          Form_UI.DrawData[2][I + Form_UI.paintCounts] := TempRData.LCZSP1_value;
+          Form_UI.DrawData[3][I + Form_UI.paintCounts] := TempRData.LCZ21_value;
+          Form_UI.DrawData[4][I + Form_UI.paintCounts] := TempRData.LCZ22_value;
+          Form_UI.DrawData[5][I + Form_UI.paintCounts] := TempRData.LCZSP2_value;
+          Form_UI.DrawData[6][I + Form_UI.paintCounts] := TempRData.DGZ11_value;
+          Form_UI.DrawData[7][I + Form_UI.paintCounts] := TempRData.DGZ12_value;
+          Form_UI.DrawData[8][I + Form_UI.paintCounts] := TempRData.DGZ21_value;
+          Form_UI.DrawData[9][I + Form_UI.paintCounts] := TempRData.DGZ22_value;
+          Form_UI.DrawData[10][I + Form_UI.paintCounts] := TempRData.SPJL_value;
+          Form_UI.DrawData[11][I + Form_UI.paintCounts] := TempRData.SPGC_value;
+          Form_UI.DrawData[12][I + Form_UI.paintCounts] := TempRData.DGBHL_value;
+          Form_UI.DrawData[13][I + Form_UI.paintCounts] := TempRData.DWDGC_value;
+          Form_UI.DrawData[14][I + Form_UI.paintCounts] := TempRData.JCL_value;
+          Form_UI.DrawData[15][I + Form_UI.paintCounts] := TempRData.JCL_mean;
+          Form_UI.DrawData[16][I + Form_UI.paintCounts] := TempRData.JCL_max;
+          Form_UI.DrawData[17][I + Form_UI.paintCounts] := TempRData.JCL_min;
+          Form_UI.DrawData[18][I + Form_UI.paintCounts] := TempRData.JCL_std;
+          Form_UI.DrawData[19][I + Form_UI.paintCounts] := TempRData.YD1_value;
+          Form_UI.DrawData[20][I + Form_UI.paintCounts] := TempRData.YD2_value;
+          Form_UI.DrawData[21][I + Form_UI.paintCounts] := TempRData.DL_value;
+          Form_UI.DrawData[22][I + Form_UI.paintCounts] := TempRData.RH_value;
+          Form_UI.DrawData[23][I + Form_UI.paintCounts] := TempRData.RH_time;
+          Form_UI.DrawData[24][I + Form_UI.paintCounts] := TempRData.RH_numb;
+          Form_UI.DrawData[25][I + Form_UI.paintCounts] := TempRData.mykilo / 1000;
+        end;
+        Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
+      end
+      else
+      begin
+        for I := 0 to 9999 - Form_UI.paintCounts - Form_UI.drawThreshold do
+        begin
+          Form_UI.DrawData[0][I] := Form_UI.DrawData[0][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[1][I] := Form_UI.DrawData[1][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[2][I] := Form_UI.DrawData[2][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[3][I] := Form_UI.DrawData[3][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[4][I] := Form_UI.DrawData[4][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[5][I] := Form_UI.DrawData[5][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[6][I] := Form_UI.DrawData[6][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[7][I] := Form_UI.DrawData[7][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[8][I] := Form_UI.DrawData[8][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[9][I] := Form_UI.DrawData[9][I];
+          Form_UI.DrawData[10][I] := Form_UI.DrawData[10][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[11][I] := Form_UI.DrawData[11][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[12][I] := Form_UI.DrawData[12][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[13][I] := Form_UI.DrawData[13][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[14][I] := Form_UI.DrawData[14][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[15][I] := Form_UI.DrawData[15][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[16][I] := Form_UI.DrawData[16][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[17][I] := Form_UI.DrawData[17][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[18][I] := Form_UI.DrawData[18][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[19][I] := Form_UI.DrawData[19][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[20][I] := Form_UI.DrawData[20][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[21][I] := Form_UI.DrawData[21][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[22][I] := Form_UI.DrawData[22][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[23][I] := Form_UI.DrawData[23][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[24][I] := Form_UI.DrawData[24][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+          Form_UI.DrawData[25][I] := Form_UI.DrawData[25][I + Form_UI.paintCounts + Form_UI.drawThreshold - 5000];
+        end;
+
+        for I := 4999 - Form_UI.drawThreshold to 4999 do
+        begin
+          Form_UI.DrawData[0][I] := TempRData.LCZ11_value;
+          Form_UI.DrawData[1][I] := TempRData.LCZ12_value;
+          Form_UI.DrawData[2][I] := TempRData.LCZSP1_value;
+          Form_UI.DrawData[3][I] := TempRData.LCZ21_value;
+          Form_UI.DrawData[4][I] := TempRData.LCZ22_value;
+          Form_UI.DrawData[5][I] := TempRData.LCZSP2_value;
+          Form_UI.DrawData[6][I] := TempRData.DGZ11_value;
+          Form_UI.DrawData[7][I] := TempRData.DGZ12_value;
+          Form_UI.DrawData[8][I] := TempRData.DGZ21_value;
+          Form_UI.DrawData[9][I] := TempRData.DGZ22_value;
+          Form_UI.DrawData[10][I] := TempRData.SPJL_value;
+          Form_UI.DrawData[11][I] := TempRData.SPGC_value;
+          Form_UI.DrawData[12][I] := TempRData.DGBHL_value;
+          Form_UI.DrawData[13][I] := TempRData.DWDGC_value;
+          Form_UI.DrawData[14][I] := TempRData.JCL_value;
+          Form_UI.DrawData[15][I] := TempRData.JCL_mean;
+          Form_UI.DrawData[16][I] := TempRData.JCL_max;
+          Form_UI.DrawData[17][I] := TempRData.JCL_min;
+          Form_UI.DrawData[18][I] := TempRData.JCL_std;
+          Form_UI.DrawData[19][I] := TempRData.YD1_value;
+          Form_UI.DrawData[20][I] := TempRData.YD2_value;
+          Form_UI.DrawData[21][I] := TempRData.DL_value;
+          Form_UI.DrawData[22][I] := TempRData.RH_value;
+          Form_UI.DrawData[23][I] := TempRData.RH_time;
+          Form_UI.DrawData[24][I] := TempRData.RH_numb;
+          Form_UI.DrawData[25][I] := TempRData.mykilo / 1000;
+        end;
+      end;
+
+      SetLength(tmp0ChartValues, length(Form_UI.DrawData[0]));
+      for I := 0 to length(Form_UI.DrawData[25]) - 1 do
+      begin
+        tmp0ChartValues[I] := Form_UI.DrawData[25][I];
+      end;
+
+      if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Conductor then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[0]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[1]));
+        SetLength(tmp3ChartValues, length(Form_UI.DrawData[2]));
+        SetLength(tmp4ChartValues, length(Form_UI.DrawData[3]));
+        SetLength(tmp5ChartValues, length(Form_UI.DrawData[4]));
+        SetLength(tmp6ChartValues, length(Form_UI.DrawData[5]));
+        SetLength(tmp7ChartValues, length(Form_UI.DrawData[6]));
+        SetLength(tmp8ChartValues, length(Form_UI.DrawData[7]));
+        SetLength(tmp9ChartValues, length(Form_UI.DrawData[8]));
+        SetLength(tmp10ChartValues, length(Form_UI.DrawData[9]));
+
+        for I := 0 to length(Form_UI.DrawData[0]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[0][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[1][I];
+          tmp3ChartValues[I] := Form_UI.DrawData[2][I];
+          tmp4ChartValues[I] := Form_UI.DrawData[3][I];
+          tmp5ChartValues[I] := Form_UI.DrawData[4][I];
+          tmp6ChartValues[I] := Form_UI.DrawData[5][I];
+          tmp7ChartValues[I] := Form_UI.DrawData[6][I];
+          tmp8ChartValues[I] := Form_UI.DrawData[7][I];
+          tmp9ChartValues[I] := Form_UI.DrawData[8][I];
+          tmp10ChartValues[I] := Form_UI.DrawData[9][I];
+        end;
+
+        Form_UI.Series_Line1Width.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line1Width.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line1Width.XValues.Modified := True;
+        Form_UI.Series_Line1Width.YValues.Value := tmp1ChartValues;
+        Form_UI.Series_Line1Width.YValues.Count := length(Form_UI.DrawData[0]);
+        Form_UI.Series_Line1Width.YValues.Modified := True;
+
+        Form_UI.Series_Line2Width.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line2Width.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line2Width.XValues.Modified := True;
+        Form_UI.Series_Line2Width.YValues.Value := tmp2ChartValues;
+        Form_UI.Series_Line2Width.YValues.Count := length(Form_UI.DrawData[1]);
+        Form_UI.Series_Line2Width.YValues.Modified := True;
+
+        Form_UI.Series_LineDistance1.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_LineDistance1.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_LineDistance1.XValues.Modified := True;
+        Form_UI.Series_LineDistance1.YValues.Value := tmp3ChartValues;
+        Form_UI.Series_LineDistance1.YValues.Count := length(Form_UI.DrawData[2]);
+        Form_UI.Series_LineDistance1.YValues.Modified := True;
+
+        Form_UI.Series_Line3Width.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line3Width.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line3Width.XValues.Modified := True;
+        Form_UI.Series_Line3Width.YValues.Value := tmp4ChartValues;
+        Form_UI.Series_Line3Width.YValues.Count := length(Form_UI.DrawData[3]);
+        Form_UI.Series_Line3Width.YValues.Modified := True;
+
+        Form_UI.Series_Line4Width.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line4Width.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line4Width.XValues.Modified := True;
+        Form_UI.Series_Line4Width.YValues.Value := tmp5ChartValues;
+        Form_UI.Series_Line4Width.YValues.Count := length(Form_UI.DrawData[4]);
+        Form_UI.Series_Line4Width.YValues.Modified := True;
+
+        Form_UI.Series_LineDistance2.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_LineDistance2.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_LineDistance2.XValues.Modified := True;
+        Form_UI.Series_LineDistance2.YValues.Value := tmp6ChartValues;
+        Form_UI.Series_LineDistance2.YValues.Count := length(Form_UI.DrawData[5]);
+        Form_UI.Series_LineDistance2.YValues.Modified := True;
+
+        Form_UI.Series_Line1Height.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line1Height.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line1Height.XValues.Modified := True;
+        Form_UI.Series_Line1Height.YValues.Value := tmp7ChartValues;
+        Form_UI.Series_Line1Height.YValues.Count := length(Form_UI.DrawData[6]);
+        Form_UI.Series_Line1Height.YValues.Modified := True;
+
+        Form_UI.Series_Line2Height.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line2Height.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line2Height.XValues.Modified := True;
+        Form_UI.Series_Line2Height.YValues.Value := tmp8ChartValues;
+        Form_UI.Series_Line2Height.YValues.Count := length(Form_UI.DrawData[7]);
+        Form_UI.Series_Line2Height.YValues.Modified := True;
+
+        Form_UI.Series_Line3Height.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line3Height.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line3Height.XValues.Modified := True;
+        Form_UI.Series_Line3Height.YValues.Value := tmp9ChartValues;
+        Form_UI.Series_Line3Height.YValues.Count := length(Form_UI.DrawData[8]);
+        Form_UI.Series_Line3Height.YValues.Modified := True;
+
+        Form_UI.Series_Line4Height.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Line4Height.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Line4Height.XValues.Modified := True;
+        Form_UI.Series_Line4Height.YValues.Value := tmp10ChartValues;
+        Form_UI.Series_Line4Height.YValues.Count := length(Form_UI.DrawData[9]);
+        Form_UI.Series_Line4Height.YValues.Modified := True;
+
+        Form_UI.Series_Line1Width.Repaint;
+        Form_UI.Series_Line2Width.Repaint;
+        Form_UI.Series_LineDistance1.Repaint;
+        Form_UI.Series_Line3Width.Repaint;
+        Form_UI.Series_Line4Width.Repaint;
+        Form_UI.Series_LineDistance2.Repaint;
+        Form_UI.Series_Line1Height.Repaint;
+        Form_UI.Series_Line2Height.Repaint;
+        Form_UI.Series_Line3Height.Repaint;
+        Form_UI.Series_Line4Height.Repaint;
+      end
+      else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Parameter then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[10]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[11]));
+        SetLength(tmp3ChartValues, length(Form_UI.DrawData[12]));
+        SetLength(tmp4ChartValues, length(Form_UI.DrawData[13]));
+
+        for I := 0 to length(Form_UI.DrawData[10]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[10][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[11][I];
+          tmp3ChartValues[I] := Form_UI.DrawData[12][I];
+          tmp4ChartValues[I] := Form_UI.DrawData[13][I];
+        end;
+
+        Form_UI.PointSeries_Width.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_Width.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_Width.XValues.Modified := True;
+        Form_UI.PointSeries_Width.YValues.Value := tmp1ChartValues;
+        Form_UI.PointSeries_Width.YValues.Count := length(Form_UI.DrawData[10]);
+        Form_UI.PointSeries_Width.YValues.Modified := True;
+
+        Form_UI.PointSeries_Height.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_Height.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_Height.XValues.Modified := True;
+        Form_UI.PointSeries_Height.YValues.Value := tmp2ChartValues;
+        Form_UI.PointSeries_Height.YValues.Count := length(Form_UI.DrawData[11]);
+        Form_UI.PointSeries_Height.YValues.Modified := True;
+
+        Form_UI.PointSeries_Changerate.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_Changerate.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_Changerate.XValues.Modified := True;
+        Form_UI.PointSeries_Changerate.YValues.Value := tmp3ChartValues;
+        Form_UI.PointSeries_Changerate.YValues.Count := length(Form_UI.DrawData[12]);
+        Form_UI.PointSeries_Changerate.YValues.Modified := True;
+
+        Form_UI.PointSeries_Elevation.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_Elevation.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_Elevation.XValues.Modified := True;
+        Form_UI.PointSeries_Elevation.YValues.Value := tmp4ChartValues;
+        Form_UI.PointSeries_Elevation.YValues.Count := length(Form_UI.DrawData[13]);
+        Form_UI.PointSeries_Elevation.YValues.Modified := True;
+
+        Form_UI.PointSeries_Width.Repaint;
+        Form_UI.PointSeries_Height.Repaint;
+        Form_UI.PointSeries_Changerate.Repaint;
+        Form_UI.PointSeries_Elevation.Repaint;
+      end
+      else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_ContactForce then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[14]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[15]));
+        SetLength(tmp3ChartValues, length(Form_UI.DrawData[16]));
+        SetLength(tmp4ChartValues, length(Form_UI.DrawData[17]));
+        SetLength(tmp5ChartValues, length(Form_UI.DrawData[18]));
+
+        for I := 0 to length(Form_UI.DrawData[14]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[14][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[15][I];
+          tmp3ChartValues[I] := Form_UI.DrawData[16][I];
+          tmp4ChartValues[I] := Form_UI.DrawData[17][I];
+          tmp5ChartValues[I] := Form_UI.DrawData[18][I];
+        end;
+
+        Form_UI.Series_Force.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Force.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Force.XValues.Modified := True;
+        Form_UI.Series_Force.YValues.Value := tmp1ChartValues;
+        Form_UI.Series_Force.YValues.Count := length(Form_UI.DrawData[14]);
+        Form_UI.Series_Force.YValues.Modified := True;
+
+        Form_UI.Series_ForceAve.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_ForceAve.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_ForceAve.XValues.Modified := True;
+        Form_UI.Series_ForceAve.YValues.Value := tmp2ChartValues;
+        Form_UI.Series_ForceAve.YValues.Count := length(Form_UI.DrawData[15]);
+        Form_UI.Series_ForceAve.YValues.Modified := True;
+
+        Form_UI.Series_ForceMax.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_ForceMax.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_ForceMax.XValues.Modified := True;
+        Form_UI.Series_ForceMax.YValues.Value := tmp3ChartValues;
+        Form_UI.Series_ForceMax.YValues.Count := length(Form_UI.DrawData[16]);
+        Form_UI.Series_ForceMax.YValues.Modified := True;
+
+        Form_UI.Series_ForceMin.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_ForceMin.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_ForceMin.XValues.Modified := True;
+        Form_UI.Series_ForceMin.YValues.Value := tmp4ChartValues;
+        Form_UI.Series_ForceMin.YValues.Count := length(Form_UI.DrawData[17]);
+        Form_UI.Series_ForceMin.YValues.Modified := True;
+
+        Form_UI.Series_ForceVariance.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_ForceVariance.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_ForceVariance.XValues.Modified := True;
+        Form_UI.Series_ForceVariance.YValues.Value := tmp5ChartValues;
+        Form_UI.Series_ForceVariance.YValues.Count := length(Form_UI.DrawData[18]);
+        Form_UI.Series_ForceVariance.YValues.Modified := True;
+
+        Form_UI.Series_Force.Repaint;
+        Form_UI.Series_ForceAve.Repaint;
+        Form_UI.Series_ForceMax.Repaint;
+        Form_UI.Series_ForceMin.Repaint;
+        Form_UI.Series_ForceVariance.Repaint;
+      end
+      else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Hardspot then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[19]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[20]));
+
+        for I := 0 to length(Form_UI.DrawData[19]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[19][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[20][I];
+        end;
+
+        Form_UI.Series_Vacc1.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Vacc1.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Vacc1.XValues.Modified := True;
+        Form_UI.Series_Vacc1.YValues.Value := tmp1ChartValues;
+        Form_UI.Series_Vacc1.YValues.Count := length(Form_UI.DrawData[19]);
+        Form_UI.Series_Vacc1.YValues.Modified := True;
+
+        Form_UI.Series_Vacc2.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_Vacc2.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_Vacc2.XValues.Modified := True;
+        Form_UI.Series_Vacc2.YValues.Value := tmp2ChartValues;
+        Form_UI.Series_Vacc2.YValues.Count := length(Form_UI.DrawData[20]);
+        Form_UI.Series_Vacc2.YValues.Modified := True;
+
+        Form_UI.Series_Vacc1.Repaint;
+        Form_UI.Series_Vacc2.Repaint;
+      end
+      else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Electric then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[21]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[22]));
+
+        for I := 0 to length(Form_UI.DrawData[21]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[21][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[22][I];
+        end;
+
+        Form_UI.Series_ElectricValue.XValues.Value := tmp0ChartValues;
+        Form_UI.Series_ElectricValue.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.Series_ElectricValue.XValues.Modified := True;
+        Form_UI.Series_ElectricValue.YValues.Value := tmp1ChartValues;
+        Form_UI.Series_ElectricValue.YValues.Count := length(Form_UI.DrawData[21]);
+        Form_UI.Series_ElectricValue.YValues.Modified := True;
+
+        Form_UI.PointSeries_ElectricTime.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_ElectricTime.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_ElectricTime.XValues.Modified := True;
+        Form_UI.PointSeries_ElectricTime.YValues.Value := tmp2ChartValues;
+        Form_UI.PointSeries_ElectricTime.YValues.Count := length(Form_UI.DrawData[22]);
+        Form_UI.PointSeries_ElectricTime.YValues.Modified := True;
+
+        Form_UI.Series_ElectricValue.Repaint;
+        Form_UI.PointSeries_ElectricTime.Repaint;
+      end
+      else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Acying then
+      begin
+        SetLength(tmp1ChartValues, length(Form_UI.DrawData[23]));
+        SetLength(tmp2ChartValues, length(Form_UI.DrawData[24]));
+
+        for I := 0 to length(Form_UI.DrawData[23]) - 1 do
+        begin
+          tmp1ChartValues[I] := Form_UI.DrawData[23][I];
+          tmp2ChartValues[I] := Form_UI.DrawData[24][I];
+        end;
+
+        Form_UI.PointSeries_AcyingTime.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_AcyingTime.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_AcyingTime.XValues.Modified := True;
+        Form_UI.PointSeries_AcyingTime.YValues.Value := tmp1ChartValues;
+        Form_UI.PointSeries_AcyingTime.YValues.Count := length(Form_UI.DrawData[23]);
+        Form_UI.PointSeries_AcyingTime.YValues.Modified := True;
+
+        Form_UI.PointSeries_AcyingCount.XValues.Value := tmp0ChartValues;
+        Form_UI.PointSeries_AcyingCount.XValues.Count := length(Form_UI.DrawData[25]);
+        Form_UI.PointSeries_AcyingCount.XValues.Modified := True;
+        Form_UI.PointSeries_AcyingCount.YValues.Value := tmp2ChartValues;
+        Form_UI.PointSeries_AcyingCount.YValues.Count := length(Form_UI.DrawData[24]);
+        Form_UI.PointSeries_AcyingCount.YValues.Modified := True;
+
+        Form_UI.PointSeries_AcyingTime.Repaint;
+        Form_UI.PointSeries_AcyingCount.Repaint;
+      end;
+
+    end;
+
+    Sleep(1);
+  end;
+end;
+
+procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
+var
+  i : cardinal;
+begin
+  if WaitForSingleObject(m_mutex, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    if uiPotNum > 5 then
+    begin
+      Setlength(Form_UI.m_vecPot, uiPotNum);
+      for i := 0 to uiPotNum - 1 do
+      begin
+        Form_UI.m_vecPot[i] := potArray[i];
+      end;
+    end;
+    Form_UI.m_dTimeStampLast := dtimestamp;
+    Form_UI.m_uiFrameNo := uiframeNo;
+    Form_UI.m_uiFrameRecvCount := Form_UI.m_uiFrameRecvCount + 1;
+    Form_UI.m_uiPotNum := uiPotNum;
+  end;
+  ReleaseMutex(m_mutex);
+end;
+
+procedure fnResultCallback(const pTag: Pointer; const tempData: JCWJH); cdecl;
+var
+  TempData2D: ^JCWJH;
+begin
+  if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
+  begin
+    Form_UI.m_data := tempData;
+    New(TempData2D);
+    CopyMemory(TempData2D, @tempData, SizeOf(JCWJH));
+    Form_UI.Data2DCache.Push(TempData2D);
+
+    Sleep(1);
+  end;
+  ReleaseMutex(m_lock);
+end;
+
 function ProcessThread(p: Pointer): Integer; stdcall;
 var
   I, J, tempCounts: Word;
@@ -494,7 +954,7 @@ var
   IniFile : TIniFile;
   temp_time: Single;   //记录速度起始时间
 
-  startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus: Double;   //最开始的脉冲数
+  startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus, startAcyingCount, startAcyingTime: Double;   //最开始的脉冲数
   array_DataDeal: array [0..999] of Record_SaveOriginal;    //最原始数据数组
   array_DataDealing: array[0..999] of TData_Dealing;   //处理过程中的数组，包括滤波、计算等
   array_ResultDeal: array[0..999] of sDataFrame;   //计算后的结果数据
@@ -510,36 +970,36 @@ var
 begin
   while True do
   begin
-    //数据取值（仅有2D，用于测试）
-    if Form_UI.Data2DCache.count > 200 then
-    begin
-      if Form_UI.counts < 801 then
-      begin
-        for I := 0 to 199 do
-        begin
-          TempData2D := Form_UI.Data2DCache.Pop;
-          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-          Dispose(TempData2D);
-
-          Array_DataDeal[I + Form_UI.counts].Om_data := TempDataO2D;
-        end;
-        Form_UI.counts := Form_UI.counts + 200;
-      end
-      else
-      begin
-        for I := 0 to 799 do
-        begin
-          Array_DataDeal[I] := Array_DataDeal[I + Form_UI.counts - 800];
-        end;
-        for I := 800 to 999 do
-        begin
-          TempData2D := Form_UI.Data2DCache.Pop;
-          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-          Dispose(TempData2D);
-          Array_DataDeal[I].Om_data := TempDataO2D;
-        end;
-      end;
-    end;
+//    //数据取值（仅有2D，用于测试）
+//    if Form_UI.Data2DCache.count > 200 then
+//    begin
+//      if Form_UI.counts < 801 then
+//      begin
+//        for I := 0 to 199 do
+//        begin
+//          TempData2D := Form_UI.Data2DCache.Pop;
+//          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+//          Dispose(TempData2D);
+//
+//          Array_DataDeal[I + Form_UI.counts].Om_data := TempDataO2D;
+//        end;
+//        Form_UI.counts := Form_UI.counts + 200;
+//      end
+//      else
+//      begin
+//        for I := 0 to 799 do
+//        begin
+//          Array_DataDeal[I] := Array_DataDeal[I + Form_UI.counts - 800];
+//        end;
+//        for I := 800 to 999 do
+//        begin
+//          TempData2D := Form_UI.Data2DCache.Pop;
+//          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+//          Dispose(TempData2D);
+//          Array_DataDeal[I].Om_data := TempDataO2D;
+//        end;
+//      end;
+//    end;
 
     //数据取值
     if (Form_UI.Data2DCache.count > 200) and (Form_UI.HvUDPCache.count > 200) and (Form_UI.LvUDPCache.count > 200) and (Form_UI.AcyingCache.count > 500) then
@@ -878,8 +1338,8 @@ begin
          array_ResultDeal[I + Form_UI.counts - 200].DWDGC_value := 0;
 
          //硬点赋值
-         array_ResultDeal[I + Form_UI.counts - 200].YD1_value := Form_UI.CalYD(vector_HardSpot2[I], 1);
-         array_ResultDeal[I + Form_UI.counts - 200].YD2_value := Form_UI.CalYD(vector_HardSpot5[I], 1);
+         array_ResultDeal[I + Form_UI.counts - 200].YD1_value := Form_UI.CalYD(vector_HardSpot3[I], 1);
+         array_ResultDeal[I + Form_UI.counts - 200].YD2_value := Form_UI.CalYD(vector_HardSpot6[I], 1);
          array_CalibResultDeal[I + Form_UI.counts - 200].HardSpot1 := Form_UI.CalYD(vector_HardSpot1[I], 1);
          array_CalibResultDeal[I + Form_UI.counts - 200].HardSpot2 := Form_UI.CalYD(vector_HardSpot2[I], 1);
          array_CalibResultDeal[I + Form_UI.counts - 200].HardSpot3 := Form_UI.CalYD(vector_HardSpot3[I], 1);
@@ -935,6 +1395,8 @@ begin
         startPlus := array_ResultDeal[Form_UI.counts - 200].mykilo;
         startKm := Form_LineSetting.kilometer;
         startRecordKm := Form_LineSetting.kilometer;
+        startAcyingTime := array_ResultDeal[Form_UI.counts - 200].RH_time;
+        startAcyingCount := array_ResultDeal[Form_UI.counts - 200].RH_numb;
 //        Form_UI.IsFirstCal := False;
       end
       else
@@ -1019,7 +1481,7 @@ begin
           else
           begin
             temp_time := GetTickCount;
-            array_PlusResult[Form_UI.calingCounts - 1].myspeed := ((tempPlus - startPlus) * 13 / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
+            array_PlusResult[Form_UI.calingCounts - 1].myspeed := Abs((tempPlus - startPlus) * 13 / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
             Form_UI.time_CalSpeed := temp_time;
           end;
           startPlus := tempPlus;
@@ -1104,21 +1566,31 @@ begin
           temp_arrayDL[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].DL_value;
           array_PlusResult[Form_UI.calingCounts - 1].JCL_value := Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force;
           array_PlusResult[Form_UI.calingCounts - 1].DL_value := Form_UI.CalMean(temp_arrayDL) - Form_UI.calibrate_Electricity;
-          array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC2;
-          array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC5;
-          if array_PlusData[Form_UI.calingCounts - 1].DL_value > ESV then
+          array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC3;
+          array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC6;
+          if array_PlusData[Form_UI.calingCounts - 1].DL_value > ESV * 0.3 then
           begin
-            if Form_UI.IsJCDL = True then
+            if Form_UI.IsJCDL then
             begin
               Form_UI.time_Electricity := GetTickCount;
-              Form_UI.IsJCDL := False
+              Form_UI.IsJCDL := False;
             end;
-            array_PlusResult[Form_UI.calingCounts - 1].RH_value := GetTickCount - Form_UI.time_Electricity;
           end
           else
           begin
-            Form_UI.IsJCDL := True;
-            array_PlusResult[Form_UI.calingCounts - 1].RH_value := 0;
+            if not Form_UI.IsJCDL then
+            begin
+              array_PlusResult[Form_UI.calingCounts - 1].RH_value := GetTickCount - Form_UI.time_Electricity;
+              Form_UI.IsJCDL := True;
+            end;
+          end;
+
+          //燃弧赋值
+          if array_PlusData[Form_UI.calingCounts - 1].RH_numb <> startAcyingCount then startAcyingCount := array_PlusData[Form_UI.calingCounts - 1].RH_numb
+          else
+          begin
+            array_PlusData[Form_UI.calingCounts - 1].RH_time := 0;
+            array_PlusData[Form_UI.calingCounts - 1].RH_numb := 0;
           end;
 
           //标定值同时计算
@@ -1383,103 +1855,14 @@ begin
           array_DataDealing[I] := array_DataDealing[Form_UI.counts - tempCounts + I];
           array_ResultDeal[I] := array_ResultDeal[Form_UI.counts - tempCounts + I];
           array_CalibResultDeal[I] := array_CalibResultDeal[Form_UI.counts - tempCounts + I];
-          Form_UI.counts := tempCounts;
         end;
+        Form_UI.counts := tempCounts;
       end;
 
     end;
 
     Sleep(1);
   end;
-end;
-
-function DrawThread(p: Pointer): Integer; stdcall;
-var
-  TempResultData: ^sDataFrame;
-  TempRData: sDataFrame;
-  I: Byte;
-begin
-  //  Synchronize();
-  while True do
-  begin
-    if Form_UI.ResultCache.count > Form_UI.drawThreshold then
-    begin
-      for I := 0 to Form_UI.drawThreshold - 1 do
-      begin
-        TempResultData := Form_UI.ResultCache.Pop;
-        CopyMemory(@TempRData, TempResultData, SizeOf(sDataFrame));
-        Dispose(TempResultData);
-
-
-      end;
-      Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
-    end;
-
-    if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Conductor then
-    begin
-      ;
-    end
-    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Parameter then
-    begin
-      ;
-    end
-    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_ContactForce then
-    begin
-      ;
-    end
-    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Hardspot then
-    begin
-      ;
-    end
-    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Electric then
-    begin
-      ;
-    end
-    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Acying then
-    begin
-      ;
-    end;
-
-    Sleep(1);
-  end;
-end;
-
-procedure OnPointCould(pTag: Pointer; dtimestamp: Double; uiframeNo: Int64; potArray: PPOINTF; uiPotNum: Cardinal); cdecl;
-var
-  i : cardinal;
-begin
-  if WaitForSingleObject(m_mutex, INFINITE) = WAIT_OBJECT_0 then
-  begin
-    if uiPotNum > 5 then
-    begin
-      Setlength(Form_UI.m_vecPot, uiPotNum);
-      for i := 0 to uiPotNum - 1 do
-      begin
-        Form_UI.m_vecPot[i] := potArray[i];
-      end;
-    end;
-    Form_UI.m_dTimeStampLast := dtimestamp;
-    Form_UI.m_uiFrameNo := uiframeNo;
-    Form_UI.m_uiFrameRecvCount := Form_UI.m_uiFrameRecvCount + 1;
-    Form_UI.m_uiPotNum := uiPotNum;
-  end;
-  ReleaseMutex(m_mutex);
-end;
-
-procedure fnResultCallback(const pTag: Pointer; const tempData: JCWJH); cdecl;
-var
-  TempData2D: ^JCWJH;
-begin
-  if WaitForSingleObject(m_lock, INFINITE) = WAIT_OBJECT_0 then
-  begin
-    Form_UI.m_data := tempData;
-    New(TempData2D);
-    CopyMemory(TempData2D, @tempData, SizeOf(JCWJH));
-    Form_UI.Data2DCache.Push(TempData2D);
-
-    Sleep(1);
-  end;
-  ReleaseMutex(m_lock);
 end;
 
 procedure TForm_UI.Action_AcyingDisplayExecute(Sender: TObject);
@@ -1713,7 +2096,7 @@ begin
     end;
 
     //绘图数据数组初始化
-    for I := 0 to 24 do
+    for I := 0 to 25 do
     begin
       for J := 0 to 4999 do
       begin
@@ -1916,7 +2299,7 @@ begin
   end;
 
   //绘图数据数组初始化
-  for I := 0 to 24 do
+  for I := 0 to 25 do
   begin
     for J := 0 to 4999 do
     begin
@@ -2051,7 +2434,7 @@ begin
 
       Writeln(ConfigurationTextFile, '[调试]');
       Writeln(ConfigurationTextFile, '调试 = 0');
-      Writeln(ConfigurationTextFile, '绘图点数 = 20');
+      Writeln(ConfigurationTextFile, '绘图点数 = 50');
       Writeln(ConfigurationTextFile, '计算点数 = 100');
       Writeln(ConfigurationTextFile, '');
 
@@ -2084,7 +2467,7 @@ begin
     Calibrate_ACC6 := IniFile.ReadFloat('标定', 'ACC6', 0);
 
     IsDebug := IniFile.ReadInteger('调试', '调试', 1);
-    drawThreshold := IniFile.ReadInteger('调试', '点数', 20);
+    drawThreshold := IniFile.ReadInteger('调试', '点数', 50);
     calCounts := IniFile.ReadInteger('调试', '计算', 100);
     SetLength(array_CalForce, calCounts);
 
