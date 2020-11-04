@@ -1,11 +1,10 @@
 object Form_UI: TForm_UI
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
+  BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = #24339#32593#26816#27979#36719#20214
-  ClientHeight = 719
-  ClientWidth = 1360
+  ClientHeight = 709
+  ClientWidth = 1350
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,6 +13,7 @@ object Form_UI: TForm_UI
   Font.Style = []
   Menu = MainMenu_UI
   OldCreateOrder = False
+  WindowState = wsMaximized
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -22,7 +22,7 @@ object Form_UI: TForm_UI
   object dxRibbon: TdxRibbon
     Left = 0
     Top = 0
-    Width = 1360
+    Width = 1350
     Height = 136
     BarManager = dxBarManager
     ColorSchemeName = 'Blue'
@@ -30,6 +30,7 @@ object Form_UI: TForm_UI
     TabOrder = 0
     TabStop = False
     OnMinimizedChanged = dxRibbonMinimizedChanged
+    ExplicitWidth = 1360
     object dxRibbonTab_System: TdxRibbonTab
       Active = True
       Caption = #31995#32479#25511#21046#21488
@@ -68,8 +69,8 @@ object Form_UI: TForm_UI
   end
   object dxRibbonStatusBar: TdxRibbonStatusBar
     Left = 0
-    Top = 696
-    Width = 1360
+    Top = 686
+    Width = 1350
     Height = 23
     Panels = <
       item
@@ -106,25 +107,31 @@ object Form_UI: TForm_UI
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
+    ExplicitTop = 696
+    ExplicitWidth = 1360
   end
   object RzPageControl: TRzPageControl
     Left = 0
     Top = 136
-    Width = 1360
-    Height = 560
+    Width = 1350
+    Height = 550
     Hint = ''
     ActivePage = TabSheet_Conductor
     Align = alClient
     TabOrder = 2
+    ExplicitWidth = 1360
+    ExplicitHeight = 560
     FixedDimension = 19
     object TabSheet_Conductor: TRzTabSheet
       TabVisible = False
       Caption = #23548#39640#25289#20986#20540#30028#38754
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Condutor: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -288,6 +295,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object Series_Line1Width: TFastLineSeries
@@ -415,15 +424,13 @@ object Form_UI: TForm_UI
     object TabSheet_Parameter: TRzTabSheet
       TabVisible = False
       Caption = #20854#20313#20960#20309#21442#25968#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Parameter: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -521,6 +528,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object PointSeries_Width: TPointSeries
@@ -580,15 +589,13 @@ object Form_UI: TForm_UI
     object TabSheet_Contactforce: TRzTabSheet
       TabVisible = False
       Caption = #25509#35302#21147#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Contactforce: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -697,6 +704,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object Series_Force: TFastLineSeries
@@ -764,15 +773,13 @@ object Form_UI: TForm_UI
     object TabSheet_Hardspot: TRzTabSheet
       TabVisible = False
       Caption = #30828#28857#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Hardspot: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -848,6 +855,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object Series_Vacc1: TFastLineSeries
@@ -879,15 +888,13 @@ object Form_UI: TForm_UI
     object TabSheet_Electric: TRzTabSheet
       TabVisible = False
       Caption = #30005#27969#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Electric: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -963,6 +970,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object Series_ElectricValue: TFastLineSeries
@@ -995,15 +1004,13 @@ object Form_UI: TForm_UI
     object TabSheet_Acying: TRzTabSheet
       TabVisible = False
       Caption = #29123#24359#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1356
+      ExplicitHeight = 556
       object Chart_Acying: TChart
         Left = 0
         Top = 0
-        Width = 1356
-        Height = 556
+        Width = 1346
+        Height = 546
         BackWall.Brush.Gradient.Direction = gdBottomTop
         BackWall.Brush.Gradient.EndColor = clWhite
         BackWall.Brush.Gradient.StartColor = 15395562
@@ -1079,6 +1086,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1356
+        ExplicitHeight = 556
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object PointSeries_AcyingTime: TPointSeries
