@@ -2504,9 +2504,10 @@ object Form_UI: TForm_UI
     Left = 968
   end
   object IdUDPServer_Hv: TIdUDPServer
+    Active = True
     Bindings = <
       item
-        IP = '127.0.0.1'
+        IP = '10.10.10.11'
         Port = 1025
       end>
     DefaultPort = 1025
@@ -2514,10 +2515,11 @@ object Form_UI: TForm_UI
     Left = 1064
   end
   object IdUDPServer_Lv: TIdUDPServer
+    Active = True
     Bindings = <
       item
-        IP = '127.0.0.2'
-        Port = 1025
+        IP = '10.10.10.11'
+        Port = 1026
       end>
     DefaultPort = 1025
     OnUDPRead = IdUDPServer_LvUDPRead
@@ -2527,7 +2529,7 @@ object Form_UI: TForm_UI
   object IdUDPServer_Acying: TIdUDPServer
     Bindings = <
       item
-        IP = '127.0.0.3'
+        IP = '127.0.0.1'
         Port = 1025
       end>
     DefaultPort = 1025

@@ -1868,9 +1868,6 @@ end;
 
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
-//  IdUDPServer_UDP.Active := True;
-//  UDPStartCollect;
-
   case Init2DIP of
     0:
     begin
@@ -2085,7 +2082,6 @@ var
   FirOrder: Integer;
   I: Byte;
   J: Word;
-//  TempWord: array [0..1] of Byte;
 begin
   RzPageControl.ActivePage := TabSheet_Conductor;
 
@@ -2167,6 +2163,10 @@ begin
 
   Timer_InitSubGroup.Enabled := True;
 
+//  //UDP控件初始化
+//  IdUDPServer_Hv.Active := True;
+//  IdUDPServer_Lv.Active := True;
+
   //布尔类型初始化
   IsRun := False;
   IsSave := False;
@@ -2218,9 +2218,7 @@ begin
   end;
 
   //测试
-//  TempWord[0] := 254;
-//  TempWord[1] := 255;
-//  counts := Word(TempWord);
+  UDPStartCollect;
 end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
@@ -2318,7 +2316,7 @@ begin
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[传感器设置]');
-      Writeln(ConfigurationTextFile, '2DIP = 192.168.100.100');
+      Writeln(ConfigurationTextFile, '2DIP = 10.10.10.100');
       Writeln(ConfigurationTextFile, 'HvUDPIP = 10.10.10.2');
       Writeln(ConfigurationTextFile, 'HvUDPPort = 1025');
       Writeln(ConfigurationTextFile, 'LvUDPIP = 10.10.10.3');
@@ -2355,7 +2353,7 @@ begin
 
     LineName := IniFile.ReadString('基础设置', '线路名称', '未知线路');
 
-    TCPIP := IniFile.ReadString('传感器设置', '2DIP', '192.168.100.100');
+    TCPIP := IniFile.ReadString('传感器设置', '2DIP', '10.10.10.100');
     HvUDPIP := IniFile.ReadString('传感器设置', 'HvUDPIP', '10.10.10.2');
     HvUDPPort := IniFile.ReadString('传感器设置', 'HvUDPPort', '1025');
     LvUDPIP := IniFile.ReadString('传感器设置', 'LvUDPIP', '10.10.10.3');
@@ -2516,9 +2514,11 @@ procedure TForm_UI.IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
 var
   TempDataHv: ^TRecord_OriginalHv;
 begin
-  New(TempDataHv);
-  CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
-  Form_UI.HvUDPCache.Push(TempDataHv);
+//  New(TempDataHv);
+//  CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
+//  Form_UI.HvUDPCache.Push(TempDataHv);
+
+//  Sleep(1);
 end;
 
 procedure TForm_UI.IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
@@ -2526,9 +2526,11 @@ procedure TForm_UI.IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
 var
   TempDataLv: ^TRecord_OriginalLv;
 begin
-  New(TempDataLv);
-  CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
-  Form_UI.LvUDPCache.Push(TempDataLv);
+//  New(TempDataLv);
+//  CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
+//  Form_UI.LvUDPCache.Push(TempDataLv);
+
+//  Sleep(1);
 end;
 
 function TForm_UI.Init2DIP: Integer;
@@ -2560,7 +2562,7 @@ begin
   SetLength(Buffer_Send, 50);
   Buffer_Send[0] := 2;
   Buffer_Send[1] := 20;
-  Buffer_Send[2] := 49;
+  Buffer_Send[2] := 48;
   Buffer_Send[3] := 1;
   for I := 4 to 39 do Buffer_Send[I] := 0;
   Buffer_Send[40] := 1;
@@ -2573,16 +2575,12 @@ begin
   Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
   Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
   Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-//  IdUDPServer_Hv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+//  IdUDPServer_Hv.SendBuffer('10.10.10.11', 1025, Buffer_Send);
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 
-  Buffer_Send[2] := 50;
 //  IdUDPServer_Lv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
-
-  Buffer_Send[2] := 51;
 //  IdUDPServer_Acying.SendBuffer('10.10.10.4', 1025, Buffer_Send);
-
-//  IdUDPServer_Hv.SendBuffer('127.0.0.5', 1025, Buffer_Send);
-//  IdUDPServer_Hv.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 procedure TForm_UI.UDPStopCollect;
@@ -2595,10 +2593,10 @@ begin
   SetLength(Buffer_Send, 50);
   Buffer_Send[0] := 2;
   Buffer_Send[1] := 20;
-  Buffer_Send[2] := 49;
-  Buffer_Send[3] := 2;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
   for I := 4 to 39 do Buffer_Send[I] := 0;
-  Buffer_Send[40] := 1;
+  Buffer_Send[40] := 2;
   Buffer_Send[41] := 0;
   Buffer_Send[42] := 0;
   Buffer_Send[43] := 0;
@@ -2608,15 +2606,12 @@ begin
   Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
   Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
   Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-//  IdUDPServer_Hv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+//  IdUDPServer_Hv.SendBuffer('10.10.10.11', 1025, Buffer_Send);
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 
-  Buffer_Send[2] := 50;
 //  IdUDPServer_Lv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
-
-  Buffer_Send[2] := 51;
 //  IdUDPServer_Acying.SendBuffer('10.10.10.4', 1025, Buffer_Send);
-
-//  IdUDPServer_Hv.SendBuffer('192.168.3.100', 1025, Buffer_Send);
 end;
 
 procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte);
