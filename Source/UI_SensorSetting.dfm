@@ -442,7 +442,7 @@ object Form_Sensor: TForm_Sensor
     Top = 594
     Width = 104
     Height = 33
-    Caption = #30830#35748
+    Caption = #20445#23384
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
