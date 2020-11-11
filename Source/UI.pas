@@ -272,6 +272,14 @@ type
     PointSeries_ElectricTime: TPointSeries;
     PointSeries_AcyingTime: TPointSeries;
     PointSeries_AcyingCount: TPointSeries;
+    ManagerBar_Simulation: TdxBar;
+    LargeButton_StartSimulate: TdxBarLargeButton;
+    LargeButton_StopSimulate: TdxBarLargeButton;
+    MenuItem_Simulation: TMenuItem;
+    MenuItem_StartSimulate: TMenuItem;
+    MenuItem_StopSimulate: TMenuItem;
+    Action_StartSimulate: TAction;
+    Action_StopSimulate: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -305,6 +313,8 @@ type
     procedure Action_OpenFileExecute(Sender: TObject);
     procedure Action_StartPlaybackExecute(Sender: TObject);
     procedure Action_StopPlaybackExecute(Sender: TObject);
+    procedure Action_StartSimulateExecute(Sender: TObject);
+    procedure Action_StopSimulateExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
@@ -1883,11 +1893,9 @@ begin
             ResumeThread(PSaveThread);
             ResumeThread(PProcessThread);
             ResumeThread(PDrawThread);
-            IdUDPServer_Hv.Active := True;
-            IdUDPServer_Lv.Active := True;
-            IdUDPServer_Acying.Active := True;
             IsRun := True;
             UDPStartCollect;
+            IdUDPServer_Acying.Active := True;
             dxRibbonStatusBar.Panels[0].Text := '正在采集。';
             dxRibbonStatusBar.Panels[4].Text := '线路状况：' + Form_LineSetting.shangxiaxing + Form_LineSetting.direction + '。';
             dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(Form_LineSetting.kilometer) + 'km';
@@ -1933,6 +1941,33 @@ begin
   dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
 end;
 
+procedure TForm_UI.Action_StartSimulateExecute(Sender: TObject);
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 1;
+  Buffer_Send[42] := 200;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+end;
+
 procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
 begin
   IsCalibrating := False;
@@ -1946,14 +1981,12 @@ var
 begin
   if IsRun then
   begin
+    IdUDPServer_Acying.Active := False;
     UDPStopCollect;
+
     SuspendThread(Form_UI.PSaveThread);
     SuspendThread(Form_UI.PProcessThread);
     SuspendThread(Form_UI.PDrawThread);
-
-    IdUDPServer_Hv.Active := False;
-    IdUDPServer_Lv.Active := False;
-    IdUDPServer_Acying.Active := False;
 
     Data2DCache.clear;
     HvUDPCache.clear;
@@ -2033,6 +2066,33 @@ procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
 begin
   IsSave := False;
   dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
+end;
+
+procedure TForm_UI.Action_StopSimulateExecute(Sender: TObject);
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 1;
+  Buffer_Send[42] := 200;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -2514,9 +2574,9 @@ procedure TForm_UI.IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
 var
   TempDataHv: ^TRecord_OriginalHv;
 begin
-//  New(TempDataHv);
-//  CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
-//  Form_UI.HvUDPCache.Push(TempDataHv);
+  New(TempDataHv);
+  CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
+  Form_UI.HvUDPCache.Push(TempDataHv);
 
 //  Sleep(1);
 end;
@@ -2526,9 +2586,9 @@ procedure TForm_UI.IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
 var
   TempDataLv: ^TRecord_OriginalLv;
 begin
-//  New(TempDataLv);
-//  CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
-//  Form_UI.LvUDPCache.Push(TempDataLv);
+  New(TempDataLv);
+  CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
+  Form_UI.LvUDPCache.Push(TempDataLv);
 
 //  Sleep(1);
 end;

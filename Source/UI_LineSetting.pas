@@ -108,13 +108,11 @@ begin
               ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
               ResumeThread(Form_UI.PDrawThread);
-              Form_UI.IdUDPServer_Hv.Active := True;
-              Form_UI.IdUDPServer_Lv.Active := True;
-              Form_UI.IdUDPServer_Acying.Active := True;
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
               Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;
               Form_UI.UDPStartCollect;
+              Form_UI.IdUDPServer_Acying.Active := True;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
               Form_UI.dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
               Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
