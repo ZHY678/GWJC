@@ -391,6 +391,9 @@ type
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;
     array_CalForce: array of Single;
 
+    vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
+    vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
+
     //低通滤波器
     FirFilter_LowPassPower1: TFirFilter;
     FirFilter_LowPassPower2: TFirFilter;
@@ -960,8 +963,6 @@ var
   TempDataOAcying: TRecord_OriginalAcying;
   TempDataSO: ^Record_SaveOriginal;
   TempDataSR: ^sDataFrame;
-  vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
-  vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
   array_PlusData: array of sDataFrame;
   IniFile : TIniFile;
   temp_time: Single;   //记录速度起始时间
@@ -981,39 +982,8 @@ var
 begin
   while True do
   begin
-//    //数据取值（仅有2D，用于测试）
-//    if Form_UI.Data2DCache.count > 200 then
-//    begin
-//      if Form_UI.counts < 801 then
-//      begin
-//        for I := 0 to 199 do
-//        begin
-//          TempData2D := Form_UI.Data2DCache.Pop;
-//          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-//          Dispose(TempData2D);
-//
-//          Array_DataDeal[I + Form_UI.counts].Om_data := TempDataO2D;
-//        end;
-//        Form_UI.counts := Form_UI.counts + 200;
-//      end
-//      else
-//      begin
-//        for I := 0 to 799 do
-//        begin
-//          Array_DataDeal[I] := Array_DataDeal[I + Form_UI.counts - 800];
-//        end;
-//        for I := 800 to 999 do
-//        begin
-//          TempData2D := Form_UI.Data2DCache.Pop;
-//          CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-//          Dispose(TempData2D);
-//          Array_DataDeal[I].Om_data := TempDataO2D;
-//        end;
-//      end;
-//    end;
-
     //数据取值
-    if (Form_UI.Data2DCache.count > 200) and (Form_UI.HvUDPCache.count > 200) and (Form_UI.LvUDPCache.count > 200) and (Form_UI.AcyingCache.count > 500) then
+    if (Form_UI.Data2DCache.count > 200) and (Form_UI.HvUDPCache.count > 200) and (Form_UI.LvUDPCache.count > 200) and (Form_UI.AcyingCache.count > 200) then
     begin
       for I := 0 to 199 do
       begin
@@ -1031,29 +1001,35 @@ begin
         CopyMemory(@TempDataOLv, TempDataLv, SizeOf(TRecord_OriginalLv));
         Dispose(TempDataLv);
         Array_DataDeal[I].OLvData := TempDataOLv;
-      end;
 
-      //燃弧数据从500个点抽200个点赋值
-      J := 0;
-      tempCounts := 0;
-      for I := 0 to 499 do
-      begin
         TempDataAcying := Form_UI.AcyingCache.Pop;
         CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
         Dispose(TempDataAcying);
-
-        if I = J + 1 then
-        begin
-          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
-          tempCounts := tempCounts + 1;
-        end;
-        if I = J + 4 then
-        begin
-          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
-          tempCounts := tempCounts + 1;
-          J := J + 5;
-        end;
+        array_DataDeal[I].AcyingData := TempDataOAcying;
       end;
+
+      //因为燃弧传感器采样频率由500设置成了200，所以地下的代码暂时已经改到了上面，底下的不删，作为备份
+//      //燃弧数据从500个点抽200个点赋值
+//      J := 0;
+//      tempCounts := 0;
+//      for I := 0 to 499 do
+//      begin
+//        TempDataAcying := Form_UI.AcyingCache.Pop;
+//        CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
+//        Dispose(TempDataAcying);
+//
+//        if I = J + 1 then
+//        begin
+//          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+//          tempCounts := tempCounts + 1;
+//        end;
+//        if I = J + 4 then
+//        begin
+//          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
+//          tempCounts := tempCounts + 1;
+//          J := J + 5;
+//        end;
+//      end;
 
       //原始数据存储
       if Form_UI.IsSave then
@@ -1166,74 +1142,54 @@ begin
       end;
 
       //滤波前vector赋值
-      vector_X1.Size(200);
-      vector_Y1.Size(200);
-      vector_X2.Size(200);
-      vector_Y2.Size(200);
-      vector_X3.Size(200);
-      vector_Y3.Size(200);
-      vector_X4.Size(200);
-      vector_Y4.Size(200);
-      vector_Power1.Size(200);
-      vector_Power2.Size(200);
-      vector_Power3.Size(200);
-      vector_Power4.Size(200);
-      vector_Electricity.Size(200);
-      vector_HardSpot1.Size(200);
-      vector_HardSpot2.Size(200);
-      vector_HardSpot3.Size(200);
-      vector_HardSpot4.Size(200);
-      vector_HardSpot5.Size(200);
-      vector_HardSpot6.Size(200);
-
       for I := 0 to 199 do
       begin
-        vector_X1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x;
-        vector_Y1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y;
-        vector_X2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x;
-        vector_Y2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y;
-        vector_X3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x;
-        vector_Y3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.y;
-        vector_X4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.x;
-        vector_Y4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.y;
+        Form_UI.vector_X1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x;
+        Form_UI.vector_Y1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y;
+        Form_UI.vector_X2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x;
+        Form_UI.vector_Y2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y;
+        Form_UI.vector_X3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x;
+        Form_UI.vector_Y3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.y;
+        Form_UI.vector_X4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.x;
+        Form_UI.vector_Y4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.y;
 
-        vector_Power1[I] := array_DataDealing[I].TempHv.Power1;
-        vector_Power2[I] := array_DataDealing[I].TempHv.Power2;
-        vector_Power3[I] := array_DataDealing[I].TempHv.Power3;
-        vector_Power4[I] := array_DataDealing[I].TempHv.Power4;
-        vector_HardSpot1[I] := array_DataDealing[I].TempHv.HardSpot1;
-        vector_HardSpot2[I] := array_DataDealing[I].TempHv.HardSpot2;
-        vector_HardSpot3[I] := array_DataDealing[I].TempHv.HardSpot3;
-        vector_HardSpot4[I] := array_DataDealing[I].TempHv.HardSpot4;
-        vector_HardSpot5[I] := array_DataDealing[I].TempHv.HardSpot5;
-        vector_HardSpot6[I] := array_DataDealing[I].TempHv.HardSpot6;
+        Form_UI.vector_Power1[I] := array_DataDealing[I].TempHv.Power1;
+        Form_UI.vector_Power2[I] := array_DataDealing[I].TempHv.Power2;
+        Form_UI.vector_Power3[I] := array_DataDealing[I].TempHv.Power3;
+        Form_UI.vector_Power4[I] := array_DataDealing[I].TempHv.Power4;
+        Form_UI.vector_HardSpot1[I] := array_DataDealing[I].TempHv.HardSpot1;
+        Form_UI.vector_HardSpot2[I] := array_DataDealing[I].TempHv.HardSpot2;
+        Form_UI.vector_HardSpot3[I] := array_DataDealing[I].TempHv.HardSpot3;
+        Form_UI.vector_HardSpot4[I] := array_DataDealing[I].TempHv.HardSpot4;
+        Form_UI.vector_HardSpot5[I] := array_DataDealing[I].TempHv.HardSpot5;
+        Form_UI.vector_HardSpot6[I] := array_DataDealing[I].TempHv.HardSpot6;
 
-        vector_Electricity[I] := array_DataDealing[I].TempLv.Electric;
+        Form_UI.vector_Electricity[I] := array_DataDealing[I].TempLv.Electric;
       end;
 
       //数据滤波
-      Form_UI.FirFilter_2DAverageX1.filter(vector_X1, vector_X1);
-      Form_UI.FirFilter_2DAverageY1.filter(vector_Y1, vector_Y1);
-      Form_UI.FirFilter_2DAverageX2.filter(vector_X2, vector_X2);
-      Form_UI.FirFilter_2DAverageY2.filter(vector_Y2, vector_Y2);
-      Form_UI.FirFilter_2DAverageX3.filter(vector_X3, vector_X3);
-      Form_UI.FirFilter_2DAverageY3.filter(vector_Y3, vector_Y3);
-      Form_UI.FirFilter_2DAverageX4.filter(vector_X4, vector_X4);
-      Form_UI.FirFilter_2DAverageY4.filter(vector_Y4, vector_Y4);
+      Form_UI.FirFilter_2DAverageX1.filter(Form_UI.vector_X1, Form_UI.vector_X1);
+      Form_UI.FirFilter_2DAverageY1.filter(Form_UI.vector_Y1, Form_UI.vector_Y1);
+      Form_UI.FirFilter_2DAverageX2.filter(Form_UI.vector_X2, Form_UI.vector_X2);
+      Form_UI.FirFilter_2DAverageY2.filter(Form_UI.vector_Y2, Form_UI.vector_Y2);
+      Form_UI.FirFilter_2DAverageX3.filter(Form_UI.vector_X3, Form_UI.vector_X3);
+      Form_UI.FirFilter_2DAverageY3.filter(Form_UI.vector_Y3, Form_UI.vector_Y3);
+      Form_UI.FirFilter_2DAverageX4.filter(Form_UI.vector_X4, Form_UI.vector_X4);
+      Form_UI.FirFilter_2DAverageY4.filter(Form_UI.vector_Y4, Form_UI.vector_Y4);
 
-      Form_UI.FirFilter_LowPassPower1.filter(vector_Power1, vector_Power1);
-      Form_UI.FirFilter_LowPassPower2.filter(vector_Power2, vector_Power2);
-      Form_UI.FirFilter_LowPassPower3.filter(vector_Power3, vector_Power3);
-      Form_UI.FirFilter_LowPassPower4.filter(vector_Power4, vector_Power4);
+      Form_UI.FirFilter_LowPassPower1.filter(Form_UI.vector_Power1, Form_UI.vector_Power1);
+      Form_UI.FirFilter_LowPassPower2.filter(Form_UI.vector_Power2, Form_UI.vector_Power2);
+      Form_UI.FirFilter_LowPassPower3.filter(Form_UI.vector_Power3, Form_UI.vector_Power3);
+      Form_UI.FirFilter_LowPassPower4.filter(Form_UI.vector_Power4, Form_UI.vector_Power4);
 
-      Form_UI.FirFilter_LowPassHardSpot1.filter(vector_HardSpot1, vector_HardSpot1);
-      Form_UI.FirFilter_LowPassHardSpot2.filter(vector_HardSpot2, vector_HardSpot2);
-      Form_UI.FirFilter_LowPassHardSpot3.filter(vector_HardSpot3, vector_HardSpot3);
-      Form_UI.FirFilter_LowPassHardSpot4.filter(vector_HardSpot4, vector_HardSpot4);
-      Form_UI.FirFilter_LowPassHardSpot5.filter(vector_HardSpot5, vector_HardSpot5);
-      Form_UI.FirFilter_LowPassHardSpot6.filter(vector_HardSpot6, vector_HardSpot6);
+      Form_UI.FirFilter_LowPassHardSpot1.filter(Form_UI.vector_HardSpot1, Form_UI.vector_HardSpot1);
+      Form_UI.FirFilter_LowPassHardSpot2.filter(Form_UI.vector_HardSpot2, Form_UI.vector_HardSpot2);
+      Form_UI.FirFilter_LowPassHardSpot3.filter(Form_UI.vector_HardSpot3, Form_UI.vector_HardSpot3);
+      Form_UI.FirFilter_LowPassHardSpot4.filter(Form_UI.vector_HardSpot4, Form_UI.vector_HardSpot4);
+      Form_UI.FirFilter_LowPassHardSpot5.filter(Form_UI.vector_HardSpot5, Form_UI.vector_HardSpot5);
+      Form_UI.FirFilter_LowPassHardSpot6.filter(Form_UI.vector_HardSpot6, Form_UI.vector_HardSpot6);
 
-      Form_UI.FirFilter_LowPassHardElectric.filter(vector_Electricity, vector_Electricity);
+      Form_UI.FirFilter_LowPassHardElectric.filter(Form_UI.vector_Electricity, Form_UI.vector_Electricity);
 
       //滤波后赋值并做初步简单计算
       for I := 0 to 199 do
@@ -1255,55 +1211,55 @@ begin
           end;
           1:
           begin
-            array_ResultDeal[I].LCZ11_value := vector_X1[I];
+            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
             array_ResultDeal[I].LCZ12_value := 0;
             array_ResultDeal[I].LCZSP1_value := 0;
             array_ResultDeal[I].LCZ21_value := 0;
             array_ResultDeal[I].LCZ22_value := 0;
             array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := vector_Y1[I];
+            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
             array_ResultDeal[I].DGZ12_value := 0;
             array_ResultDeal[I].DGZ21_value := 0;
             array_ResultDeal[I].DGZ22_value := 0;
           end;
           2:
           begin
-            array_ResultDeal[I].LCZ11_value := vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(vector_X2[I] - vector_X1[I]);
+            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
+            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
+            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
             array_ResultDeal[I].LCZ21_value := 0;
             array_ResultDeal[I].LCZ22_value := 0;
             array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := vector_Y2[I];
+            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
+            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
             array_ResultDeal[I].DGZ21_value := 0;
             array_ResultDeal[I].DGZ22_value := 0;
           end;
           3:
           begin
-            array_ResultDeal[I].LCZ11_value := vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(vector_X2[I] - vector_X1[I]);
-            array_ResultDeal[I].LCZ21_value := vector_X3[I];
+            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
+            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
+            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+            array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I];
             array_ResultDeal[I].LCZ22_value := 0;
             array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := vector_Y2[I];
-            array_ResultDeal[I].DGZ21_value := vector_Y3[I];
+            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
+            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
+            array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I];
             array_ResultDeal[I].DGZ22_value := 0;
           end;
           4:
           begin
-            array_ResultDeal[I].LCZ11_value := vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(vector_X2[I] - vector_X1[I]);
-            array_ResultDeal[I].LCZ21_value := vector_X3[I];
-            array_ResultDeal[I].LCZ22_value := vector_X4[I];
-            array_ResultDeal[I].LCZSP2_value := Abs(vector_X4[I] - vector_X3[I]);
-            array_ResultDeal[I].DGZ11_value := vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := vector_Y2[I];
-            array_ResultDeal[I].DGZ21_value := vector_Y3[I];
-            array_ResultDeal[I].DGZ22_value := vector_Y4[I];
+            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
+            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
+            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+            array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I];
+            array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I];
+            array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
+            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
+            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
+            array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I];
+            array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I];
           end;
         end;
         array_ResultDeal[I].SPJL_value := 0;
@@ -1312,20 +1268,20 @@ begin
         array_ResultDeal[I].DWDGC_value := 0;
 
         //硬点赋值
-        array_ResultDeal[I].YD1_value := Form_UI.CalYD(vector_HardSpot3[I], 1);   //第二个参数是质量
-        array_ResultDeal[I].YD2_value := Form_UI.CalYD(vector_HardSpot6[I], 1);
-        array_CalibResultDeal[I].HardSpot1 := Form_UI.CalYD(vector_HardSpot1[I], 1);
-        array_CalibResultDeal[I].HardSpot2 := Form_UI.CalYD(vector_HardSpot2[I], 1);
-        array_CalibResultDeal[I].HardSpot3 := Form_UI.CalYD(vector_HardSpot3[I], 1);
-        array_CalibResultDeal[I].HardSpot4 := Form_UI.CalYD(vector_HardSpot4[I], 1);
-        array_CalibResultDeal[I].HardSpot5 := Form_UI.CalYD(vector_HardSpot5[I], 1);
-        array_CalibResultDeal[I].HardSpot6 := Form_UI.CalYD(vector_HardSpot6[I], 1);
+        array_ResultDeal[I].YD1_value := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);   //第二个参数是质量
+        array_ResultDeal[I].YD2_value := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 1);
+        array_CalibResultDeal[I].HardSpot1 := Form_UI.CalYD(Form_UI.vector_HardSpot1[I], 1);
+        array_CalibResultDeal[I].HardSpot2 := Form_UI.CalYD(Form_UI.vector_HardSpot2[I], 1);
+        array_CalibResultDeal[I].HardSpot3 := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);
+        array_CalibResultDeal[I].HardSpot4 := Form_UI.CalYD(Form_UI.vector_HardSpot4[I], 1);
+        array_CalibResultDeal[I].HardSpot5 := Form_UI.CalYD(Form_UI.vector_HardSpot5[I], 1);
+        array_CalibResultDeal[I].HardSpot6 := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 1);
 
         //接触力赋值
-        array_CalibResultDeal[I].Power1 := Form_UI.CalJCL(vector_Power1[I]);
-        array_CalibResultDeal[I].Power2 := Form_UI.CalJCL(vector_Power2[I]);
-        array_CalibResultDeal[I].Power3 := Form_UI.CalJCL(vector_Power3[I]);
-        array_CalibResultDeal[I].Power4 := Form_UI.CalJCL(vector_Power4[I]);
+        array_CalibResultDeal[I].Power1 := Form_UI.CalJCL(Form_UI.vector_Power1[I]);
+        array_CalibResultDeal[I].Power2 := Form_UI.CalJCL(Form_UI.vector_Power2[I]);
+        array_CalibResultDeal[I].Power3 := Form_UI.CalJCL(Form_UI.vector_Power3[I]);
+        array_CalibResultDeal[I].Power4 := Form_UI.CalJCL(Form_UI.vector_Power4[I]);
         array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - array_CalibResultDeal[I].HardSpot3 - array_CalibResultDeal[I].HardSpot6 - 0;   //0暂时为重力
         array_ResultDeal[I].JCL_mean := 0;
         array_ResultDeal[I].JCL_max := 0;
@@ -1333,7 +1289,7 @@ begin
         array_ResultDeal[I].JCL_std := 0;
 
         //电流赋值
-        array_ResultDeal[I].DL_value := Form_UI.CalDL(vector_Electricity[I]);
+        array_ResultDeal[I].DL_value := Form_UI.CalDL(Form_UI.vector_Electricity[I]);
         array_ResultDeal[I].RH_value := 0;
 
         //燃弧赋值
@@ -1981,12 +1937,8 @@ var
 begin
   if IsRun then
   begin
-    IdUDPServer_Acying.Active := False;
     UDPStopCollect;
-
-    SuspendThread(Form_UI.PSaveThread);
-    SuspendThread(Form_UI.PProcessThread);
-    SuspendThread(Form_UI.PDrawThread);
+    IdUDPServer_Acying.Active := False;
 
     Data2DCache.clear;
     HvUDPCache.clear;
@@ -1995,6 +1947,10 @@ begin
     DrawCache.clear;
     OriginalCache.clear;
     ResultCache.clear;
+
+    SuspendThread(Form_UI.PSaveThread);
+    SuspendThread(Form_UI.PProcessThread);
+    SuspendThread(Form_UI.PDrawThread);
 
     IsRun := False;
     IsSave := False;
@@ -2081,7 +2037,7 @@ begin
   Buffer_Send[2] := 48;
   Buffer_Send[3] := 1;
   for I := 4 to 39 do Buffer_Send[I] := 0;
-  Buffer_Send[40] := 1;
+  Buffer_Send[40] := 2;
   Buffer_Send[41] := 1;
   Buffer_Send[42] := 200;
   Buffer_Send[43] := 0;
@@ -2142,6 +2098,7 @@ var
   FirOrder: Integer;
   I: Byte;
   J: Word;
+//  Test: array of Single;
 begin
   RzPageControl.ActivePage := TabSheet_Conductor;
 
@@ -2216,6 +2173,26 @@ begin
   FirFilter_2DAverageXX4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
   FirFilter_2DAverageYY4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
 
+  vector_X1.Size(200);
+  vector_Y1.Size(200);
+  vector_X2.Size(200);
+  vector_Y2.Size(200);
+  vector_X3.Size(200);
+  vector_Y3.Size(200);
+  vector_X4.Size(200);
+  vector_Y4.Size(200);
+  vector_Power1.Size(200);
+  vector_Power2.Size(200);
+  vector_Power3.Size(200);
+  vector_Power4.Size(200);
+  vector_Electricity.Size(200);
+  vector_HardSpot1.Size(200);
+  vector_HardSpot2.Size(200);
+  vector_HardSpot3.Size(200);
+  vector_HardSpot4.Size(200);
+  vector_HardSpot5.Size(200);
+  vector_HardSpot6.Size(200);
+
   //创建线程
   PSaveThread := CreateThread(nil, 0, @SaveThread, nil, 4, FSaveThreadID);
   PProcessThread := CreateThread(nil, 0, @ProcessThread, nil, 4, FProcessThreadID);
@@ -2277,8 +2254,8 @@ begin
     end;
   end;
 
-  //测试
-  UDPStartCollect;
+//  //测试
+//  SetLength(Test, 0);
 end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
@@ -2339,7 +2316,7 @@ begin
   CloseHandle(m_mutex);
   CloseHandle(m_lock);
 
-//  DeleteCriticalSection(CS);
+  DeleteCriticalSection(CS);
 end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
