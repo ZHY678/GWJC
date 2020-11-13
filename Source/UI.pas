@@ -363,6 +363,16 @@ type
     calCounts, drawCounts, calingCounts, paintCounts: Word;
 //    counts: Word;
 
+    TempData2D123: ^JCWJH;
+    TempDataO2D123: JCWJH;
+    TempDataHv123: ^TRecord_OriginalHv;
+    TempDataOHv123: TRecord_OriginalHv;
+    TempDataLv123: ^TRecord_OriginalLv;
+    TempDataOLv123: TRecord_OriginalLv;
+    TempDataAcying123: ^TRecord_OriginalAcying;
+    TempDataOAcying123: TRecord_OriginalAcying;
+    array_DataDeal123: array [0..199] of Record_SaveOriginal;    //最原始数据数组
+
     IsRun, IsSave, IsPlayback, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
@@ -391,6 +401,7 @@ type
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;
     array_CalForce: array of Single;
 
+    //滤波器所要的vector数组
     vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
     vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
 
@@ -443,6 +454,8 @@ type
     function CalMin(tempArray: array of Single): Single;
     function Calstd(tempArray: array of Single): Single;
     function CalAve(tempArray: array of Single): Single;
+    procedure UDPStartSimulate;
+    procedure UDPStopSimulate;
   end;
 
 var
@@ -987,25 +1000,41 @@ begin
     begin
       for I := 0 to 199 do
       begin
-        TempData2D := Form_UI.Data2DCache.Pop;
-        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-        Dispose(TempData2D);
-        Array_DataDeal[I].Om_data := TempDataO2D;
+//        TempData2D := Form_UI.Data2DCache.Pop;
+//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+//        Dispose(TempData2D);
+//        Array_DataDeal[I].Om_data := TempDataO2D;
+        Form_UI.TempData2D123 := Form_UI.Data2DCache.Pop;
+        CopyMemory(@Form_UI.TempDataO2D123, Form_UI.TempData2D123, SizeOf(JCWJH));
+        Dispose(Form_UI.TempData2D123);
+        Form_UI.array_DataDeal123[I].Om_data := Form_UI.TempDataO2D123;
 
-        TempDataHv := Form_UI.HvUDPCache.Pop;
-        CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
-        Dispose(TempDataHv);
-        Array_DataDeal[I].OHvData := TempDataOHv;
+//        TempDataHv := Form_UI.HvUDPCache.Pop;
+//        CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
+//        Dispose(TempDataHv);
+//        Array_DataDeal[I].OHvData := TempDataOHv;
+        Form_UI.TempDataHv123 := Form_UI.HvUDPCache.Pop;
+        CopyMemory(@Form_UI.TempDataOHv123, Form_UI.TempDataHv123, SizeOf(TRecord_OriginalHv));
+        Dispose(Form_UI.TempDataHv123);
+        Form_UI.array_DataDeal123[I].OHvData := Form_UI.TempDataOHv123;
 
-        TempDataLv := Form_UI.LvUDPCache.Pop;
-        CopyMemory(@TempDataOLv, TempDataLv, SizeOf(TRecord_OriginalLv));
-        Dispose(TempDataLv);
-        Array_DataDeal[I].OLvData := TempDataOLv;
+//        TempDataLv := Form_UI.LvUDPCache.Pop;
+//        CopyMemory(@TempDataOLv, TempDataLv, SizeOf(TRecord_OriginalLv));
+//        Dispose(TempDataLv);
+//        Array_DataDeal[I].OLvData := TempDataOLv;
+        Form_UI.TempDataLv123 := Form_UI.LvUDPCache.Pop;
+        CopyMemory(@Form_UI.TempDataOLv123, Form_UI.TempDataLv123, SizeOf(TRecord_OriginalLv));
+        Dispose(Form_UI.TempDataLv123);
+        Form_UI.array_DataDeal123[I].OLvData := Form_UI.TempDataOLv123;
 
-        TempDataAcying := Form_UI.AcyingCache.Pop;
-        CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
-        Dispose(TempDataAcying);
-        array_DataDeal[I].AcyingData := TempDataOAcying;
+//        TempDataAcying := Form_UI.AcyingCache.Pop;
+//        CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
+//        Dispose(TempDataAcying);
+//        array_DataDeal[I].AcyingData := TempDataOAcying;
+        Form_UI.TempDataAcying123 := Form_UI.AcyingCache.Pop;
+        CopyMemory(@Form_UI.TempDataOAcying123, Form_UI.TempDataAcying123, SizeOf(TRecord_OriginalAcying));
+        Dispose(Form_UI.TempDataAcying123);
+        Form_UI.array_DataDeal123[I].AcyingData := Form_UI.TempDataOAcying123;
       end;
 
       //因为燃弧传感器采样频率由500设置成了200，所以地下的代码暂时已经改到了上面，底下的不删，作为备份
@@ -1898,30 +1927,47 @@ begin
 end;
 
 procedure TForm_UI.Action_StartSimulateExecute(Sender: TObject);
-var
-  Buffer_Send: TIdBytes;
-  I: Byte;
-  TempTime: TDateTime;
 begin
-  TempTime := Now;
-  SetLength(Buffer_Send, 50);
-  Buffer_Send[0] := 2;
-  Buffer_Send[1] := 20;
-  Buffer_Send[2] := 48;
-  Buffer_Send[3] := 1;
-  for I := 4 to 39 do Buffer_Send[I] := 0;
-  Buffer_Send[40] := 1;
-  Buffer_Send[41] := 1;
-  Buffer_Send[42] := 200;
-  Buffer_Send[43] := 0;
-  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
-  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
-  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
-  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
-  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
-  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
-  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+  case Init2DIP of
+    0:
+    begin
+      case Open2D of
+        0:
+        begin
+          dxRibbonStatusBar.Panels[3].Text := '2D传感器已正常开始工作。';
+
+          if not IsRun then
+          begin
+            StartMs := GetTickCount;
+            startTime := FormatDateTime('yymmddhhnnss', Now);
+            ResumeThread(PSaveThread);
+            ResumeThread(PProcessThread);
+            ResumeThread(PDrawThread);
+            IsRun := True;
+            UDPStartSimulate;
+            IdUDPServer_Acying.Active := True;
+            dxRibbonStatusBar.Panels[0].Text := '正在采集。';
+            dxRibbonStatusBar.Panels[4].Text := '线路状况：' + Form_LineSetting.shangxiaxing + Form_LineSetting.direction + '。';
+            dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(Form_LineSetting.kilometer) + 'km';
+          end;
+        end;
+        -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+        -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+        -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+        -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+        -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+        -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+        -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+      end;
+    end;
+    -1: dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
+    -2: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效的实例句柄。';
+    -3: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效设备ID。';
+    -4: dxRibbonStatusBar.Panels[3].Text := '2D传感器已启动，不能更改设置。';
+    -5: dxRibbonStatusBar.Panels[3].Text := '2D传感器未启动，不能更改设置。';
+    -6: dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
+    -404: dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
+  end;
 end;
 
 procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
@@ -2026,29 +2072,78 @@ end;
 
 procedure TForm_UI.Action_StopSimulateExecute(Sender: TObject);
 var
-  Buffer_Send: TIdBytes;
   I: Byte;
-  TempTime: TDateTime;
+  J: Word;
 begin
-  TempTime := Now;
-  SetLength(Buffer_Send, 50);
-  Buffer_Send[0] := 2;
-  Buffer_Send[1] := 20;
-  Buffer_Send[2] := 48;
-  Buffer_Send[3] := 1;
-  for I := 4 to 39 do Buffer_Send[I] := 0;
-  Buffer_Send[40] := 2;
-  Buffer_Send[41] := 1;
-  Buffer_Send[42] := 200;
-  Buffer_Send[43] := 0;
-  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
-  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
-  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
-  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
-  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
-  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
-  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
-  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+  if IsRun then
+  begin
+    UDPStopSimulate;
+    IdUDPServer_Acying.Active := False;
+
+    Data2DCache.clear;
+    HvUDPCache.clear;
+    LvUDPCache.clear;
+    AcyingCache.clear;
+    DrawCache.clear;
+    OriginalCache.clear;
+    ResultCache.clear;
+
+    SuspendThread(Form_UI.PSaveThread);
+    SuspendThread(Form_UI.PProcessThread);
+    SuspendThread(Form_UI.PDrawThread);
+
+    IsRun := False;
+    IsSave := False;
+    dxRibbonStatusBar.Panels[0].Text := '已停止采集。';
+    dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
+
+    //为下次开始做准备
+    IsFirstCal := True;
+    IsJCDL := True;
+    IsGJD := False;
+//    counts:= 0;
+    drawCounts:= 0;
+    calingCounts := 0;
+    noPlusCounts := 0;
+    calHCounts := 0;
+    calMaoCounts := 0;
+    poleCounts := 0;
+    paintCounts := 0;
+
+    JCL := 0;
+    Calib_DY := 0;
+    YL1 := 0;
+    YL2 := 0;
+    YL3 := 0;
+    YL4 := 0;
+    YD1 := 0;
+    YD2 := 0;
+    YD3 := 0;
+    YD4 := 0;
+    YD5 := 0;
+    YD6 := 0;
+    time_Electricity := 0;
+    time_CalSpeed := 0;
+
+    //2D错误值取前一个值数组初始化
+    for I := 0 to 3 do
+    begin
+      temp_X[I] := 65537;
+      temp_Y[I] := 65537;
+    end;
+
+    //绘图数据数组初始化
+    for I := 0 to 25 do
+    begin
+      for J := 0 to 4999 do
+      begin
+        DrawData[I][J] := 0;
+      end;
+    end;
+
+    Close2D;
+    dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
+  end;
 end;
 
 procedure TForm_UI.Action_VersionExecute(Sender: TObject);
@@ -2543,7 +2638,7 @@ var
 begin
   New(tempDataAcying);
   CopyMemory(tempDataAcying, @AData, SizeOf(TRecord_OriginalAcying));
-  Form_UI.AcyingCache.Push(tempDataAcying);
+  AcyingCache.Push(tempDataAcying);
 end;
 
 procedure TForm_UI.IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
@@ -2553,9 +2648,7 @@ var
 begin
   New(TempDataHv);
   CopyMemory(TempDataHv, @AData, SizeOf(TRecord_OriginalHv));
-  Form_UI.HvUDPCache.Push(TempDataHv);
-
-//  Sleep(1);
+  HvUDPCache.Push(TempDataHv);
 end;
 
 procedure TForm_UI.IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
@@ -2565,9 +2658,7 @@ var
 begin
   New(TempDataLv);
   CopyMemory(TempDataLv, @AData, SizeOf(TRecord_OriginalLv));
-  Form_UI.LvUDPCache.Push(TempDataLv);
-
-//  Sleep(1);
+  LvUDPCache.Push(TempDataLv);
 end;
 
 function TForm_UI.Init2DIP: Integer;
@@ -2904,5 +2995,59 @@ begin
     else Result := Result / J;
   end
   else Result := -1;
+end;
+
+procedure TForm_UI.UDPStartSimulate;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 1;
+  Buffer_Send[41] := 1;
+  Buffer_Send[42] := 200;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+end;
+
+procedure TForm_UI.UDPStopSimulate;
+var
+  Buffer_Send: TIdBytes;
+  I: Byte;
+  TempTime: TDateTime;
+begin
+  TempTime := Now;
+  SetLength(Buffer_Send, 50);
+  Buffer_Send[0] := 2;
+  Buffer_Send[1] := 20;
+  Buffer_Send[2] := 48;
+  Buffer_Send[3] := 1;
+  for I := 4 to 39 do Buffer_Send[I] := 0;
+  Buffer_Send[40] := 2;
+  Buffer_Send[41] := 1;
+  Buffer_Send[42] := 200;
+  Buffer_Send[43] := 0;
+  Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
+  Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
+  Buffer_Send[46] := StrToInt(FormatDateTime('dd', TempTime));
+  Buffer_Send[47] := StrToInt(FormatDateTime('hh', TempTime));
+  Buffer_Send[48] := StrToInt(FormatDateTime('nn', TempTime));
+  Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
+  IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
+  IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 end;
 end.
