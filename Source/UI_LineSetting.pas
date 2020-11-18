@@ -116,7 +116,7 @@ begin
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
               Form_UI.dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
               Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
-              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
+              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(Form_LineSetting.kilometer) + 'km   速度：0km/h';
             end;
           end;
           -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';
