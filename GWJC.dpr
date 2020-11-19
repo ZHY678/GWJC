@@ -10,7 +10,8 @@ uses
   YEGinc in 'Source\YEGinc.pas',
   UGlobalpara in 'Source\UGlobalpara.pas',
   UI_SensorSetting in 'Source\UI_SensorSetting.pas' {Form_Sensor},
-  UFirFilter in 'Source\UFirFilter.pas';
+  UFirFilter in 'Source\UFirFilter.pas',
+  UDrawThread in 'Source\UDrawThread.pas';
 
 {$R *.res}
 
