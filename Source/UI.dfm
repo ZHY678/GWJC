@@ -116,7 +116,7 @@ object Form_UI: TForm_UI
     Width = 1350
     Height = 550
     Hint = ''
-    ActivePage = TabSheet_Conductor
+    ActivePage = TabSheet_Data
     Align = alClient
     TabOrder = 2
     FixedDimension = 19
@@ -520,6 +520,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitLeft = -1
+        ExplicitTop = -3
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object PointSeries_Width: TPointSeries
@@ -527,8 +529,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#27700#24179#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -540,8 +544,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#22402#30452#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -553,8 +559,10 @@ object Form_UI: TForm_UI
           Title = #23548#39640#21464#21270#29575
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -566,8 +574,10 @@ object Form_UI: TForm_UI
           Title = #23450#20301#28857#39640#24046
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -969,8 +979,10 @@ object Form_UI: TForm_UI
           Title = #30005#27969#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1069,8 +1081,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#25345#32493#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1082,13 +1096,303 @@ object Form_UI: TForm_UI
           Title = #29123#24359#27425#25968
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 1
+        end
+      end
+    end
+    object TabSheet_Data: TRzTabSheet
+      TabVisible = False
+      Caption = #24339#32593#27979#35797#25968#25454#30028#38754
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+      object Chart_Data: TChart
+        Left = 0
+        Top = 0
+        Width = 1346
+        Height = 546
+        BackWall.Brush.Gradient.Direction = gdBottomTop
+        BackWall.Brush.Gradient.EndColor = clWhite
+        BackWall.Brush.Gradient.StartColor = 15395562
+        BackWall.Brush.Gradient.Visible = True
+        BackWall.Transparent = False
+        Foot.Font.Color = clBlue
+        Foot.Font.Name = 'Verdana'
+        Gradient.Direction = gdBottomTop
+        Gradient.EndColor = clWhite
+        Gradient.MidColor = 15395562
+        Gradient.StartColor = 15395562
+        Gradient.Visible = True
+        LeftWall.Color = 14745599
+        Legend.Font.Name = 'Verdana'
+        Legend.Shadow.Transparency = 0
+        MarginLeft = 5
+        RightWall.Color = 14745599
+        Title.Font.Name = 'Verdana'
+        BottomAxis.Axis.Color = 4210752
+        BottomAxis.Grid.Color = 11119017
+        BottomAxis.LabelsFormat.Font.Name = 'Verdana'
+        BottomAxis.TicksInner.Color = 11119017
+        BottomAxis.Title.Font.Name = 'Verdana'
+        DepthAxis.Axis.Color = 4210752
+        DepthAxis.Grid.Color = 11119017
+        DepthAxis.LabelsFormat.Font.Name = 'Verdana'
+        DepthAxis.TicksInner.Color = 11119017
+        DepthAxis.Title.Font.Name = 'Verdana'
+        DepthTopAxis.Axis.Color = 4210752
+        DepthTopAxis.Grid.Color = 11119017
+        DepthTopAxis.LabelsFormat.Font.Name = 'Verdana'
+        DepthTopAxis.TicksInner.Color = 11119017
+        DepthTopAxis.Title.Font.Name = 'Verdana'
+        CustomAxes = <
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            EndPosition = 11.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 11.000000000000000000
+            EndPosition = 22.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 22.000000000000000000
+            EndPosition = 33.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 33.000000000000000000
+            EndPosition = 44.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 44.000000000000000000
+            EndPosition = 55.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 55.000000000000000000
+            EndPosition = 66.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 66.000000000000000000
+            EndPosition = 77.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 77.000000000000000000
+            EndPosition = 88.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 88.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end>
+        LeftAxis.Axis.Color = 4210752
+        LeftAxis.Grid.Color = 11119017
+        LeftAxis.LabelsFormat.Font.Name = 'Verdana'
+        LeftAxis.TicksInner.Color = 11119017
+        LeftAxis.Title.Font.Name = 'Verdana'
+        RightAxis.Axis.Color = 4210752
+        RightAxis.Grid.Color = 11119017
+        RightAxis.LabelsFormat.Font.Name = 'Verdana'
+        RightAxis.TicksInner.Color = 11119017
+        RightAxis.Title.Font.Name = 'Verdana'
+        TopAxis.Axis.Color = 4210752
+        TopAxis.Grid.Color = 11119017
+        TopAxis.LabelsFormat.Font.Name = 'Verdana'
+        TopAxis.TicksInner.Color = 11119017
+        TopAxis.Title.Font.Name = 'Verdana'
+        View3D = False
+        Align = alClient
+        TabOrder = 0
+        ExplicitLeft = 424
+        ExplicitTop = 277
+        ExplicitWidth = 400
+        ExplicitHeight = 250
+        DefaultCanvas = 'TGDIPlusCanvas'
+        PrintMargins = (
+          15
+          30
+          15
+          30)
+        ColorPaletteIndex = 13
+        object FastLineSeries_Line1Height: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #23548#39640
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 10708548
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 0
+        end
+        object FastLineSeries_Line1Width: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #25289#20986#20540
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 3513587
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 1
+        end
+        object FastLineSeries_Vacc1: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30828#28857'1'
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 1330417
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 2
+        end
+        object FastLineSeries_Vacc2: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30828#28857'2'
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 11048782
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 3
+        end
+        object FastLineSeries_Force: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #25509#35302#21147
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 7028779
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 4
+        end
+        object PointSeries_AcyingCountData: TPointSeries
+          Title = #29123#24359#27425#25968
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loNone
+          YValues.Name = 'Y'
+          YValues.Order = loAscending
+          CustomVertAxis = 5
+        end
+        object PointSeries_AcyingTimeData: TPointSeries
+          Title = #29123#24359#26102#38388
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 6
+        end
+        object FastLineSeries_ElectricValue: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30005#27969#20540
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 6144242
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 7
+        end
+        object PointSeries_ElectricTimeData: TPointSeries
+          Title = #30005#27969#26102#38388
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 8
         end
       end
     end
@@ -1116,6 +1420,9 @@ object Form_UI: TForm_UI
     end
     object MenuItem_Display: TMenuItem
       Caption = #30028#38754#26174#31034
+      object MenuItem_Data: TMenuItem
+        Action = Action_DataDisplay
+      end
       object MenuItem_Conductor: TMenuItem
         Action = Action_ConductorDisplay
       end
@@ -1299,6 +1606,10 @@ object Form_UI: TForm_UI
       Caption = #20572#27490#20223#30495
       OnExecute = Action_StopSimulateExecute
     end
+    object Action_DataDisplay: TAction
+      Caption = #24339#32593#27979#35797#25968#25454
+      OnExecute = Action_DataDisplayExecute
+    end
   end
   object dxBarManager: TdxBarManager
     Font.Charset = DEFAULT_CHARSET
@@ -1351,7 +1662,7 @@ object Form_UI: TForm_UI
     object ManagerBar_System: TdxBar
       Caption = #31995#32479#25805#20316
       CaptionButtons = <>
-      DockedLeft = 753
+      DockedLeft = 841
       DockedTop = 0
       FloatLeft = 1298
       FloatTop = 8
@@ -1512,6 +1823,10 @@ object Form_UI: TForm_UI
       ItemLinks = <
         item
           Visible = True
+          ItemName = 'LargeButton_Data'
+        end
+        item
+          Visible = True
           ItemName = 'LargeButton_Conductor'
         end
         item
@@ -1543,7 +1858,7 @@ object Form_UI: TForm_UI
     object ManagerBar_Simulation: TdxBar
       Caption = #20223#30495#35774#32622
       CaptionButtons = <>
-      DockedLeft = 616
+      DockedLeft = 704
       DockedTop = 0
       FloatLeft = 1384
       FloatTop = 8
@@ -1778,13 +2093,13 @@ object Form_UI: TForm_UI
         22656E61626C652D6261636B67726F756E643A6E657720302030203332203332
         3B2220786D6C3A73706163653D227072657365727665223E262331333B262331
         303B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
-        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B093C
-        7374796C6520747970653D22746578742F637373223E2E477265656E7B66696C
-        6C3A233033394332333B7D3C2F7374796C653E0D0A093C7061746820636C6173
-        733D22477265656E2220643D224D31362C3243382E332C322C322C382E332C32
-        2C313673362E332C31342C31342C31347331342D362E332C31342D3134533233
-        2E372C322C31362C327A204D31322C32325631306C31302C364C31322C32327A
-        222F3E0D0A3C2F7376673E0D0A}
+        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
+        393B093C7374796C6520747970653D22746578742F637373223E2E477265656E
+        7B66696C6C3A233033394332333B7D3C2F7374796C653E0D0A093C7061746820
+        636C6173733D22477265656E2220643D224D31362C3243382E332C322C322C38
+        2E332C322C313673362E332C31342C31342C31347331342D362E332C31342D31
+        345332332E372C322C31362C327A204D31322C32325631306C31302C364C3132
+        2C32327A222F3E0D0A3C2F7376673E0D0A}
     end
     object LargeButton_StopCollect: TdxBarLargeButton
       Action = Action_StopCollect
@@ -1824,26 +2139,26 @@ object Form_UI: TForm_UI
         2033323B2220786D6C3A73706163653D227072657365727665223E262331333B
         262331303B2623393B2623393B2623393B2623393B2623393B2623393B262339
         3B2623393B2623393B2623393B2623393B2623393B2623393B2623393B262339
-        3B093C7374796C6520747970653D22746578742F6373732220786D6C3A737061
-        63653D227072657365727665223E2E57686974657B66696C6C3A234646464646
-        463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C3A233732
-        373237323B7D262331333B262331303B2623393B2E426C75657B66696C6C3A23
-        3131373744373B7D262331333B262331303B2623393B2E7374307B6F70616369
-        74793A302E353B7D3C2F7374796C653E0D0A093C672069643D22D0A1D0BBD0BE
-        D0B95F32223E0D0A09093C672069643D2253617665223E0D0A0909093C706F6C
-        79676F6E20636C6173733D22426C75652220706F696E74733D2233302C322032
-        2C3220322C333020322C333020362C333020362C32302032362C32302032362C
-        33302033302C3330202623393B2623393B222F3E0D0A0909093C726563742078
-        3D22362220793D22322220636C6173733D225768697465222077696474683D22
-        323022206865696768743D223134222F3E0D0A0909093C7061746820636C6173
-        733D22426C61636B2220643D224D362C323076313068323056323048367A204D
-        32342C3238682D34762D3668345632387A222F3E0D0A0909093C6720636C6173
-        733D22737430223E0D0A090909093C7265637420783D22382220793D22342220
-        636C6173733D22426C61636B222077696474683D22313622206865696768743D
-        2232222F3E0D0A090909093C7265637420783D22382220793D22382220636C61
-        73733D22426C61636B222077696474683D22313222206865696768743D223222
-        2F3E0D0A0909093C2F673E0D0A09093C2F673E0D0A093C2F673E0D0A3C2F7376
-        673E0D0A}
+        3B2623393B093C7374796C6520747970653D22746578742F6373732220786D6C
+        3A73706163653D227072657365727665223E2E57686974657B66696C6C3A2346
+        46464646463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C
+        3A233732373237323B7D262331333B262331303B2623393B2E426C75657B6669
+        6C6C3A233131373744373B7D262331333B262331303B2623393B2E7374307B6F
+        7061636974793A302E353B7D3C2F7374796C653E0D0A093C672069643D22D0A1
+        D0BBD0BED0B95F32223E0D0A09093C672069643D2253617665223E0D0A090909
+        3C706F6C79676F6E20636C6173733D22426C75652220706F696E74733D223330
+        2C3220322C3220322C333020322C333020362C333020362C32302032362C3230
+        2032362C33302033302C3330202623393B2623393B222F3E0D0A0909093C7265
+        637420783D22362220793D22322220636C6173733D2257686974652220776964
+        74683D22323022206865696768743D223134222F3E0D0A0909093C7061746820
+        636C6173733D22426C61636B2220643D224D362C323076313068323056323048
+        367A204D32342C3238682D34762D3668345632387A222F3E0D0A0909093C6720
+        636C6173733D22737430223E0D0A090909093C7265637420783D22382220793D
+        22342220636C6173733D22426C61636B222077696474683D2231362220686569
+        6768743D2232222F3E0D0A090909093C7265637420783D22382220793D223822
+        20636C6173733D22426C61636B222077696474683D2231322220686569676874
+        3D2232222F3E0D0A0909093C2F673E0D0A09093C2F673E0D0A093C2F673E0D0A
+        3C2F7376673E0D0A}
     end
     object LargeButton_StopSave: TdxBarLargeButton
       Action = Action_StopSave
@@ -1859,35 +2174,35 @@ object Form_UI: TForm_UI
         22656E61626C652D6261636B67726F756E643A6E657720302030203332203332
         3B2220786D6C3A73706163653D227072657365727665223E262331333B262331
         303B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
-        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B093C
-        7374796C6520747970653D22746578742F6373732220786D6C3A73706163653D
-        227072657365727665223E2E57686974657B66696C6C3A234646464646463B7D
-        262331333B262331303B2623393B2E426C61636B7B66696C6C3A233732373237
-        323B7D262331333B262331303B2623393B2E426C75657B66696C6C3A23313137
-        3744373B7D262331333B262331303B2623393B2E5265647B66696C6C3A234431
-        314331433B7D262331333B262331303B2623393B2E7374307B6F706163697479
-        3A302E353B7D3C2F7374796C653E0D0A093C672069643D224C617965725F3222
-        3E0D0A09093C672069643D22536176655F616E645F636C6F7365223E0D0A0909
-        093C706F6C79676F6E20636C6173733D22426C75652220706F696E74733D2233
-        302C3220322C3220322C333020322C333020362C333020362C32302032362C32
-        302032362C33302033302C3330202623393B2623393B222F3E0D0A0909093C72
-        65637420783D22362220793D22322220636C6173733D22576869746522207769
-        6474683D22323022206865696768743D223134222F3E0D0A0909093C70617468
-        20636C6173733D22426C61636B2220643D224D362C3230763130683230563230
-        48367A204D32342C3238682D34762D3668345632387A222F3E0D0A0909093C67
-        20636C6173733D22737430223E0D0A090909093C7265637420783D2238222079
-        3D22342220636C6173733D22426C61636B222077696474683D22382220686569
-        6768743D2232222F3E0D0A090909093C7265637420783D22382220793D223822
-        20636C6173733D22426C61636B222077696474683D223822206865696768743D
-        2232222F3E0D0A0909093C2F673E0D0A0909093C7061746820636C6173733D22
-        5265642220643D224D32352C3063332E392C302C372C332E312C372C37732D33
-        2E312C372D372C37732D372D332E312D372D375332312E312C302C32352C307A
-        222F3E0D0A0909093C7061746820636C6173733D2257686974652220643D224D
-        32382E382C392E336C2D312E342C312E344C32352C382E346C2D322E332C322E
-        336C2D312E342D312E344C32332E362C376C2D322E332D322E336C312E342D31
-        2E344C32352C352E366C322E332D322E336C312E342C312E344C32362E342C37
-        20202623393B2623393B2623393B4C32382E382C392E337A222F3E0D0A09093C
-        2F673E0D0A093C2F673E0D0A3C2F7376673E0D0A}
+        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
+        393B093C7374796C6520747970653D22746578742F6373732220786D6C3A7370
+        6163653D227072657365727665223E2E57686974657B66696C6C3A2346464646
+        46463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C3A2337
+        32373237323B7D262331333B262331303B2623393B2E426C75657B66696C6C3A
+        233131373744373B7D262331333B262331303B2623393B2E5265647B66696C6C
+        3A234431314331433B7D262331333B262331303B2623393B2E7374307B6F7061
+        636974793A302E353B7D3C2F7374796C653E0D0A093C672069643D224C617965
+        725F32223E0D0A09093C672069643D22536176655F616E645F636C6F7365223E
+        0D0A0909093C706F6C79676F6E20636C6173733D22426C75652220706F696E74
+        733D2233302C3220322C3220322C333020322C333020362C333020362C323020
+        32362C32302032362C33302033302C3330202623393B2623393B222F3E0D0A09
+        09093C7265637420783D22362220793D22322220636C6173733D225768697465
+        222077696474683D22323022206865696768743D223134222F3E0D0A0909093C
+        7061746820636C6173733D22426C61636B2220643D224D362C32307631306832
+        3056323048367A204D32342C3238682D34762D3668345632387A222F3E0D0A09
+        09093C6720636C6173733D22737430223E0D0A090909093C7265637420783D22
+        382220793D22342220636C6173733D22426C61636B222077696474683D223822
+        206865696768743D2232222F3E0D0A090909093C7265637420783D2238222079
+        3D22382220636C6173733D22426C61636B222077696474683D22382220686569
+        6768743D2232222F3E0D0A0909093C2F673E0D0A0909093C7061746820636C61
+        73733D225265642220643D224D32352C3063332E392C302C372C332E312C372C
+        37732D332E312C372D372C37732D372D332E312D372D375332312E312C302C32
+        352C307A222F3E0D0A0909093C7061746820636C6173733D2257686974652220
+        643D224D32382E382C392E336C2D312E342C312E344C32352C382E346C2D322E
+        332C322E336C2D312E342D312E344C32332E362C376C2D322E332D322E336C31
+        2E342D312E344C32352C352E366C322E332D322E336C312E342C312E344C3236
+        2E342C3720202623393B2623393B2623393B4C32382E382C392E337A222F3E0D
+        0A09093C2F673E0D0A093C2F673E0D0A3C2F7376673E0D0A}
     end
     object LargeButton_Connect: TdxBarLargeButton
       Caption = #24320#21551#26381#21153#22120
@@ -1950,15 +2265,15 @@ object Form_UI: TForm_UI
         22656E61626C652D6261636B67726F756E643A6E657720302030203332203332
         3B2220786D6C3A73706163653D227072657365727665223E262331333B262331
         303B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
-        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B093C
-        7374796C6520747970653D22746578742F637373223E2E5265647B66696C6C3A
-        234431314331433B7D3C2F7374796C653E0D0A093C7061746820636C6173733D
-        225265642220643D224D32392C32483343322E352C322C322C322E352C322C33
-        76323663302C302E352C302E352C312C312C3168323663302E352C302C312D30
-        2E352C312D3156334333302C322E352C32392E352C322C32392C327A204D3234
-        2C32326C2D322C326C2D362D366C2D362C3620202623393B6C2D322D326C362D
-        366C2D362D366C322D326C362C366C362D366C322C326C2D362C364C32342C32
-        327A222F3E0D0A3C2F7376673E0D0A}
+        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
+        393B093C7374796C6520747970653D22746578742F637373223E2E5265647B66
+        696C6C3A234431314331433B7D3C2F7374796C653E0D0A093C7061746820636C
+        6173733D225265642220643D224D32392C32483343322E352C322C322C322E35
+        2C322C3376323663302C302E352C302E352C312C312C3168323663302E352C30
+        2C312D302E352C312D3156334333302C322E352C32392E352C322C32392C327A
+        204D32342C32326C2D322C326C2D362D366C2D362C3620202623393B6C2D322D
+        326C362D366C2D362D366C322D326C362C366C362D366C322C326C2D362C364C
+        32342C32327A222F3E0D0A3C2F7376673E0D0A}
     end
     object LargeButton_Line: TdxBarLargeButton
       Action = Action_OpenLineUI
@@ -2132,13 +2447,13 @@ object Form_UI: TForm_UI
         22656E61626C652D6261636B67726F756E643A6E657720302030203332203332
         3B2220786D6C3A73706163653D227072657365727665223E262331333B262331
         303B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
-        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B093C
-        7374796C6520747970653D22746578742F637373223E2E426C75657B66696C6C
-        3A233131373744373B7D3C2F7374796C653E0D0A093C7061746820636C617373
-        3D22426C75652220643D224D32372C34483543342E352C342C342C342E352C34
-        2C3576323263302C302E352C302E352C312C312C3168323263302E352C302C31
-        2D302E352C312D3156354332382C342E352C32372E352C342C32372C347A222F
-        3E0D0A3C2F7376673E0D0A}
+        393B2623393B2623393B2623393B2623393B2623393B2623393B2623393B2623
+        393B093C7374796C6520747970653D22746578742F637373223E2E426C75657B
+        66696C6C3A233131373744373B7D3C2F7374796C653E0D0A093C706174682063
+        6C6173733D22426C75652220643D224D32372C34483543342E352C342C342C34
+        2E352C342C3576323263302C302E352C302E352C312C312C3168323263302E35
+        2C302C312D302E352C312D3156354332382C342E352C32372E352C342C32372C
+        347A222F3E0D0A3C2F7376673E0D0A}
     end
     object LargeButton_Pause: TdxBarLargeButton
       Action = Action_StopCollect
@@ -2688,6 +3003,39 @@ object Form_UI: TForm_UI
         5D27F563A9F825622380E7099970108260845180FFEECA267160FF3188498BFD
         37F99759150253FACD0000000049454E44AE426082}
     end
+    object LargeButton_Data: TdxBarLargeButton
+      Action = Action_DataDisplay
+      Category = 0
+      HotGlyph.SourceDPI = 96
+      HotGlyph.Data = {
+        3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D225554
+        462D38223F3E0D0A3C7376672076657273696F6E3D22312E31222069643D22D0
+        A1D0BBD0BED0B95F312220786D6C6E733D22687474703A2F2F7777772E77332E
+        6F72672F323030302F7376672220786D6C6E733A786C696E6B3D22687474703A
+        2F2F7777772E77332E6F72672F313939392F786C696E6B2220783D2230707822
+        20793D22307078222076696577426F783D223020302033322033322220737479
+        6C653D22656E61626C652D6261636B67726F756E643A6E657720302030203332
+        2033323B2220786D6C3A73706163653D227072657365727665223E262331333B
+        262331303B093C7374796C6520747970653D22746578742F6373732220786D6C
+        3A73706163653D227072657365727665223E2E57686974657B66696C6C3A2346
+        46464646463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C
+        3A233732373237323B7D262331333B262331303B2623393B2E426C75657B6669
+        6C6C3A233131373744373B7D3C2F7374796C653E0D0A093C7265637420793D22
+        322220636C6173733D22426C61636B222077696474683D223332222068656967
+        68743D223238222F3E0D0A093C673E0D0A09093C7265637420783D2232222079
+        3D22362220636C6173733D225768697465222077696474683D22313022206865
+        696768743D223232222F3E0D0A09093C7265637420783D2231342220793D2236
+        2220636C6173733D225768697465222077696474683D22313622206865696768
+        743D223232222F3E0D0A093C2F673E0D0A093C673E0D0A09093C726563742078
+        3D2231362220793D2231302220636C6173733D22426C7565222077696474683D
+        22313222206865696768743D2232222F3E0D0A09093C7265637420783D223136
+        2220793D2231342220636C6173733D22426C7565222077696474683D22313222
+        206865696768743D2232222F3E0D0A09093C7265637420783D2231362220793D
+        2231382220636C6173733D22426C7565222077696474683D2231322220686569
+        6768743D2232222F3E0D0A09093C7265637420783D2231362220793D22323222
+        20636C6173733D22426C7565222077696474683D22313222206865696768743D
+        2232222F3E0D0A093C2F673E0D0A3C2F7376673E0D0A}
+    end
   end
   object OpenDialog: TOpenDialog
     Left = 864
@@ -2702,35 +3050,21 @@ object Form_UI: TForm_UI
     Left = 968
   end
   object IdUDPServer_Hv: TIdUDPServer
-    Active = True
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1025
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_HvUDPRead
     Left = 1064
   end
   object IdUDPServer_Lv: TIdUDPServer
-    Active = True
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1026
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_LvUDPRead
     Left = 1064
     Top = 48
   end
   object IdUDPServer_Acying: TIdUDPServer
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1027
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_AcyingUDPRead
     Left = 1064
     Top = 96

@@ -103,20 +103,30 @@ begin
 
             if not Form_UI.IsRun then
             begin
+              Form_UI.Counts_Package := 0;
+              Form_UI.Counts_Save := 0;
+              Form_UI.Counts_Number := 0;
               Form_UI.StartMs := GetTickCount;
               Form_UI.startTime := FormatDateTime('yymmddhhnnss', Now);
+              Form_UI.Data2DCache.clear;
+              Form_UI.HvUDPCache.clear;
+              Form_UI.LvUDPCache.clear;
+              Form_UI.AcyingCache.clear;
+              Form_UI.DrawCache.clear;
+              Form_UI.OriginalCache.clear;
               ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
-              ResumeThread(Form_UI.PDrawThread);
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
               Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;
+              Form_UI.Counts_Package := 0;
+              Form_UI.Counts_Save := 0;
               Form_UI.UDPStartCollect;
               Form_UI.IdUDPServer_Acying.Active := True;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';
               Form_UI.dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
               Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
-              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
+              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(Form_LineSetting.kilometer) + 'km   速度：0km/h';
             end;
           end;
           -1: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器发生未知错误。';

@@ -5,7 +5,7 @@ object Form_Sensor: TForm_Sensor
   BorderStyle = bsSingle
   Caption = #20256#24863#22120#35774#32622
   ClientHeight = 635
-  ClientWidth = 569
+  ClientWidth = 880
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -438,7 +438,7 @@ object Form_Sensor: TForm_Sensor
     end
   end
   object Button_Comfirm: TButton
-    Left = 235
+    Left = 411
     Top = 594
     Width = 104
     Height = 33
@@ -602,8 +602,8 @@ object Form_Sensor: TForm_Sensor
     end
   end
   object GroupBox_CalCount: TGroupBox
-    Left = 8
-    Top = 455
+    Left = 567
+    Top = 137
     Width = 305
     Height = 123
     Caption = #35745#31639#35774#32622
@@ -1017,6 +1017,253 @@ object Form_Sensor: TForm_Sensor
       ParentFont = False
       ReadOnly = True
       TabOrder = 11
+    end
+  end
+  object GroupBox_Computer: TGroupBox
+    Left = 8
+    Top = 455
+    Width = 305
+    Height = 122
+    Caption = #19978#20301#26426#35774#32622
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 7
+    object Label_ComputerIP1: TLabel
+      Left = 16
+      Top = 32
+      Width = 95
+      Height = 19
+      Caption = #35774#22791'IP'#22320#22336#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_ComputerIP2: TLabel
+      Left = 143
+      Top = 40
+      Width = 5
+      Height = 19
+      Caption = '.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_ComputerIP3: TLabel
+      Left = 198
+      Top = 40
+      Width = 5
+      Height = 19
+      Caption = '.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_ComputerIP4: TLabel
+      Left = 248
+      Top = 40
+      Width = 5
+      Height = 19
+      Caption = '.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_ComputerIPort: TLabel
+      Left = 16
+      Top = 80
+      Width = 96
+      Height = 19
+      Caption = #35774#22791#31471#21475#21495#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Edit_ComputerIP1: TEdit
+      Left = 104
+      Top = 32
+      Width = 33
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+    object Edit_ComputerIP2: TEdit
+      Left = 159
+      Top = 32
+      Width = 33
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+    end
+    object Edit_ComputerIP3: TEdit
+      Left = 209
+      Top = 32
+      Width = 33
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
+    end
+    object Edit_ComputerIP4: TEdit
+      Left = 259
+      Top = 32
+      Width = 33
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+    end
+    object Edit_ComputerPort: TEdit
+      Left = 104
+      Top = 80
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 4
+    end
+  end
+  object GroupBox_Parameter: TGroupBox
+    Left = 567
+    Top = 8
+    Width = 305
+    Height = 123
+    Caption = #21442#25968#35774#32622
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 8
+    object Label_Quality: TLabel
+      Left = 17
+      Top = 33
+      Width = 80
+      Height = 19
+      Caption = #24339#32593#36136#37327#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_ElectricityValue: TLabel
+      Left = 17
+      Top = 73
+      Width = 96
+      Height = 19
+      Caption = #30005#27969#26631#20934#20540#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Edit_Quality: TEdit
+      Left = 105
+      Top = 33
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+    object Edit_ElectrycityValue: TEdit
+      Left = 105
+      Top = 73
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+    end
+  end
+  object GroupBox_Sensor: TGroupBox
+    Left = 567
+    Top = 266
+    Width = 305
+    Height = 98
+    Caption = #20256#24863#22120#26041#21521#35774#32622
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 9
+    object RadioButton_Zheng: TRadioButton
+      Left = 48
+      Top = 48
+      Width = 113
+      Height = 17
+      Caption = #27491#21521
+      TabOrder = 0
+    end
+    object RadioButton_Fu: TRadioButton
+      Left = 175
+      Top = 48
+      Width = 113
+      Height = 17
+      Caption = #21453#21521
+      TabOrder = 1
     end
   end
 end

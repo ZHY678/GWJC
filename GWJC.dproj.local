@@ -2,25 +2,27 @@
 <BorlandProject>
 	<Transactions>
     <Transaction>2020/09/18 15:49:52.000.698,=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2020/09/18 15:50:02.000.247,C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project.dproj</Transaction>
-    <Transaction>2020/09/18 15:50:50.000.524,C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Unit1.dfm=F:\ZHYFILE\弓网检测装置\软件代码\UI.dfm</Transaction>
-    <Transaction>2020/09/18 15:50:50.000.524,C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Unit1.pas=F:\ZHYFILE\弓网检测装置\软件代码\UI.pas</Transaction>
-    <Transaction>2020/09/18 15:50:54.000.785,C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project.dproj=F:\ZHYFILE\弓网检测装置\软件代码\Project.dproj</Transaction>
-    <Transaction>2020/09/18 15:52:44.000.482,F:\ZHYFILE\弓网检测装置\软件代码\Project.dproj=F:\ZHYFILE\弓网检测装置\软件代码\GWJC.dproj</Transaction>
+    <Transaction>2020/09/18 15:50:02.000.247,C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project.dproj=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2020/09/18 15:50:50.000.524,F:\ZHYFILE\弓网检测装置\软件代码\UI.dfm=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>2020/09/18 15:50:50.000.524,F:\ZHYFILE\弓网检测装置\软件代码\UI.pas=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2020/09/18 15:50:54.000.785,F:\ZHYFILE\弓网检测装置\软件代码\Project.dproj=C:\Users\ZHY\Documents\Embarcadero\Studio\Projects\Project.dproj</Transaction>
+    <Transaction>2020/09/18 15:52:44.000.482,F:\ZHYFILE\弓网检测装置\软件代码\GWJC.dproj=F:\ZHYFILE\弓网检测装置\软件代码\Project.dproj</Transaction>
     <Transaction>2020/09/18 16:01:01.000.135,=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\UI.pas</Transaction>
     <Transaction>2020/09/21 09:48:35.000.957,=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Unit1.pas</Transaction>
-    <Transaction>2020/09/21 09:55:54.000.955,F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\UI_LineSetting.dfm=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Unit1.dfm</Transaction>
-    <Transaction>2020/09/21 09:55:54.000.955,F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\UI_LineSetting.pas=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Unit1.pas</Transaction>
+    <Transaction>2020/09/21 09:55:54.000.955,F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Unit1.pas=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\UI_LineSetting.pas</Transaction>
+    <Transaction>2020/09/21 09:55:54.000.955,F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Unit1.dfm=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\UI_LineSetting.dfm</Transaction>
     <Transaction>2020/09/23 15:55:21.000.758,=F:\ZHYFILE\弓网检测装置\软件代码\GWJC\Source\sfContnrs.pas</Transaction>
+    <Transaction>2020/09/24 11:41:09.000.642,=F:\弓网检测\Source\JCWDataDef.pas</Transaction>
     <Transaction>2020/09/24 11:41:09.000.934,=F:\弓网检测\Source\YEGinc.pas</Transaction>
     <Transaction>2020/09/24 11:41:09.000.908,=F:\弓网检测\Source\JCWMesh.pas</Transaction>
-    <Transaction>2020/09/24 11:41:09.000.642,=F:\弓网检测\Source\JCWDataDef.pas</Transaction>
     <Transaction>2020/09/24 14:02:00.000.950,=F:\弓网检测\Unit1.pas</Transaction>
-    <Transaction>2020/09/24 14:02:26.000.313,F:\弓网检测\Unit1.pas=F:\弓网检测\Source\UGlobalpara.pas</Transaction>
+    <Transaction>2020/09/24 14:02:26.000.313,F:\弓网检测\Source\UGlobalpara.pas=F:\弓网检测\Unit1.pas</Transaction>
     <Transaction>2020/09/25 16:43:47.000.030,=F:\弓网检测\Unit1.pas</Transaction>
-    <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Unit1.pas=F:\弓网检测\Source\UI_SensorSetting.pas</Transaction>
-    <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Unit1.dfm=F:\弓网检测\Source\UI_SensorSetting.dfm</Transaction>
+    <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Source\UI_SensorSetting.pas=F:\弓网检测\Unit1.pas</Transaction>
+    <Transaction>2020/09/25 17:21:12.000.008,F:\弓网检测\Source\UI_SensorSetting.dfm=F:\弓网检测\Unit1.dfm</Transaction>
     <Transaction>2020/10/20 15:57:04.000.475,=F:\弓网检测\Unit1.pas</Transaction>
-    <Transaction>2020/10/20 15:59:14.000.631,F:\弓网检测\Source\UFirFilter.pas=F:\弓网检测\Unit1.pas</Transaction>
+    <Transaction>2020/10/20 15:59:14.000.631,F:\弓网检测\Unit1.pas=F:\弓网检测\Source\UFirFilter.pas</Transaction>
+    <Transaction>2020/11/19 13:52:40.000.598,=F:\弓网检测\Unit1.pas</Transaction>
+    <Transaction>2020/11/19 13:53:40.000.216,F:\弓网检测\Unit1.pas=F:\弓网检测\Source\UDrawThread.pas</Transaction>
   </Transactions>
 </BorlandProject>
