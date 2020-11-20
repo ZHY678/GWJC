@@ -470,6 +470,96 @@ begin
 
       Form_UI.PointSeries_AcyingTime.Repaint;
 //        Form_UI.PointSeries_AcyingCount.Repaint;
+    end
+    else if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Data then
+    begin
+      SetLength(tmp1ChartValues, Form_UI.paintCounts);
+      SetLength(tmp2ChartValues, Form_UI.paintCounts);
+      SetLength(tmp3ChartValues, Form_UI.paintCounts);
+      SetLength(tmp4ChartValues, Form_UI.paintCounts);
+      SetLength(tmp5ChartValues, Form_UI.paintCounts);
+      SetLength(tmp6ChartValues, Form_UI.paintCounts);
+      SetLength(tmp7ChartValues, Form_UI.paintCounts);
+      SetLength(tmp8ChartValues, Form_UI.paintCounts);
+      SetLength(tmp9ChartValues, Form_UI.paintCounts);
+
+      for I := 0 to Form_UI.paintCounts - 1 do
+      begin
+        tmp1ChartValues[I] := Form_UI.DrawData[6][I];
+        tmp2ChartValues[I] := Form_UI.DrawData[0][I];
+        tmp3ChartValues[I] := Form_UI.DrawData[19][I];
+        tmp4ChartValues[I] := Form_UI.DrawData[20][I];
+        tmp5ChartValues[I] := Form_UI.DrawData[14][I];
+        tmp6ChartValues[I] := Form_UI.DrawData[24][I];
+        tmp7ChartValues[I] := Form_UI.DrawData[23][I];
+        tmp8ChartValues[I] := Form_UI.DrawData[21][I];
+        tmp9ChartValues[I] := Form_UI.DrawData[22][I];
+      end;
+
+      Form_UI.FastLineSeries_Line1Height.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Line1Height.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Line1Height.XValues.Modified := True;
+      Form_UI.FastLineSeries_Line1Height.YValues.Value := tmp1ChartValues;
+      Form_UI.FastLineSeries_Line1Height.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Line1Height.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Line1Width.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Line1Width.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Line1Width.XValues.Modified := True;
+      Form_UI.FastLineSeries_Line1Width.YValues.Value := tmp2ChartValues;
+      Form_UI.FastLineSeries_Line1Width.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Line1Width.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Vacc1.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Vacc1.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Vacc1.XValues.Modified := True;
+      Form_UI.FastLineSeries_Vacc1.YValues.Value := tmp3ChartValues;
+      Form_UI.FastLineSeries_Vacc1.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Vacc1.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Vacc2.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Vacc2.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Vacc2.XValues.Modified := True;
+      Form_UI.FastLineSeries_Vacc2.YValues.Value := tmp4ChartValues;
+      Form_UI.FastLineSeries_Vacc2.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Vacc2.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Force.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Force.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Force.XValues.Modified := True;
+      Form_UI.FastLineSeries_Force.YValues.Value := tmp5ChartValues;
+      Form_UI.FastLineSeries_Force.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Force.YValues.Modified := True;
+
+      Form_UI.PointSeries_AcyingCountData.XValues.Value := tmp0ChartValues;
+      Form_UI.PointSeries_AcyingCountData.XValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_AcyingCountData.XValues.Modified := True;
+      Form_UI.PointSeries_AcyingCountData.YValues.Value := tmp6ChartValues;
+      Form_UI.PointSeries_AcyingCountData.YValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_AcyingCountData.YValues.Modified := True;
+
+      Form_UI.PointSeries_AcyingTimeData.XValues.Value := tmp0ChartValues;
+      Form_UI.PointSeries_AcyingTimeData.XValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_AcyingTimeData.XValues.Modified := True;
+      Form_UI.PointSeries_AcyingTimeData.YValues.Value := tmp7ChartValues;
+      Form_UI.PointSeries_AcyingTimeData.YValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_AcyingTimeData.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_ElectricValue.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_ElectricValue.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_ElectricValue.XValues.Modified := True;
+      Form_UI.FastLineSeries_ElectricValue.YValues.Value := tmp8ChartValues;
+      Form_UI.FastLineSeries_ElectricValue.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_ElectricValue.YValues.Modified := True;
+
+      Form_UI.PointSeries_ElectricTimeData.XValues.Value := tmp0ChartValues;
+      Form_UI.PointSeries_ElectricTimeData.XValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_ElectricTimeData.XValues.Modified := True;
+      Form_UI.PointSeries_ElectricTimeData.YValues.Value := tmp9ChartValues;
+      Form_UI.PointSeries_ElectricTimeData.YValues.Count := Form_UI.paintCounts;
+      Form_UI.PointSeries_ElectricTimeData.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Line1Height.Repaint;
     end;
   end;
 end;

@@ -103,13 +103,24 @@ begin
 
             if not Form_UI.IsRun then
             begin
+              Form_UI.Counts_Package := 0;
+              Form_UI.Counts_Save := 0;
+              Form_UI.Counts_Number := 0;
               Form_UI.StartMs := GetTickCount;
               Form_UI.startTime := FormatDateTime('yymmddhhnnss', Now);
+              Form_UI.Data2DCache.clear;
+              Form_UI.HvUDPCache.clear;
+              Form_UI.LvUDPCache.clear;
+              Form_UI.AcyingCache.clear;
+              Form_UI.DrawCache.clear;
+              Form_UI.OriginalCache.clear;
               ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
               Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;
+              Form_UI.Counts_Package := 0;
+              Form_UI.Counts_Save := 0;
               Form_UI.UDPStartCollect;
               Form_UI.IdUDPServer_Acying.Active := True;
               Form_UI.dxRibbonStatusBar.Panels[0].Text := '正在采集。';

@@ -116,7 +116,7 @@ object Form_UI: TForm_UI
     Width = 1350
     Height = 550
     Hint = ''
-    ActivePage = TabSheet_Conductor
+    ActivePage = TabSheet_Data
     Align = alClient
     TabOrder = 2
     FixedDimension = 19
@@ -520,6 +520,8 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
+        ExplicitLeft = -1
+        ExplicitTop = -3
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object PointSeries_Width: TPointSeries
@@ -527,8 +529,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#27700#24179#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -540,8 +544,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#22402#30452#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -553,8 +559,10 @@ object Form_UI: TForm_UI
           Title = #23548#39640#21464#21270#29575
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -566,8 +574,10 @@ object Form_UI: TForm_UI
           Title = #23450#20301#28857#39640#24046
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -969,8 +979,10 @@ object Form_UI: TForm_UI
           Title = #30005#27969#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1069,8 +1081,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#25345#32493#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1082,13 +1096,303 @@ object Form_UI: TForm_UI
           Title = #29123#24359#27425#25968
           VertAxis = aCustomVertAxis
           ClickableLine = False
+          Pointer.HorizSize = 2
           Pointer.InflateMargins = True
-          Pointer.Style = psRectangle
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 1
+        end
+      end
+    end
+    object TabSheet_Data: TRzTabSheet
+      TabVisible = False
+      Caption = #24339#32593#27979#35797#25968#25454#30028#38754
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+      object Chart_Data: TChart
+        Left = 0
+        Top = 0
+        Width = 1346
+        Height = 546
+        BackWall.Brush.Gradient.Direction = gdBottomTop
+        BackWall.Brush.Gradient.EndColor = clWhite
+        BackWall.Brush.Gradient.StartColor = 15395562
+        BackWall.Brush.Gradient.Visible = True
+        BackWall.Transparent = False
+        Foot.Font.Color = clBlue
+        Foot.Font.Name = 'Verdana'
+        Gradient.Direction = gdBottomTop
+        Gradient.EndColor = clWhite
+        Gradient.MidColor = 15395562
+        Gradient.StartColor = 15395562
+        Gradient.Visible = True
+        LeftWall.Color = 14745599
+        Legend.Font.Name = 'Verdana'
+        Legend.Shadow.Transparency = 0
+        MarginLeft = 5
+        RightWall.Color = 14745599
+        Title.Font.Name = 'Verdana'
+        BottomAxis.Axis.Color = 4210752
+        BottomAxis.Grid.Color = 11119017
+        BottomAxis.LabelsFormat.Font.Name = 'Verdana'
+        BottomAxis.TicksInner.Color = 11119017
+        BottomAxis.Title.Font.Name = 'Verdana'
+        DepthAxis.Axis.Color = 4210752
+        DepthAxis.Grid.Color = 11119017
+        DepthAxis.LabelsFormat.Font.Name = 'Verdana'
+        DepthAxis.TicksInner.Color = 11119017
+        DepthAxis.Title.Font.Name = 'Verdana'
+        DepthTopAxis.Axis.Color = 4210752
+        DepthTopAxis.Grid.Color = 11119017
+        DepthTopAxis.LabelsFormat.Font.Name = 'Verdana'
+        DepthTopAxis.TicksInner.Color = 11119017
+        DepthTopAxis.Title.Font.Name = 'Verdana'
+        CustomAxes = <
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            EndPosition = 11.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 11.000000000000000000
+            EndPosition = 22.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 22.000000000000000000
+            EndPosition = 33.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 33.000000000000000000
+            EndPosition = 44.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 44.000000000000000000
+            EndPosition = 55.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 55.000000000000000000
+            EndPosition = 66.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 66.000000000000000000
+            EndPosition = 77.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 77.000000000000000000
+            EndPosition = 88.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end
+          item
+            Axis.Color = 4210752
+            Grid.Color = 11119017
+            Horizontal = False
+            OtherSide = False
+            LabelsFormat.Font.Name = 'Verdana'
+            StartPosition = 88.000000000000000000
+            TicksInner.Color = 11119017
+            Title.Font.Name = 'Verdana'
+          end>
+        LeftAxis.Axis.Color = 4210752
+        LeftAxis.Grid.Color = 11119017
+        LeftAxis.LabelsFormat.Font.Name = 'Verdana'
+        LeftAxis.TicksInner.Color = 11119017
+        LeftAxis.Title.Font.Name = 'Verdana'
+        RightAxis.Axis.Color = 4210752
+        RightAxis.Grid.Color = 11119017
+        RightAxis.LabelsFormat.Font.Name = 'Verdana'
+        RightAxis.TicksInner.Color = 11119017
+        RightAxis.Title.Font.Name = 'Verdana'
+        TopAxis.Axis.Color = 4210752
+        TopAxis.Grid.Color = 11119017
+        TopAxis.LabelsFormat.Font.Name = 'Verdana'
+        TopAxis.TicksInner.Color = 11119017
+        TopAxis.Title.Font.Name = 'Verdana'
+        View3D = False
+        Align = alClient
+        TabOrder = 0
+        ExplicitLeft = 424
+        ExplicitTop = 277
+        ExplicitWidth = 400
+        ExplicitHeight = 250
+        DefaultCanvas = 'TGDIPlusCanvas'
+        PrintMargins = (
+          15
+          30
+          15
+          30)
+        ColorPaletteIndex = 13
+        object FastLineSeries_Line1Height: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #23548#39640
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 10708548
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 0
+        end
+        object FastLineSeries_Line1Width: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #25289#20986#20540
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 3513587
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 1
+        end
+        object FastLineSeries_Vacc1: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30828#28857'1'
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 1330417
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 2
+        end
+        object FastLineSeries_Vacc2: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30828#28857'2'
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 11048782
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 3
+        end
+        object FastLineSeries_Force: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #25509#35302#21147
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 7028779
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 4
+        end
+        object PointSeries_AcyingCountData: TPointSeries
+          Title = #29123#24359#27425#25968
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loNone
+          YValues.Name = 'Y'
+          YValues.Order = loAscending
+          CustomVertAxis = 5
+        end
+        object PointSeries_AcyingTimeData: TPointSeries
+          Title = #29123#24359#26102#38388
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 6
+        end
+        object FastLineSeries_ElectricValue: TFastLineSeries
+          Selected.Hover.Visible = True
+          Title = #30005#27969#20540
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 6144242
+          TreatNulls = tnDontPaint
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 7
+        end
+        object PointSeries_ElectricTimeData: TPointSeries
+          Title = #30005#27969#26102#38388
+          VertAxis = aCustomVertAxis
+          ClickableLine = False
+          Pointer.HorizSize = 2
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.VertSize = 2
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 8
         end
       end
     end
@@ -1116,6 +1420,9 @@ object Form_UI: TForm_UI
     end
     object MenuItem_Display: TMenuItem
       Caption = #30028#38754#26174#31034
+      object MenuItem_Data: TMenuItem
+        Action = Action_DataDisplay
+      end
       object MenuItem_Conductor: TMenuItem
         Action = Action_ConductorDisplay
       end
@@ -1299,6 +1606,10 @@ object Form_UI: TForm_UI
       Caption = #20572#27490#20223#30495
       OnExecute = Action_StopSimulateExecute
     end
+    object Action_DataDisplay: TAction
+      Caption = #24339#32593#27979#35797#25968#25454
+      OnExecute = Action_DataDisplayExecute
+    end
   end
   object dxBarManager: TdxBarManager
     Font.Charset = DEFAULT_CHARSET
@@ -1351,7 +1662,7 @@ object Form_UI: TForm_UI
     object ManagerBar_System: TdxBar
       Caption = #31995#32479#25805#20316
       CaptionButtons = <>
-      DockedLeft = 753
+      DockedLeft = 841
       DockedTop = 0
       FloatLeft = 1298
       FloatTop = 8
@@ -1512,6 +1823,10 @@ object Form_UI: TForm_UI
       ItemLinks = <
         item
           Visible = True
+          ItemName = 'LargeButton_Data'
+        end
+        item
+          Visible = True
           ItemName = 'LargeButton_Conductor'
         end
         item
@@ -1543,7 +1858,7 @@ object Form_UI: TForm_UI
     object ManagerBar_Simulation: TdxBar
       Caption = #20223#30495#35774#32622
       CaptionButtons = <>
-      DockedLeft = 616
+      DockedLeft = 704
       DockedTop = 0
       FloatLeft = 1384
       FloatTop = 8
@@ -2688,6 +3003,39 @@ object Form_UI: TForm_UI
         5D27F563A9F825622380E7099970108260845180FFEECA267160FF3188498BFD
         37F99759150253FACD0000000049454E44AE426082}
     end
+    object LargeButton_Data: TdxBarLargeButton
+      Action = Action_DataDisplay
+      Category = 0
+      HotGlyph.SourceDPI = 96
+      HotGlyph.Data = {
+        3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D225554
+        462D38223F3E0D0A3C7376672076657273696F6E3D22312E31222069643D22D0
+        A1D0BBD0BED0B95F312220786D6C6E733D22687474703A2F2F7777772E77332E
+        6F72672F323030302F7376672220786D6C6E733A786C696E6B3D22687474703A
+        2F2F7777772E77332E6F72672F313939392F786C696E6B2220783D2230707822
+        20793D22307078222076696577426F783D223020302033322033322220737479
+        6C653D22656E61626C652D6261636B67726F756E643A6E657720302030203332
+        2033323B2220786D6C3A73706163653D227072657365727665223E262331333B
+        262331303B093C7374796C6520747970653D22746578742F6373732220786D6C
+        3A73706163653D227072657365727665223E2E57686974657B66696C6C3A2346
+        46464646463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C
+        3A233732373237323B7D262331333B262331303B2623393B2E426C75657B6669
+        6C6C3A233131373744373B7D3C2F7374796C653E0D0A093C7265637420793D22
+        322220636C6173733D22426C61636B222077696474683D223332222068656967
+        68743D223238222F3E0D0A093C673E0D0A09093C7265637420783D2232222079
+        3D22362220636C6173733D225768697465222077696474683D22313022206865
+        696768743D223232222F3E0D0A09093C7265637420783D2231342220793D2236
+        2220636C6173733D225768697465222077696474683D22313622206865696768
+        743D223232222F3E0D0A093C2F673E0D0A093C673E0D0A09093C726563742078
+        3D2231362220793D2231302220636C6173733D22426C7565222077696474683D
+        22313222206865696768743D2232222F3E0D0A09093C7265637420783D223136
+        2220793D2231342220636C6173733D22426C7565222077696474683D22313222
+        206865696768743D2232222F3E0D0A09093C7265637420783D2231362220793D
+        2231382220636C6173733D22426C7565222077696474683D2231322220686569
+        6768743D2232222F3E0D0A09093C7265637420783D2231362220793D22323222
+        20636C6173733D22426C7565222077696474683D22313222206865696768743D
+        2232222F3E0D0A093C2F673E0D0A3C2F7376673E0D0A}
+    end
   end
   object OpenDialog: TOpenDialog
     Left = 864
@@ -2702,35 +3050,21 @@ object Form_UI: TForm_UI
     Left = 968
   end
   object IdUDPServer_Hv: TIdUDPServer
-    Active = True
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1025
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_HvUDPRead
     Left = 1064
   end
   object IdUDPServer_Lv: TIdUDPServer
-    Active = True
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1026
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_LvUDPRead
     Left = 1064
     Top = 48
   end
   object IdUDPServer_Acying: TIdUDPServer
-    Bindings = <
-      item
-        IP = '10.10.10.11'
-        Port = 1027
-      end>
-    DefaultPort = 1025
+    Bindings = <>
+    DefaultPort = 0
     OnUDPRead = IdUDPServer_AcyingUDPRead
     Left = 1064
     Top = 96

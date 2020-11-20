@@ -281,6 +281,20 @@ type
     MenuItem_StopSimulate: TMenuItem;
     Action_StartSimulate: TAction;
     Action_StopSimulate: TAction;
+    LargeButton_Data: TdxBarLargeButton;
+    MenuItem_Data: TMenuItem;
+    TabSheet_Data: TRzTabSheet;
+    Chart_Data: TChart;
+    FastLineSeries_Line1Height: TFastLineSeries;
+    FastLineSeries_Line1Width: TFastLineSeries;
+    FastLineSeries_Vacc1: TFastLineSeries;
+    FastLineSeries_Vacc2: TFastLineSeries;
+    FastLineSeries_Force: TFastLineSeries;
+    PointSeries_AcyingCountData: TPointSeries;
+    PointSeries_AcyingTimeData: TPointSeries;
+    FastLineSeries_ElectricValue: TFastLineSeries;
+    PointSeries_ElectricTimeData: TPointSeries;
+    Action_DataDisplay: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -316,10 +330,11 @@ type
     procedure Action_StopPlaybackExecute(Sender: TObject);
     procedure Action_StartSimulateExecute(Sender: TObject);
     procedure Action_StopSimulateExecute(Sender: TObject);
+    procedure Action_DataDisplayExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
-    LineName, TCPIP, HvUDPIP, HvUDPPort, LvUDPIP, LvUDPPort, AcyingUDPIP, AcyingUDPPort: string;
+    LineName, TCPIP, HvUDPIP, HvUDPPort, LvUDPIP, LvUDPPort, AcyingUDPIP, AcyingUDPPort, ComputerIP, ComputerPort: string;
     IsDebug: Byte;
 
     FGlobalpara: TGlobalpara;
@@ -357,6 +372,8 @@ type
     GSpeed: Double;
     GKilometer: Single;
 
+    Counts_Package, Counts_Save, Counts_Number: Integer;   //包号测试，这三个变量在程序中无任何实际意义，但是存在的意义是为了测试是否丢失数据
+
 //    CS: TRTLCriticalSection;
 
     tempData_2D: TData_2D;
@@ -380,6 +397,8 @@ type
 
     DrawData: array [0..25, 0..4999] of Single;   //绘图数据数组
 
+    Direction_Sensor: Byte;
+    Value_Quality, Value_StandradElectricity: Single;
     calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6: Single;
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;
     array_CalForce: array of Single;
@@ -449,10 +468,10 @@ var
   Form_UI: TForm_UI;
 
   const
-    ESV = 5.0;   //电流标准值
     Distance_Pluse = 13;   //一个脉冲距离13mm
     Number_Draw = 5000;   //绘图的点数
     Number_Cal = 200;     //一次性计算的点数
+    G = 9.8;              //重力加速度
 
 implementation
 
@@ -584,6 +603,8 @@ begin
         Dispose(TempDataAcying);
         array_DataDeal[I].AcyingData := TempDataOAcying;
 
+        Form_UI.Counts_Number := Form_UI.Counts_Number + 1;
+
         //原始数据存储
         if Form_UI.IsSave then
         begin
@@ -701,6 +722,13 @@ begin
         array_DataDealing[I].TempLv.Status1 := array_DataDeal[I].OLvData.OLv[50];
 
         array_DataDealing[I].TempLv.Status2 := array_DataDeal[I].OLvData.OLv[51];
+
+        //用低压包号赋值包号测试
+        TempInteger[0] := array_DataDeal[I].OLvData.OLv[40];
+        TempInteger[1] := array_DataDeal[I].OLvData.OLv[41];
+        TempInteger[2] := array_DataDeal[I].OLvData.OLv[42];
+        TempInteger[3] := array_DataDeal[I].OLvData.OLv[43];
+        Form_UI.Counts_Package := Integer(TempInteger);
 
         //燃弧结构体赋值
         TempWord[0] := array_DataDeal[I].AcyingData.Acying[3];
@@ -842,7 +870,7 @@ begin
         array_ResultDeal[I].DWDGC_value := 0;
 
         //硬点赋值
-        array_ResultDeal[I].YD1_value := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);   //第二个参数是质量
+        array_ResultDeal[I].YD1_value := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);   //第二个参数是灵敏度系数
         array_ResultDeal[I].YD2_value := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 1);
         array_CalibResultDeal[I].HardSpot1 := Form_UI.CalYD(Form_UI.vector_HardSpot1[I], 1);
         array_CalibResultDeal[I].HardSpot2 := Form_UI.CalYD(Form_UI.vector_HardSpot2[I], 1);
@@ -856,7 +884,10 @@ begin
         array_CalibResultDeal[I].Power2 := Form_UI.CalJCL(Form_UI.vector_Power2[I], 1);
         array_CalibResultDeal[I].Power3 := Form_UI.CalJCL(Form_UI.vector_Power3[I], 1);
         array_CalibResultDeal[I].Power4 := Form_UI.CalJCL(Form_UI.vector_Power4[I], 1);
-        array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - array_CalibResultDeal[I].HardSpot3 - array_CalibResultDeal[I].HardSpot6 - 0;   //0暂时为重力
+
+        if Form_UI.Direction_Sensor = 1 then array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 + Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2
+        else array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2;
+
         array_ResultDeal[I].JCL_mean := 0;
         array_ResultDeal[I].JCL_max := 0;
         array_ResultDeal[I].JCL_min := 0;
@@ -1000,7 +1031,7 @@ begin
             Form_UI.IsGJD := True;
             Form_UI.poleCounts := 0;
             endRecordKm := tempKm;
-            if Abs(endRecordKm - startRecordKm) > 5 then
+            if Abs(endRecordKm - startRecordKm) > 0.005 then
             begin
               Form_UI.calHCounts := Form_UI.calHCounts + 1;
               SetLength(temp_DGBHL_value, Form_UI.calHCounts);
@@ -1047,7 +1078,7 @@ begin
           array_PlusResult[Form_UI.calingCounts - 1].DL_value := Form_UI.CalMean(temp_arrayDL) - Form_UI.calibrate_Electricity;
           array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC3;
           array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC6;
-          if array_PlusResult[Form_UI.calingCounts - 1].DL_value > ESV * 0.3 then
+          if array_PlusResult[Form_UI.calingCounts - 1].DL_value > Form_UI.Value_StandradElectricity * 0.3 then
           begin
             if Form_UI.IsJCDL then
             begin
@@ -1114,7 +1145,9 @@ begin
               (Form_UI.YD1 = 0) and (Form_UI.YD2 = 0) and (Form_UI.YD3 = 0) and (Form_UI.YD4 = 0) and (Form_UI.YD5 = 0) and (Form_UI.YD6 = 0) and
               (Form_UI.Calib_DY = 0) and  (Form_UI.JCL = 0) then
               begin
-                Form_UI.Calibrate_Force := Form_UI.YL1 + Form_UI.YL2 + Form_UI.YL3 + Form_UI.YL4 - Form_UI.YD3 - Form_UI.YD6 - 0;
+                if Form_UI.Direction_Sensor = 1 then Form_UI.Calibrate_Force := Form_UI.YL1 + Form_UI.YL2 + Form_UI.YL3 + Form_UI.YL4 + Form_UI.Value_Quality * (Form_UI.YD3 + Form_UI.YD6) / 2 - Form_UI.Value_Quality * G
+                else Form_UI.Calibrate_Force := Form_UI.YL1 + Form_UI.YL2 + Form_UI.YL3 + Form_UI.YL4 - Form_UI.Value_Quality * (Form_UI.YD3 + Form_UI.YD6) / 2 - Form_UI.Value_Quality * G;
+
                 Form_UI.Calibrate_Electricity := Form_UI.Calib_DY;
                 Form_UI.Calibrate_Power1 := Form_UI.YL1;
                 Form_UI.Calibrate_Power2 := Form_UI.YL2;
@@ -1353,6 +1386,11 @@ begin
   RzPageControl.ActivePage := TabSheet_Conductor;
 end;
 
+procedure TForm_UI.Action_DataDisplayExecute(Sender: TObject);
+begin
+  RzPageControl.ActivePage := TabSheet_Data;
+end;
+
 procedure TForm_UI.Action_ElectricDisplayExecute(Sender: TObject);
 begin
   RzPageControl.ActivePage := TabSheet_Electric;
@@ -1435,8 +1473,18 @@ begin
 
           if not IsRun then
           begin
+            Counts_Package := 0;
+            Counts_Save := 0;
+            Counts_Number := 0;
             StartMs := GetTickCount;
             startTime := FormatDateTime('yymmddhhnnss', Now);
+            Data2DCache.clear;
+            HvUDPCache.clear;
+            LvUDPCache.clear;
+            AcyingCache.clear;
+            DrawCache.clear;
+            OriginalCache.clear;
+            ResultCache.clear;
             ResumeThread(PSaveThread);
             ResumeThread(PProcessThread);
             FDrawThread.Resume;
@@ -1504,10 +1552,20 @@ begin
           begin
             StartMs := GetTickCount;
             startTime := FormatDateTime('yymmddhhnnss', Now);
+            Data2DCache.clear;
+            HvUDPCache.clear;
+            LvUDPCache.clear;
+            AcyingCache.clear;
+            DrawCache.clear;
+            OriginalCache.clear;
+            ResultCache.clear;
             ResumeThread(PSaveThread);
             ResumeThread(PProcessThread);
             FDrawThread.Resume;
             IsRun := True;
+            Counts_Package := 0;
+            Counts_Save := 0;
+            Counts_Number := 0;
             UDPStartSimulate;
             IdUDPServer_Acying.Active := True;
             dxRibbonStatusBar.Panels[0].Text := '正在采集。';
@@ -1549,7 +1607,6 @@ begin
     UDPStopCollect;
     IdUDPServer_Acying.Active := False;
 
-    SuspendThread(Form_UI.PSaveThread);
     SuspendThread(Form_UI.PProcessThread);
     FDrawThread.Suspend;
 
@@ -1557,14 +1614,6 @@ begin
     IsSave := False;
     dxRibbonStatusBar.Panels[0].Text := '已停止采集。';
     dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
-
-    Data2DCache.clear;
-    HvUDPCache.clear;
-    LvUDPCache.clear;
-    AcyingCache.clear;
-    DrawCache.clear;
-    OriginalCache.clear;
-    ResultCache.clear;
 
     //为下次开始做准备
     IsFirstCal := True;
@@ -1597,6 +1646,7 @@ begin
         DrawData[I][J] := 0;
       end;
     end;
+    SuspendThread(Form_UI.PSaveThread);
 
     Close2D;
     dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
@@ -1605,7 +1655,6 @@ end;
 
 procedure TForm_UI.Action_StopPlaybackExecute(Sender: TObject);
 begin
-  SuspendThread(PSaveThread);
   SuspendThread(PProcessThread);
   FDrawThread.Suspend;
   IsFirstCalibrate := False;
@@ -1614,6 +1663,7 @@ begin
   LargeButton_Pause.Enabled := True;
   LargeButton_StartCollect.Enabled := True;
   LargeButton_StopCollect.Enabled := True;
+  SuspendThread(PSaveThread);
 end;
 
 procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
@@ -1621,8 +1671,6 @@ begin
   if IsSave then
   begin
     IsSave := False;
-    OriginalCache.clear;
-    ResultCache.clear;
     dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
     StopSaveOriginalData;
     StopSaveResultData;
@@ -1639,15 +1687,7 @@ begin
     UDPStopSimulate;
     IdUDPServer_Acying.Active := False;
 
-    Data2DCache.clear;
-    HvUDPCache.clear;
-    LvUDPCache.clear;
-    AcyingCache.clear;
-    DrawCache.clear;
-    OriginalCache.clear;
-    ResultCache.clear;
 
-    SuspendThread(PSaveThread);
     SuspendThread(PProcessThread);
     FDrawThread.Suspend;
 
@@ -1687,6 +1727,7 @@ begin
         DrawData[I][J] := 0;
       end;
     end;
+    SuspendThread(PSaveThread);
 
     Close2D;
     dxRibbonStatusBar.Panels[3].Text := '2D传感器已停止工作。';
@@ -1742,7 +1783,7 @@ var
   J: Word;
 //  Test: array of Single;
 begin
-  RzPageControl.ActivePage := TabSheet_Conductor;
+  RzPageControl.ActivePage := TabSheet_Data;
 
   //关联相应地址
   ErrorLogPath := ExtractFilePath(Application.ExeName)  + Ansistring('ErrorLog\ErrorLog.txt');
@@ -1765,10 +1806,6 @@ begin
 
   InitFolder;
   InitConfigurationFile;
-
-  IdUDPServer_Hv.DefaultPort := StrToInt(HvUDPPort);
-  IdUDPServer_Lv.DefaultPort := StrToInt(LvUDPPort);
-  IdUDPServer_Acying.DefaultPort := StrToInt(AcyingUDPPort);
 
   FGlobalpara.DataSelfDelete(SavedOriginalDataPath, 20.0);    //数据自删减，如果路径是不存在的路径是不会出错的
   FGlobalpara.DataSelfDelete(SavedResultDataPath, 20.0);    //数据自删减
@@ -1862,6 +1899,9 @@ begin
   calMaoCounts := 0;
   poleCounts := 0;
   paintCounts := 0;
+  Counts_Package := 0;
+  Counts_Save := 0;
+  Counts_Number := 0;
 
   JCL := 0;
   Calib_DY := 0;
@@ -1968,6 +2008,14 @@ end;
 
 procedure TForm_UI.TimerTimer(Sender: TObject);
 begin
+  //下面三句代码无意义，仅做测试用
+  Counts_Package := Counts_Package;
+  Counts_Save := Counts_Save;
+  Counts_Number := Counts_Number;
+
+  if IsRun then Form_Sensor.Button_Comfirm.Enabled := False
+  else Form_Sensor.Button_Comfirm.Enabled := True;
+
   dxRibbonStatusBar.Panels[5].Text := '公里标：' + Formatfloat('0.000', GKilometer) + 'km   速度：' + Formatfloat('0.000', GSpeed) + 'km/h';
   dxRibbonStatusBar.Panels[6].Text := FormatDateTime('yyyy年mm月dd日 hh:nn:ss', Now);
 end;
@@ -2002,12 +2050,21 @@ begin
 
       Writeln(ConfigurationTextFile, '[传感器设置]');
       Writeln(ConfigurationTextFile, '2DIP = 10.10.10.100');
-      Writeln(ConfigurationTextFile, 'HvUDPIP = 10.10.10.2');
+      Writeln(ConfigurationTextFile, 'HvUDPIP = 10.10.10.3');
       Writeln(ConfigurationTextFile, 'HvUDPPort = 1025');
-      Writeln(ConfigurationTextFile, 'LvUDPIP = 10.10.10.3');
-      Writeln(ConfigurationTextFile, 'LvUDPPort = 1025');
+      Writeln(ConfigurationTextFile, 'LvUDPIP = 10.10.10.2');
+      Writeln(ConfigurationTextFile, 'LvUDPPort = 1026');
       Writeln(ConfigurationTextFile, 'AcyingUDPIP = 10.10.10.4');
-      Writeln(ConfigurationTextFile, 'AcyingUDPPort = 1025');
+      Writeln(ConfigurationTextFile, 'AcyingUDPPort = 1027');
+      Writeln(ConfigurationTextFile, 'ComputerIP = 10.10.10.11');
+      Writeln(ConfigurationTextFile, 'ComputerPort = 1025');
+      Writeln(ConfigurationTextFile, 'ComputerPort = 1025');
+      Writeln(ConfigurationTextFile, 'Direction = 1');
+      Writeln(ConfigurationTextFile, '');
+
+      Writeln(ConfigurationTextFile, '[参数设置]');
+      Writeln(ConfigurationTextFile, '弓网质量 = 0');
+      Writeln(ConfigurationTextFile, '电流标准值 = 0');
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[标定]');
@@ -2027,7 +2084,7 @@ begin
 
       Writeln(ConfigurationTextFile, '[调试]');
       Writeln(ConfigurationTextFile, '调试 = 0');
-      Writeln(ConfigurationTextFile, '绘图点数 = 50');
+      Writeln(ConfigurationTextFile, '绘图点数 = 100');
       Writeln(ConfigurationTextFile, '计算点数 = 100');
       Writeln(ConfigurationTextFile, '');
 
@@ -2039,12 +2096,18 @@ begin
     LineName := IniFile.ReadString('基础设置', '线路名称', '未知线路');
 
     TCPIP := IniFile.ReadString('传感器设置', '2DIP', '10.10.10.100');
-    HvUDPIP := IniFile.ReadString('传感器设置', 'HvUDPIP', '10.10.10.2');
+    HvUDPIP := IniFile.ReadString('传感器设置', 'HvUDPIP', '10.10.10.3');
     HvUDPPort := IniFile.ReadString('传感器设置', 'HvUDPPort', '1025');
-    LvUDPIP := IniFile.ReadString('传感器设置', 'LvUDPIP', '10.10.10.3');
-    LvUDPPort := IniFile.ReadString('传感器设置', 'LvUDPPort', '1025');
+    LvUDPIP := IniFile.ReadString('传感器设置', 'LvUDPIP', '10.10.10.2');
+    LvUDPPort := IniFile.ReadString('传感器设置', 'LvUDPPort', '1026');
     AcyingUDPIP := IniFile.ReadString('传感器设置', 'AcyingUDPIP', '10.10.10.4');
-    AcyingUDPPort := IniFile.ReadString('传感器设置', 'AcyingUDPPort', '1025');
+    AcyingUDPPort := IniFile.ReadString('传感器设置', 'AcyingUDPPort', '1027');
+    ComputerIP := IniFile.ReadString('传感器设置', 'ComputerIP', '10.10.10.11');
+    ComputerPort := IniFile.ReadString('传感器设置', 'ComputerPort', '1025');
+    Direction_Sensor := IniFile.ReadInteger('传感器设置', 'Direction', 1);
+
+    Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 0);
+    Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 0);
 
     Calibrate_Force := IniFile.ReadFloat('标定', 'Force', 0);
     Calibrate_Electricity := IniFile.ReadFloat('标定', 'Electricity', 0);
@@ -2063,7 +2126,12 @@ begin
     drawThreshold := IniFile.ReadInteger('调试', '绘图点数', 50);
     calCounts := IniFile.ReadInteger('调试', '计算点数', 100);
     SetLength(array_CalForce, calCounts);
-//    IdUDPServer_Hv.Binding.PeerIP := TCPIP;
+
+    IdUDPServer_Hv.DefaultPort := StrToInt(HvUDPPort);
+    IdUDPServer_Hv.Active := True;
+    IdUDPServer_Lv.DefaultPort := StrToInt(LvUDPPort);
+    IdUDPServer_Lv.Active := True;
+    IdUDPServer_Acying.DefaultPort := StrToInt(AcyingUDPPort);
 
     IniFile.Free;
 
@@ -2087,7 +2155,6 @@ begin
       MenuItem_LineAndSensor.Visible := False;
       MenuItem_Playback.Visible := False;
     end;
-
   except
     On E : Exception Do
     begin
@@ -2152,6 +2219,24 @@ begin
     end;
   end;
   Form_Sensor.Edit_UDPAcyingPort.Text := AcyingUDPPort;
+
+  division := ComputerIP.Split(['.']);
+  for i := 0 to 3 do
+  begin
+    case i of
+      0: Form_Sensor.Edit_ComputerIP1.Text := division[i];
+      1: Form_Sensor.Edit_ComputerIP2.Text := division[i];
+      2: Form_Sensor.Edit_ComputerIP3.Text := division[i];
+      3: Form_Sensor.Edit_ComputerIP4.Text := division[i];
+    end;
+  end;
+  Form_Sensor.Edit_ComputerPort.Text := ComputerPort;
+
+  if Direction_Sensor = 1 then Form_Sensor.RadioButton_Zheng.Checked := True
+  else Form_Sensor.RadioButton_Fu.Checked := True;
+
+  Form_Sensor.Edit_Quality.Text := FloatToStr(Value_Quality);
+  Form_Sensor.Edit_ElectrycityValue.Text := FloatToStr(Value_StandradElectricity);
 
   Form_Sensor.Edit_DrawCounts.Text := IntToStr(drawThreshold);
   Form_Sensor.Edit_CalCounts.Text := IntToStr(calCounts);
@@ -2459,6 +2544,7 @@ begin
     AcyingCache.Push(TempDataAcying);
 
     InputDataSize := InputDataSize + SizeOf(Record_SaveOriginal);
+    Counts_Save := Counts_Save + 1;
   end;
   dxRibbonStatusBar.Panels[1].Text := '数据读取完毕，可以开始回放。';
   FileStream.Free;

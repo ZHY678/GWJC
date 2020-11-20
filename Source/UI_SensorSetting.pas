@@ -81,6 +81,25 @@ type
     Label_ACC3: TLabel;
     Edit_CalCounts: TEdit;
     Label_CalCounts: TLabel;
+    GroupBox_Computer: TGroupBox;
+    Label_ComputerIP1: TLabel;
+    Label_ComputerIP2: TLabel;
+    Label_ComputerIP3: TLabel;
+    Label_ComputerIP4: TLabel;
+    Label_ComputerIPort: TLabel;
+    Edit_ComputerIP1: TEdit;
+    Edit_ComputerIP2: TEdit;
+    Edit_ComputerIP3: TEdit;
+    Edit_ComputerIP4: TEdit;
+    Edit_ComputerPort: TEdit;
+    GroupBox_Parameter: TGroupBox;
+    Label_Quality: TLabel;
+    Label_ElectricityValue: TLabel;
+    Edit_Quality: TEdit;
+    Edit_ElectrycityValue: TEdit;
+    GroupBox_Sensor: TGroupBox;
+    RadioButton_Zheng: TRadioButton;
+    RadioButton_Fu: TRadioButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure Button_ComfirmClick(Sender: TObject);
@@ -112,7 +131,10 @@ begin
   (FGlobalpara.IsNumberType(Edit_UDPLvIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPLvIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPLvPort.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_UDPAcyingIP1.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingIP2.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_UDPAcyingIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_UDPAcyingPort.Text) = 1) and
-  (FGlobalpara.IsNumberType(Edit_DrawCounts.Text) = 1) and (FGlobalpara.IsNumberType(Edit_CalCounts.Text) = 1) then
+  (FGlobalpara.IsNumberType(Edit_DrawCounts.Text) = 1) and (FGlobalpara.IsNumberType(Edit_CalCounts.Text) = 1) and
+  (FGlobalpara.IsNumberType(Edit_ComputerIP1.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerIP2.Text) = 1) and
+  (FGlobalpara.IsNumberType(Edit_ComputerIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerPort.Text) = 1) and
+  (FGlobalpara.IsNumberType(Edit_Quality.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_ElectrycityValue.Text) <> 0) then
   begin
     if (StrToInt(Edit_IP1.Text) <= 255) and (StrToInt(Edit_IP2.Text) <= 255) and (StrToInt(Edit_IP3.Text) <= 255) and
     (StrToInt(Edit_IP4.Text) <= 255) and (StrToInt(Edit_UDPHvIP1.Text) <= 255) and (StrToInt(Edit_UDPHvIP2.Text) <= 255) and
@@ -128,7 +150,12 @@ begin
     (StrToInt(Edit_UDPAcyingIP3.Text) <= 255) and (StrToInt(Edit_UDPAcyingIP4.Text) <= 255) and (StrToInt(Edit_UDPAcyingPort.Text) < 65536) and
     (StrToInt(Edit_UDPAcyingIP1.Text) >= 0) and (StrToInt(Edit_UDPAcyingIP2.Text) >= 0) and
     (StrToInt(Edit_UDPAcyingIP3.Text) >= 0) and (StrToInt(Edit_UDPAcyingIP4.Text) >= 0) and (StrToInt(Edit_UDPAcyingPort.Text) >= 0) and
-    (StrToInt(Edit_DrawCounts.Text) >= 10) and (StrToInt(Edit_CalCounts.Text) >= 50) then
+    (StrToInt(Edit_DrawCounts.Text) >= 50) and (StrToInt(Edit_CalCounts.Text) >= 50) and
+    (StrToInt(Edit_ComputerIP1.Text) <= 255) and (StrToInt(Edit_ComputerIP2.Text) <= 255) and
+    (StrToInt(Edit_ComputerIP3.Text) <= 255) and (StrToInt(Edit_ComputerIP4.Text) <= 255) and (StrToInt(Edit_ComputerPort.Text) < 65536) and
+    (StrToInt(Edit_ComputerIP1.Text) >= 0) and (StrToInt(Edit_ComputerIP2.Text) >= 0) and
+    (StrToInt(Edit_ComputerIP3.Text) >= 0) and (StrToInt(Edit_ComputerIP4.Text) >= 0) and (StrToInt(Edit_ComputerPort.Text) >= 0) and
+    (StrToFloat(Edit_Quality.Text) >= 0) and (StrToFloat(Edit_ElectrycityValue.Text) >= 0) then
     begin
       if FileExists(Form_UI.ConfigurationFilePath) then
       begin
@@ -144,6 +171,14 @@ begin
           Inifile.WriteString('传感器设置', 'AcyingUDPPort',  Edit_UDPAcyingPort.Text);
           Inifile.WriteString('调试', '绘图点数',  Edit_DrawCounts.Text);
           Inifile.WriteString('调试', '计算点数',  Edit_CalCounts.Text);
+          Inifile.WriteString('传感器设置', 'ComputerIP',  Edit_ComputerIP1.Text + '.' + Edit_ComputerIP2.Text + '.' + Edit_ComputerIP3.Text + '.' + Edit_ComputerIP4.Text);
+          Inifile.WriteString('传感器设置', 'ComputerPort',  Edit_ComputerPort.Text);
+          Inifile.WriteString('参数设置', '弓网质量',  Edit_Quality.Text);
+          Inifile.WriteString('参数设置', '电流标准值',  Edit_ElectrycityValue.Text);
+
+          if RadioButton_Zheng.Checked then Inifile.WriteString('传感器设置', 'Direction',  '1')
+          else Inifile.WriteString('传感器设置', 'Direction',  '0');
+
           IniFile.Free;
           MessageBox(Handle, '设置已恢复。', '传感器设置', MB_OK + MB_ICONQUESTION);
           Close;
@@ -155,7 +190,7 @@ begin
     end
     else MessageBox(Handle, '输入的参数长度不符合要求，请检查。', '传感器设置', MB_OK);
   end
-  else MessageBox(Handle, '输入的参数不为整数，请检查。', '传感器设置', MB_OK);
+  else MessageBox(Handle, '输入的某些参数不规范，请检查。', '传感器设置', MB_OK);
 end;
 
 procedure TForm_Sensor.FormClose(Sender: TObject; var Action: TCloseAction);
