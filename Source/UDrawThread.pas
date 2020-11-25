@@ -95,6 +95,7 @@ begin
         Form_UI.DrawData[23][I + Form_UI.paintCounts] := TempRData.RH_time;
         Form_UI.DrawData[24][I + Form_UI.paintCounts] := TempRData.RH_numb;
         Form_UI.DrawData[25][I + Form_UI.paintCounts] := TempRData.mykilo;
+        Form_UI.DrawData[26][I + Form_UI.paintCounts] := TempRData.mark;
       end;
       Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
     end
@@ -128,6 +129,7 @@ begin
         Form_UI.DrawData[23][I] := Form_UI.DrawData[23][I + Form_UI.paintCounts + Form_UI.drawThreshold - Number_Draw];
         Form_UI.DrawData[24][I] := Form_UI.DrawData[24][I + Form_UI.paintCounts + Form_UI.drawThreshold - Number_Draw];
         Form_UI.DrawData[25][I] := Form_UI.DrawData[25][I + Form_UI.paintCounts + Form_UI.drawThreshold - Number_Draw];
+        Form_UI.DrawData[26][I] := Form_UI.DrawData[26][I + Form_UI.paintCounts + Form_UI.drawThreshold - Number_Draw];
       end;
 
       for I := Number_Draw - 1 - Form_UI.drawThreshold to Number_Draw - 1 do
@@ -162,6 +164,7 @@ begin
         Form_UI.DrawData[23][I] := TempRData.RH_time;
         Form_UI.DrawData[24][I] := TempRData.RH_numb;
         Form_UI.DrawData[25][I] := TempRData.mykilo;
+        Form_UI.DrawData[26][I] := TempRData.mark;
       end;
     end;
 
@@ -482,6 +485,7 @@ begin
       SetLength(tmp7ChartValues, Form_UI.paintCounts);
       SetLength(tmp8ChartValues, Form_UI.paintCounts);
       SetLength(tmp9ChartValues, Form_UI.paintCounts);
+      SetLength(tmp10ChartValues, Form_UI.paintCounts);
 
       for I := 0 to Form_UI.paintCounts - 1 do
       begin
@@ -494,6 +498,8 @@ begin
         tmp7ChartValues[I] := Form_UI.DrawData[23][I];
         tmp8ChartValues[I] := Form_UI.DrawData[21][I];
         tmp9ChartValues[I] := Form_UI.DrawData[22][I];
+        if Form_UI.DrawData[26][I] = 4 then tmp10ChartValues[I] := 1
+        else tmp10ChartValues[I] := 0;
       end;
 
       Form_UI.FastLineSeries_Line1Height.XValues.Value := tmp0ChartValues;
@@ -558,6 +564,13 @@ begin
       Form_UI.PointSeries_ElectricTimeData.YValues.Value := tmp9ChartValues;
       Form_UI.PointSeries_ElectricTimeData.YValues.Count := Form_UI.paintCounts;
       Form_UI.PointSeries_ElectricTimeData.YValues.Modified := True;
+
+      Form_UI.FastLineSeries_Pole.XValues.Value := tmp0ChartValues;
+      Form_UI.FastLineSeries_Pole.XValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Pole.XValues.Modified := True;
+      Form_UI.FastLineSeries_Pole.YValues.Value := tmp10ChartValues;
+      Form_UI.FastLineSeries_Pole.YValues.Count := Form_UI.paintCounts;
+      Form_UI.FastLineSeries_Pole.YValues.Modified := True;
 
       Form_UI.FastLineSeries_Line1Height.Repaint;
     end;

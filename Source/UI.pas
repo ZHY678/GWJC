@@ -97,6 +97,7 @@ type
   end;
 
   Record_SaveOriginal = record
+    Distance_Init: Double;
     Om_data: JCWJH;
     OHvData: TRecord_OriginalHv;
     OLvData: TRecord_OriginalLv;
@@ -295,6 +296,7 @@ type
     FastLineSeries_ElectricValue: TFastLineSeries;
     PointSeries_ElectricTimeData: TPointSeries;
     Action_DataDisplay: TAction;
+    FastLineSeries_Pole: TFastLineSeries;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -395,12 +397,13 @@ type
     time_Electricity: Single;   //电流大于标准值百分之30开始时间
     time_CalSpeed: Single;
 
-    DrawData: array [0..25, 0..4999] of Single;   //绘图数据数组
+    DrawData: array [0..26, 0..4999] of Single;   //绘图数据数组
 
-    Direction_Sensor: Byte;
-    Value_Quality, Value_StandradElectricity: Single;
+    Direction_Sensor, IsCompensate: Byte;   //传感器方向和是否补偿
+    Value_Quality, Value_StandradElectricity: Single;   //弓网质量和电流标准值
     calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6: Single;
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;
+    calibrate_DGZ, calibrate_LCZ: Single;
     array_CalForce: array of Single;
 
     //滤波器所要的vector数组
@@ -583,6 +586,8 @@ begin
     begin
       for I := 0 to Number_Cal - 1 do
       begin
+        array_DataDeal[I].Distance_Init := Form_LineSetting.kilometer;
+
         TempData2D := Form_UI.Data2DCache.Pop;
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
@@ -644,28 +649,57 @@ begin
         array_DataDealing[I].TempJCWJH := array_DataDeal[I].Om_data;
 
         //2D数据错误值取前一个值
-        for J := 0 to 3 do
+        if Form_UI.IsCompensate = 0 then
         begin
-          if array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x = 65536 then
+          for J := 0 to 3 do
           begin
-            if Form_UI.temp_X[J] <> 65537 then
+            if array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x = 65536 then
             begin
-              array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := Form_UI.temp_X[J];
+              if Form_UI.temp_X[J] <> 65537 then
+              begin
+                array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := Form_UI.temp_X[J];
+              end
+              else array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := 0;
             end
-            else array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x := 0;
-          end
-          else Form_UI.temp_X[J] := array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x;
+            else Form_UI.temp_X[J] := array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.x;
 
-          if array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y = 65536 then
-          begin
-            if Form_UI.temp_Y[J] <> 65537 then
+            if array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y = 65536 then
             begin
-              array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := Form_UI.temp_Y[J];
+              if Form_UI.temp_Y[J] <> 65537 then
+              begin
+                array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := Form_UI.temp_Y[J];
+              end
+              else array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := 0;
             end
-            else array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y := 0;
-          end
-          else Form_UI.temp_Y[J] := array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y;
+            else Form_UI.temp_Y[J] := array_DataDealing[I].TempJCWJH.jcx[J].pntLinePos.y;
+          end;
+        end
+        else
+        begin
+          for J := 0 to 3 do
+          begin
+            if array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.x = 65536 then
+            begin
+              if Form_UI.temp_X[J] <> 65537 then
+              begin
+                array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.x := Form_UI.temp_X[J];
+              end
+              else array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.x := 0;
+            end
+            else Form_UI.temp_X[J] := array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.x;
+
+            if array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.y = 65536 then
+            begin
+              if Form_UI.temp_Y[J] <> 65537 then
+              begin
+                array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.y := Form_UI.temp_Y[J];
+              end
+              else array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.y := 0;
+            end
+            else Form_UI.temp_Y[J] := array_DataDealing[I].TempJCWJH.jcxComp[J].pntLinePos.y;
+          end;
         end;
+
 
         //高压结构体电压赋值
         TempWord[0] := array_DataDeal[I].OHvData.OHv[44];
@@ -797,93 +831,167 @@ begin
       for I := 0 to Number_Cal - 1 do
       begin
         //2D赋值
-        case array_DataDealing[I].TempJCWJH.uiLineNum of
-          0:
-          begin
-            array_ResultDeal[I].LCZ11_value := 0;
-            array_ResultDeal[I].LCZ12_value := 0;
-            array_ResultDeal[I].LCZSP1_value := 0;
-            array_ResultDeal[I].LCZ21_value := 0;
-            array_ResultDeal[I].LCZ22_value := 0;
-            array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := 0;
-            array_ResultDeal[I].DGZ12_value := 0;
-            array_ResultDeal[I].DGZ21_value := 0;
-            array_ResultDeal[I].DGZ22_value := 0;
+        if Form_UI.IsCompensate = 0 then
+        begin
+          case array_DataDealing[I].TempJCWJH.uiLineNum of
+            0:
+            begin
+              array_ResultDeal[I].LCZ11_value := 0;
+              array_ResultDeal[I].LCZ12_value := 0;
+              array_ResultDeal[I].LCZSP1_value := 0;
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := 0;
+              array_ResultDeal[I].DGZ12_value := 0;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            1:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := 0;
+              array_ResultDeal[I].LCZSP1_value := 0;
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := 0;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            2:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            3:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            4:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I] - Form_UI.calibrate_DGZ;
+            end;
           end;
-          1:
-          begin
-            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := 0;
-            array_ResultDeal[I].LCZSP1_value := 0;
-            array_ResultDeal[I].LCZ21_value := 0;
-            array_ResultDeal[I].LCZ22_value := 0;
-            array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := 0;
-            array_ResultDeal[I].DGZ21_value := 0;
-            array_ResultDeal[I].DGZ22_value := 0;
-          end;
-          2:
-          begin
-            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-            array_ResultDeal[I].LCZ21_value := 0;
-            array_ResultDeal[I].LCZ22_value := 0;
-            array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
-            array_ResultDeal[I].DGZ21_value := 0;
-            array_ResultDeal[I].DGZ22_value := 0;
-          end;
-          3:
-          begin
-            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-            array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I];
-            array_ResultDeal[I].LCZ22_value := 0;
-            array_ResultDeal[I].LCZSP2_value := 0;
-            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
-            array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I];
-            array_ResultDeal[I].DGZ22_value := 0;
-          end;
-          4:
-          begin
-            array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I];
-            array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I];
-            array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-            array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I];
-            array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I];
-            array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
-            array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I];
-            array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I];
-            array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I];
-            array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I];
+        end
+        else
+        begin
+          case array_DataDealing[I].TempJCWJH.uiLineCompsateNum of
+            0:
+            begin
+              array_ResultDeal[I].LCZ11_value := 0;
+              array_ResultDeal[I].LCZ12_value := 0;
+              array_ResultDeal[I].LCZSP1_value := 0;
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := 0;
+              array_ResultDeal[I].DGZ12_value := 0;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            1:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := 0;
+              array_ResultDeal[I].LCZSP1_value := 0;
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := 0;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            2:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := 0;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := 0;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            3:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := 0;
+              array_ResultDeal[I].LCZSP2_value := 0;
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := 0;
+            end;
+            4:
+            begin
+              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
+              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I] - Form_UI.calibrate_DGZ;
+            end;
           end;
         end;
+
         array_ResultDeal[I].SPJL_value := 0;
         array_ResultDeal[I].SPGC_value := 0;
         array_ResultDeal[I].DGBHL_value := 0;
         array_ResultDeal[I].DWDGC_value := 0;
 
         //硬点赋值
-        array_ResultDeal[I].YD1_value := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);   //第二个参数是灵敏度系数
-        array_ResultDeal[I].YD2_value := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 1);
-        array_CalibResultDeal[I].HardSpot1 := Form_UI.CalYD(Form_UI.vector_HardSpot1[I], 1);
-        array_CalibResultDeal[I].HardSpot2 := Form_UI.CalYD(Form_UI.vector_HardSpot2[I], 1);
-        array_CalibResultDeal[I].HardSpot3 := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 1);
-        array_CalibResultDeal[I].HardSpot4 := Form_UI.CalYD(Form_UI.vector_HardSpot4[I], 1);
-        array_CalibResultDeal[I].HardSpot5 := Form_UI.CalYD(Form_UI.vector_HardSpot5[I], 1);
-        array_CalibResultDeal[I].HardSpot6 := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 1);
+        array_ResultDeal[I].YD1_value := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 24);   //第二个参数是灵敏度系数
+        array_ResultDeal[I].YD2_value := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 24);
+        array_CalibResultDeal[I].HardSpot1 := Form_UI.CalYD(Form_UI.vector_HardSpot1[I], 24);
+        array_CalibResultDeal[I].HardSpot2 := Form_UI.CalYD(Form_UI.vector_HardSpot2[I], 24);
+        array_CalibResultDeal[I].HardSpot3 := Form_UI.CalYD(Form_UI.vector_HardSpot3[I], 24);
+        array_CalibResultDeal[I].HardSpot4 := Form_UI.CalYD(Form_UI.vector_HardSpot4[I], 24);
+        array_CalibResultDeal[I].HardSpot5 := Form_UI.CalYD(Form_UI.vector_HardSpot5[I], 24);
+        array_CalibResultDeal[I].HardSpot6 := Form_UI.CalYD(Form_UI.vector_HardSpot6[I], 24);
 
         //接触力赋值
-        array_CalibResultDeal[I].Power1 := Form_UI.CalJCL(Form_UI.vector_Power1[I], 1);
-        array_CalibResultDeal[I].Power2 := Form_UI.CalJCL(Form_UI.vector_Power2[I], 1);
-        array_CalibResultDeal[I].Power3 := Form_UI.CalJCL(Form_UI.vector_Power3[I], 1);
-        array_CalibResultDeal[I].Power4 := Form_UI.CalJCL(Form_UI.vector_Power4[I], 1);
+        array_CalibResultDeal[I].Power1 := Form_UI.CalJCL(Form_UI.vector_Power1[I], 2);
+        array_CalibResultDeal[I].Power2 := Form_UI.CalJCL(Form_UI.vector_Power2[I], 2);
+        array_CalibResultDeal[I].Power3 := Form_UI.CalJCL(Form_UI.vector_Power3[I], 2);
+        array_CalibResultDeal[I].Power4 := Form_UI.CalJCL(Form_UI.vector_Power4[I], 2);
 
         if Form_UI.Direction_Sensor = 1 then array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 + Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2
         else array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2;
@@ -1639,7 +1747,7 @@ begin
     end;
 
     //绘图数据数组初始化
-    for I := 0 to 25 do
+    for I := 0 to 26 do
     begin
       for J := 0 to 4999 do
       begin
@@ -1720,7 +1828,7 @@ begin
     end;
 
     //绘图数据数组初始化
-    for I := 0 to 25 do
+    for I := 0 to 26 do
     begin
       for J := 0 to 4999 do
       begin
@@ -1770,8 +1878,8 @@ end;
 
 procedure TForm_UI.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-//  if MessageBox(handle, '您确定要退出系统吗？', '信息提示', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then CanClose := True
-//  else CanClose := False;
+  if MessageBox(handle, '您确定要退出系统吗？', '信息提示', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then CanClose := True
+  else CanClose := False;
 end;
 
 procedure TForm_UI.FormCreate(Sender: TObject);
@@ -1926,7 +2034,7 @@ begin
   end;
 
   //绘图数据数组初始化
-  for I := 0 to 25 do
+  for I := 0 to 26 do
   begin
     for J := 0 to 4999 do
     begin
@@ -2063,6 +2171,7 @@ begin
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[参数设置]');
+      Writeln(ConfigurationTextFile, '是否补偿 = 0');
       Writeln(ConfigurationTextFile, '弓网质量 = 0');
       Writeln(ConfigurationTextFile, '电流标准值 = 0');
       Writeln(ConfigurationTextFile, '');
@@ -2080,6 +2189,8 @@ begin
       Writeln(ConfigurationTextFile, 'ACC4 = 0');
       Writeln(ConfigurationTextFile, 'ACC5 = 0');
       Writeln(ConfigurationTextFile, 'ACC6 = 0');
+      Writeln(ConfigurationTextFile, 'DGZ = 0');
+      Writeln(ConfigurationTextFile, 'LCZ = 0');
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[调试]');
@@ -2106,6 +2217,7 @@ begin
     ComputerPort := IniFile.ReadString('传感器设置', 'ComputerPort', '1025');
     Direction_Sensor := IniFile.ReadInteger('传感器设置', 'Direction', 1);
 
+    IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
     Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 0);
     Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 0);
 
@@ -2121,6 +2233,9 @@ begin
     Calibrate_ACC4 := IniFile.ReadFloat('标定', 'ACC4', 0);
     Calibrate_ACC5 := IniFile.ReadFloat('标定', 'ACC5', 0);
     Calibrate_ACC6 := IniFile.ReadFloat('标定', 'ACC6', 0);
+    calibrate_DGZ := IniFile.ReadFloat('标定', 'DGZ', 0);
+    calibrate_LCZ := IniFile.ReadFloat('标定', 'LCZ', 0);
+
 
     IsDebug := IniFile.ReadInteger('调试', '调试', 1);
     drawThreshold := IniFile.ReadInteger('调试', '绘图点数', 50);
@@ -2315,20 +2430,20 @@ end;
 function TForm_UI.Init2DIP: Integer;
 begin
   Result := JCWSetIP(TCPIP);
-  if Result = 0 then Result := YEGConnect(TCPIP);
+//  if Result = 0 then Result := YEGConnect(TCPIP);
 end;
 
 function TForm_UI.Open2D: Integer;
 begin
   Result := Jcw_Start(m_hjcw);
-  if Result = 0 then Result := YEG_StartGrab(m_hYEG);
+//  if Result = 0 then Result := YEG_StartGrab(m_hYEG);
 end;
 
 procedure TForm_UI.Close2D;
 begin
-  YEGDisconnect;
+//  YEGDisconnect;
   Jcw_Stop(m_hjcw);
-  YEG_StopGrab(m_hYEG);
+//  YEG_StopGrab(m_hYEG);
 end;
 
 procedure TForm_UI.UDPStartCollect;
@@ -2494,6 +2609,7 @@ var
   LoadDataSize : Int64;
   InputDataSize : LongWord;
   TempPlayBackData : Record_SaveOriginal;
+  TempDistance_Init: Double;
   TempDataO2D: JCWJH;
   TempDataOHv: TRecord_OriginalHv;
   TempDataOLv: TRecord_OriginalLv;
@@ -2526,6 +2642,8 @@ begin
     TempDataOHv := TempPlayBackData.OHvData;
     TempDataOLv := TempPlayBackData.OLvData;
     TempDataOAcying := TempPlayBackData.AcyingData;
+
+    if InputDataSize = 0 then Form_LineSetting.kilometer := TempPlayBackData.Distance_Init;
 
     New(TempData2D);
     CopyMemory(TempData2D, @TempDataO2D, SizeOf(JCWJH));

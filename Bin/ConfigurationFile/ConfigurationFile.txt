@@ -14,6 +14,7 @@ ComputerPort =1025
 Direction = 1
 
 [参数设置]
+是否补偿 = 0
 弓网质量 = 0
 电流标准值 = 0
 
@@ -30,6 +31,8 @@ ACC3 =0
 ACC4 =0
 ACC5 =0
 ACC6 =0
+DGZ=0
+LCZ=0
 
 [调试]
 调试 = 1
