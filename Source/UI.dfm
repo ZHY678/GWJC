@@ -520,8 +520,6 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
-        ExplicitLeft = -1
-        ExplicitTop = -3
         DefaultCanvas = 'TGDIPlusCanvas'
         ColorPaletteIndex = 13
         object PointSeries_Width: TPointSeries
@@ -1111,10 +1109,6 @@ object Form_UI: TForm_UI
     object TabSheet_Data: TRzTabSheet
       TabVisible = False
       Caption = #24339#32593#27979#35797#25968#25454#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Data: TChart
         Left = 0
         Top = 0
@@ -1138,6 +1132,8 @@ object Form_UI: TForm_UI
         MarginLeft = 5
         RightWall.Color = 14745599
         Title.Font.Name = 'Verdana'
+        Title.Text.Strings = (
+          'TChart')
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsFormat.Font.Name = 'Verdana'
@@ -1160,7 +1156,7 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            EndPosition = 11.000000000000000000
+            EndPosition = 9.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1170,8 +1166,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 11.000000000000000000
-            EndPosition = 22.000000000000000000
+            StartPosition = 10.000000000000000000
+            EndPosition = 19.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1181,8 +1177,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 22.000000000000000000
-            EndPosition = 33.000000000000000000
+            StartPosition = 20.000000000000000000
+            EndPosition = 29.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1192,8 +1188,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 33.000000000000000000
-            EndPosition = 44.000000000000000000
+            StartPosition = 30.000000000000000000
+            EndPosition = 39.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1203,8 +1199,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 44.000000000000000000
-            EndPosition = 55.000000000000000000
+            StartPosition = 40.000000000000000000
+            EndPosition = 49.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1214,8 +1210,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 55.000000000000000000
-            EndPosition = 66.000000000000000000
+            StartPosition = 50.000000000000000000
+            EndPosition = 59.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1225,8 +1221,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 66.000000000000000000
-            EndPosition = 77.000000000000000000
+            StartPosition = 60.000000000000000000
+            EndPosition = 69.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1236,8 +1232,8 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 77.000000000000000000
-            EndPosition = 88.000000000000000000
+            StartPosition = 70.000000000000000000
+            EndPosition = 79.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
           end
@@ -1247,9 +1243,15 @@ object Form_UI: TForm_UI
             Horizontal = False
             OtherSide = False
             LabelsFormat.Font.Name = 'Verdana'
-            StartPosition = 88.000000000000000000
+            StartPosition = 80.000000000000000000
+            EndPosition = 89.000000000000000000
             TicksInner.Color = 11119017
             Title.Font.Name = 'Verdana'
+          end
+          item
+            Horizontal = False
+            OtherSide = False
+            StartPosition = 90.000000000000000000
           end>
         LeftAxis.Axis.Color = 4210752
         LeftAxis.Grid.Color = 11119017
@@ -1269,10 +1271,6 @@ object Form_UI: TForm_UI
         View3D = False
         Align = alClient
         TabOrder = 0
-        ExplicitLeft = 424
-        ExplicitTop = 277
-        ExplicitWidth = 400
-        ExplicitHeight = 250
         DefaultCanvas = 'TGDIPlusCanvas'
         PrintMargins = (
           15
@@ -1393,6 +1391,16 @@ object Form_UI: TForm_UI
           YValues.Name = 'Y'
           YValues.Order = loNone
           CustomVertAxis = 8
+        end
+        object FastLineSeries_Pole: TFastLineSeries
+          Title = #26438
+          VertAxis = aCustomVertAxis
+          LinePen.Color = 7368816
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+          CustomVertAxis = 9
         end
       end
     end
@@ -3016,25 +3024,25 @@ object Form_UI: TForm_UI
         20793D22307078222076696577426F783D223020302033322033322220737479
         6C653D22656E61626C652D6261636B67726F756E643A6E657720302030203332
         2033323B2220786D6C3A73706163653D227072657365727665223E262331333B
-        262331303B093C7374796C6520747970653D22746578742F6373732220786D6C
-        3A73706163653D227072657365727665223E2E57686974657B66696C6C3A2346
-        46464646463B7D262331333B262331303B2623393B2E426C61636B7B66696C6C
-        3A233732373237323B7D262331333B262331303B2623393B2E426C75657B6669
-        6C6C3A233131373744373B7D3C2F7374796C653E0D0A093C7265637420793D22
-        322220636C6173733D22426C61636B222077696474683D223332222068656967
-        68743D223238222F3E0D0A093C673E0D0A09093C7265637420783D2232222079
-        3D22362220636C6173733D225768697465222077696474683D22313022206865
-        696768743D223232222F3E0D0A09093C7265637420783D2231342220793D2236
-        2220636C6173733D225768697465222077696474683D22313622206865696768
-        743D223232222F3E0D0A093C2F673E0D0A093C673E0D0A09093C726563742078
-        3D2231362220793D2231302220636C6173733D22426C7565222077696474683D
+        262331303B2623393B093C7374796C6520747970653D22746578742F63737322
+        20786D6C3A73706163653D227072657365727665223E2E57686974657B66696C
+        6C3A234646464646463B7D262331333B262331303B2623393B2E426C61636B7B
+        66696C6C3A233732373237323B7D262331333B262331303B2623393B2E426C75
+        657B66696C6C3A233131373744373B7D3C2F7374796C653E0D0A093C72656374
+        20793D22322220636C6173733D22426C61636B222077696474683D2233322220
+        6865696768743D223238222F3E0D0A093C673E0D0A09093C7265637420783D22
+        322220793D22362220636C6173733D225768697465222077696474683D223130
+        22206865696768743D223232222F3E0D0A09093C7265637420783D2231342220
+        793D22362220636C6173733D225768697465222077696474683D223136222068
+        65696768743D223232222F3E0D0A093C2F673E0D0A093C673E0D0A09093C7265
+        637420783D2231362220793D2231302220636C6173733D22426C756522207769
+        6474683D22313222206865696768743D2232222F3E0D0A09093C726563742078
+        3D2231362220793D2231342220636C6173733D22426C7565222077696474683D
         22313222206865696768743D2232222F3E0D0A09093C7265637420783D223136
-        2220793D2231342220636C6173733D22426C7565222077696474683D22313222
+        2220793D2231382220636C6173733D22426C7565222077696474683D22313222
         206865696768743D2232222F3E0D0A09093C7265637420783D2231362220793D
-        2231382220636C6173733D22426C7565222077696474683D2231322220686569
-        6768743D2232222F3E0D0A09093C7265637420783D2231362220793D22323222
-        20636C6173733D22426C7565222077696474683D22313222206865696768743D
-        2232222F3E0D0A093C2F673E0D0A3C2F7376673E0D0A}
+        2232322220636C6173733D22426C7565222077696474683D2231322220686569
+        6768743D2232222F3E0D0A093C2F673E0D0A3C2F7376673E0D0A}
     end
   end
   object OpenDialog: TOpenDialog
