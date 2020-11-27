@@ -169,5 +169,4 @@ procedure TForm_LineSetting.FormShow(Sender: TObject);
 begin
   Form_UI.Enabled := False;
 end;
-
 end.

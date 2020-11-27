@@ -100,6 +100,25 @@ type
     GroupBox_Sensor: TGroupBox;
     RadioButton_Zheng: TRadioButton;
     RadioButton_Fu: TRadioButton;
+    Label_DGZ: TLabel;
+    Edit_DGZ: TEdit;
+    Label_LCZ: TLabel;
+    Edit_LCZ: TEdit;
+    GroupBox_Sensitivity: TGroupBox;
+    Label_YL1: TLabel;
+    Label_YL2: TLabel;
+    Label_YL4: TLabel;
+    Label_YL3: TLabel;
+    Label_AC2: TLabel;
+    Label_AC1: TLabel;
+    Edit_YL1: TEdit;
+    Edit_YL2: TEdit;
+    Edit_YL4: TEdit;
+    Edit_YL3: TEdit;
+    Edit_AC2: TEdit;
+    Edit_AC1: TEdit;
+    Label_IsCompensate: TLabel;
+    Edit_IsCompensate: TEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure Button_ComfirmClick(Sender: TObject);
@@ -134,7 +153,10 @@ begin
   (FGlobalpara.IsNumberType(Edit_DrawCounts.Text) = 1) and (FGlobalpara.IsNumberType(Edit_CalCounts.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_ComputerIP1.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerIP2.Text) = 1) and
   (FGlobalpara.IsNumberType(Edit_ComputerIP3.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerIP4.Text) = 1) and (FGlobalpara.IsNumberType(Edit_ComputerPort.Text) = 1) and
-  (FGlobalpara.IsNumberType(Edit_Quality.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_ElectrycityValue.Text) <> 0) then
+  (FGlobalpara.IsNumberType(Edit_Quality.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_ElectrycityValue.Text) <> 0) and
+  (FGlobalpara.IsNumberType(Edit_IsCompensate.Text) = 1) and (FGlobalpara.IsNumberType(Edit_DGZ.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_LCZ.Text) <> 0) and
+  (FGlobalpara.IsNumberType(Edit_YL1.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_YL2.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_YL3.Text) <> 0) and
+  (FGlobalpara.IsNumberType(Edit_YL4.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC1.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC2.Text) <> 0) then
   begin
     if (StrToInt(Edit_IP1.Text) <= 255) and (StrToInt(Edit_IP2.Text) <= 255) and (StrToInt(Edit_IP3.Text) <= 255) and
     (StrToInt(Edit_IP4.Text) <= 255) and (StrToInt(Edit_UDPHvIP1.Text) <= 255) and (StrToInt(Edit_UDPHvIP2.Text) <= 255) and
@@ -155,7 +177,10 @@ begin
     (StrToInt(Edit_ComputerIP3.Text) <= 255) and (StrToInt(Edit_ComputerIP4.Text) <= 255) and (StrToInt(Edit_ComputerPort.Text) < 65536) and
     (StrToInt(Edit_ComputerIP1.Text) >= 0) and (StrToInt(Edit_ComputerIP2.Text) >= 0) and
     (StrToInt(Edit_ComputerIP3.Text) >= 0) and (StrToInt(Edit_ComputerIP4.Text) >= 0) and (StrToInt(Edit_ComputerPort.Text) >= 0) and
-    (StrToFloat(Edit_Quality.Text) >= 0) and (StrToFloat(Edit_ElectrycityValue.Text) >= 0) then
+    (StrToFloat(Edit_Quality.Text) >= 0) and (StrToFloat(Edit_ElectrycityValue.Text) >= 0) and
+    (StrToFloat(Edit_YL1.Text) > 0) and (StrToFloat(Edit_YL2.Text) > 0) and (StrToFloat(Edit_YL3.Text) > 0) and
+    (StrToFloat(Edit_YL4.Text) > 0) and (StrToFloat(Edit_AC1.Text) > 0) and (StrToFloat(Edit_AC2.Text) > 0) and
+    (StrToInt(Edit_IsCompensate.Text) >= 0) and (StrToInt(Edit_IsCompensate.Text) <= 1) then
     begin
       if FileExists(Form_UI.ConfigurationFilePath) then
       begin
@@ -175,6 +200,16 @@ begin
           Inifile.WriteString('传感器设置', 'ComputerPort',  Edit_ComputerPort.Text);
           Inifile.WriteString('参数设置', '弓网质量',  Edit_Quality.Text);
           Inifile.WriteString('参数设置', '电流标准值',  Edit_ElectrycityValue.Text);
+
+          Inifile.WriteString('参数设置', '是否补偿 ',  Edit_IsCompensate.Text);
+          Inifile.WriteString('参数设置', '压力传感器1灵敏度系数',  Edit_YL1.Text);
+          Inifile.WriteString('参数设置', '压力传感器2灵敏度系数',  Edit_YL2.Text);
+          Inifile.WriteString('参数设置', '压力传感器3灵敏度系数',  Edit_YL3.Text);
+          Inifile.WriteString('参数设置', '压力传感器4灵敏度系数',  Edit_YL4.Text);
+          Inifile.WriteString('参数设置', '加速度1灵敏度系数',  Edit_AC1.Text);
+          Inifile.WriteString('参数设置', '加速度2灵敏度系数',  Edit_AC2.Text);
+          Inifile.WriteString('标定', 'DGZ',  Edit_DGZ.Text);
+          Inifile.WriteString('标定', 'LCZ',  Edit_LCZ.Text);
 
           if RadioButton_Zheng.Checked then Inifile.WriteString('传感器设置', 'Direction',  '1')
           else Inifile.WriteString('传感器设置', 'Direction',  '0');
@@ -203,5 +238,4 @@ begin
   Form_UI.InitSubGroup;
   Form_UI.Enabled := False;
 end;
-
 end.

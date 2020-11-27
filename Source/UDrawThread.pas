@@ -3,7 +3,7 @@ unit UDrawThread;
 interface
 
 uses
-  System.Classes, VCLTee.TeEngine, Winapi.Windows;
+  System.Classes, VCLTee.TeEngine, Winapi.Windows, Vcl.Forms;
 
 type
   TDrawThread = class(TThread)
@@ -583,8 +583,8 @@ begin
   while not Terminated do
   begin
     Synchronize(DrawLine);
+    Application.ProcessMessages;
     Sleep(50);
   end;
 end;
-
 end.
