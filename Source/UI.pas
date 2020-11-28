@@ -98,6 +98,7 @@ type
 
   Record_SaveOriginal = record
     Distance_Init: Double;
+    Pole_Init: Integer;
     Om_data: JCWJH;
     OHvData: TRecord_OriginalHv;
     OLvData: TRecord_OriginalLv;
@@ -350,7 +351,7 @@ type
     function YEGConnect(tempTCPIP: string): Integer;
     procedure YEGDisconnect;
     procedure LoadOriginalData(TempLoadOriginalPath: string);
-    procedure SaveResultHead(tempPath, tempLineName: string; initDis: Double; shangxia, rundir: string; initzengjian: Byte);
+    procedure SaveResultHead(tempPath, tempLineName: string; inight: Integer; initDis: Double; shangxia, rundir: string; initzengjian: Byte);
   public
     { Public declarations }
     //2D数据变量（导高拉出值）
@@ -394,6 +395,7 @@ type
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
     drawThreshold, poleCounts: Byte;   //绘图点数和支柱计算高差计数
+    pole_ghNumb: Integer;   //正在计数的杆号
     noPlusCounts, calHCounts, calMaoCounts: Word;   //无脉冲的数据计数和检测到柱和锚段的计数
     temp_X, temp_Y: array[0..3] of Single;   //2D错误值取前一个值数组
     time_Electricity: Single;   //电流大于标准值百分之30开始时间
@@ -476,7 +478,7 @@ var
   Form_UI: TForm_UI;
 
   const
-    Distance_Pluse = 13;          //一个脉冲距离13mm
+    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
     Number_Draw = 5000;           //绘图的点数
     Number_Cal = 200;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
     G = 9.8;                      //重力加速度
@@ -595,6 +597,7 @@ begin
       for I := 0 to Number_Cal - 1 do
       begin
         array_DataDeal[I].Distance_Init := Form_LineSetting.kilometer;
+        array_DataDeal[I].Pole_Init := Form_LineSetting.Pole_InitNumber;
 
         TempData2D := Form_UI.Data2DCache.Pop;
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
@@ -1186,7 +1189,7 @@ begin
           begin
             if Form_UI.IsGJD then
             begin
-              if Form_UI.poleCounts < 100 then   //100是防止误判断
+              if Form_UI.poleCounts < 50 then   //50是防止误判断
               begin
                 Form_UI.poleCounts := Form_UI.poleCounts + 1;
               end
@@ -1197,6 +1200,8 @@ begin
                 temp_MaxH := 0;
                 temp_MinH := 0;
                 startRecordKm := tempKm;
+                Form_UI.pole_ghNumb := Form_UI.pole_ghNumb + 1;
+                array_PlusResult[Form_UI.calingCounts - 1].ghNumb := Form_LineSetting.Pole_InitNumber + Form_UI.pole_ghNumb;
               end;
             end;
           end;
@@ -1665,7 +1670,7 @@ begin
     CopyFile(PChar(configurationFilePath), PChar(ExtractFilePath(TempOrignalDataPath) + 'ConfigurationFile.txt'), False);
     TempResultDataPath := SavedResultDataPath + Form_LineSetting.line_name + '_' + FormatDateTime('yymmddhhnnss', Now) + '\GWResult.dat';
     if not DirectoryExists(ExtractFilePath(TempResultDataPath)) then ForceDirectories(ExtractFilePath(TempResultDataPath));
-    SaveResultHead(TempResultDataPath, Form_LineSetting.line_name, Form_LineSetting.kilometer, Form_LineSetting.shangxiaxing, Form_LineSetting.direction, Form_LineSetting.plus_minus);
+    SaveResultHead(TempResultDataPath, Form_LineSetting.line_name, Form_LineSetting.Pole_InitNumber, Form_LineSetting.kilometer, Form_LineSetting.shangxiaxing, Form_LineSetting.direction, Form_LineSetting.plus_minus);
     StartSaveOriginalData;
     StartSaveResultData;
     IsSave := True;
@@ -1761,6 +1766,7 @@ begin
     calHCounts := 0;
     calMaoCounts := 0;
     poleCounts := 0;
+    pole_ghNumb := 0;
     paintCounts := 0;
     AcyingNumber_First := -1;
 
@@ -1843,6 +1849,7 @@ begin
     calHCounts := 0;
     calMaoCounts := 0;
     poleCounts := 0;
+    pole_ghNumb := 0;
     paintCounts := 0;
     AcyingNumber_First := -1;
 
@@ -2034,6 +2041,7 @@ begin
   calHCounts := 0;
   calMaoCounts := 0;
   poleCounts := 0;
+  pole_ghNumb := 0;
   paintCounts := 0;
   Counts_Package := 0;
   Counts_Save := 0;
@@ -2550,7 +2558,7 @@ begin
   IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 end;
 
-procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte);
+procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; inight: Integer; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte);
 var
   SaveResultlFile : file;
   FileStream : TFileStream;
@@ -2579,7 +2587,7 @@ begin
   end;
   TempData.Version := 1;
   for I := 0 to 394 do TempData.reserved[I] := 0;
-  TempData.inight := 0;
+  TempData.inight := inight;
   TempData.inidis := Round(initDis * 1000);
   TempData.Buchang := 0;
   if shangxia = '上行' then TempData.shangxia := 1
@@ -2693,7 +2701,11 @@ begin
     TempDataOLv := TempPlayBackData.OLvData;
     TempDataOAcying := TempPlayBackData.AcyingData;
 
-    if InputDataSize = 0 then Form_LineSetting.kilometer := TempPlayBackData.Distance_Init;
+    if InputDataSize = 0 then
+    begin
+      Form_LineSetting.kilometer := TempPlayBackData.Distance_Init;
+      Form_LineSetting.Pole_InitNumber := TempPlayBackData.Pole_Init;
+    end;
 
     New(TempData2D);
     CopyMemory(TempData2D, @TempDataO2D, SizeOf(JCWJH));
@@ -2844,7 +2856,7 @@ begin
   for I := 4 to 39 do Buffer_Send[I] := 0;
   Buffer_Send[40] := 1;
   Buffer_Send[41] := 1;
-  Buffer_Send[42] := 100;
+  Buffer_Send[42] := 91;
   Buffer_Send[43] := 0;
   Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
   Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
@@ -2871,7 +2883,7 @@ begin
   for I := 4 to 39 do Buffer_Send[I] := 0;
   Buffer_Send[40] := 2;
   Buffer_Send[41] := 1;
-  Buffer_Send[42] := 100;
+  Buffer_Send[42] := 91;
   Buffer_Send[43] := 0;
   Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
   Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));

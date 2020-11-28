@@ -95,7 +95,7 @@ begin
         Form_UI.DrawData[23][I + Form_UI.paintCounts] := TempRData.RH_time;
         Form_UI.DrawData[24][I + Form_UI.paintCounts] := TempRData.RH_numb;
         Form_UI.DrawData[25][I + Form_UI.paintCounts] := TempRData.mykilo;
-        Form_UI.DrawData[26][I + Form_UI.paintCounts] := TempRData.mark;
+        Form_UI.DrawData[26][I + Form_UI.paintCounts] := TempRData.ghNumb;
       end;
       Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
     end
@@ -164,7 +164,7 @@ begin
         Form_UI.DrawData[23][I] := TempRData.RH_time;
         Form_UI.DrawData[24][I] := TempRData.RH_numb;
         Form_UI.DrawData[25][I] := TempRData.mykilo;
-        Form_UI.DrawData[26][I] := TempRData.mark;
+        Form_UI.DrawData[26][I] := TempRData.ghNumb;
       end;
     end;
 
@@ -498,8 +498,11 @@ begin
         tmp7ChartValues[I] := Form_UI.DrawData[23][I];
         tmp8ChartValues[I] := Form_UI.DrawData[21][I];
         tmp9ChartValues[I] := Form_UI.DrawData[22][I];
-        if Form_UI.DrawData[26][I] = 4 then tmp10ChartValues[I] := 1
-        else tmp10ChartValues[I] := 0;
+        tmp10ChartValues[I] := Form_UI.DrawData[26][I];
+        if tmp10ChartValues[I] <> 0 then tmp10ChartValues[I] := 1;
+
+//        if Form_UI.DrawData[26][I] = 4 then tmp10ChartValues[I] := 1
+//        else tmp10ChartValues[I] := 0;
       end;
 
       Form_UI.FastLineSeries_Line1Height.XValues.Value := tmp0ChartValues;

@@ -30,6 +30,8 @@ type
     Panel_SettingSet: TPanel;
     Button_Set: TButton;
     Button_Start: TButton;
+    Label_Pole: TLabel;
+    Edit_Pole: TEdit;
     procedure Button_StartClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -43,6 +45,7 @@ type
     kilometer: Double;
     line_name, shangxiaxing, direction: string;
     plus_minus: Byte;
+    Pole_InitNumber: Integer;       //初始计数杆号
   end;
 
 var
@@ -57,7 +60,7 @@ uses
 
 procedure TForm_LineSetting.Button_SetClick(Sender: TObject);
 begin
-  if not (FGlobalpara.IsNumberType(Edit_Kilometer.Text) <> 0) then MessageBox(Handle, '公里标输入的值存在问题，请检查。', '线路设置', MB_OK)
+  if (not (FGlobalpara.IsNumberType(Edit_Kilometer.Text) <> 0)) or (not (FGlobalpara.IsNumberType(Edit_Pole.Text) = 1) or ((StrToInt(Edit_Pole.Text) < 0))) then MessageBox(Handle, '公里标或初始杆号输入的值存在问题，请检查。', '线路设置', MB_OK)
   else
   begin
     if Length(ComboBox_Line.Text) = 0 then MessageBox(Handle, '未选择线路名称，请检查。', '线路设置', MB_OK)
@@ -73,6 +76,7 @@ begin
           else
           begin
             kilometer := StrToFloat(Edit_Kilometer.Text);
+            Pole_InitNumber := StrToInt(Edit_Pole.Text);
             line_name := ComboBox_Line.Text;
             if RadioButton_Up.Checked then shangxiaxing := '上行'
             else shangxiaxing := '下行';
@@ -163,6 +167,7 @@ begin
   shangxiaxing := '上行';
   direction := '正向';
   plus_minus := 1;
+  Pole_InitNumber := 0;
 end;
 
 procedure TForm_LineSetting.FormShow(Sender: TObject);
