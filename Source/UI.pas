@@ -1790,6 +1790,8 @@ begin
   if IsSave then
   begin
     IsSave := False;
+    OriginalCache.clear;
+    ResultCache.clear;
     dxRibbonStatusBar.Panels[1].Text := 'Î´´æ´¢Êý¾Ý¡£';
     StopSaveOriginalData;
     StopSaveResultData;
