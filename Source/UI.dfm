@@ -527,10 +527,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#27700#24179#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -542,10 +542,10 @@ object Form_UI: TForm_UI
           Title = #25509#35302#23548#32447#38388#22402#30452#36317#31163
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -557,10 +557,10 @@ object Form_UI: TForm_UI
           Title = #23548#39640#21464#21270#29575
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -572,10 +572,10 @@ object Form_UI: TForm_UI
           Title = #23450#20301#28857#39640#24046
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -977,10 +977,10 @@ object Form_UI: TForm_UI
           Title = #30005#27969#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1079,10 +1079,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#25345#32493#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1094,10 +1094,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#27425#25968
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1342,10 +1342,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#27425#25968
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loNone
           YValues.Name = 'Y'
@@ -1356,10 +1356,10 @@ object Form_UI: TForm_UI
           Title = #29123#24359#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1382,10 +1382,10 @@ object Form_UI: TForm_UI
           Title = #30005#27969#26102#38388
           VertAxis = aCustomVertAxis
           ClickableLine = False
-          Pointer.HorizSize = 2
+          Pointer.HorizSize = 1
           Pointer.InflateMargins = True
           Pointer.Style = psCircle
-          Pointer.VertSize = 2
+          Pointer.VertSize = 1
           XValues.Name = 'X'
           XValues.Order = loAscending
           YValues.Name = 'Y'
@@ -1501,6 +1501,7 @@ object Form_UI: TForm_UI
     object MenuItem_LineAndSensor: TMenuItem
       Caption = #32447#36335#19982#20256#24863#22120#35774#32622
       object MenuItem_InitLine: TMenuItem
+        Action = Action_OpenLineUI
         Caption = #32447#36335#35774#32622
       end
       object MenuItem_Sensor: TMenuItem

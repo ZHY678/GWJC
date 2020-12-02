@@ -4,7 +4,7 @@ object Form_LineSetting: TForm_LineSetting
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #32447#36335#35774#32622
-  ClientHeight = 539
+  ClientHeight = 581
   ClientWidth = 392
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -37,7 +37,7 @@ object Form_LineSetting: TForm_LineSetting
     Left = 0
     Top = 32
     Width = 393
-    Height = 113
+    Height = 153
     Color = clHighlightText
     ParentBackground = False
     TabOrder = 1
@@ -55,6 +55,13 @@ object Form_LineSetting: TForm_LineSetting
       Height = 19
       Caption = #32447#36335#21517#31216#65306
     end
+    object Label_Pole: TLabel
+      Left = 80
+      Top = 104
+      Width = 80
+      Height = 19
+      Caption = #21021#22987#26438#21495#65306
+    end
     object Edit_Kilometer: TEdit
       Left = 200
       Top = 21
@@ -71,10 +78,19 @@ object Form_LineSetting: TForm_LineSetting
       Height = 27
       TabOrder = 1
     end
+    object Edit_Pole: TEdit
+      Left = 200
+      Top = 101
+      Width = 145
+      Height = 27
+      Alignment = taCenter
+      TabOrder = 2
+      Text = '0'
+    end
   end
   object Panel_StreamSetting: TPanel
     Left = 0
-    Top = 176
+    Top = 216
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -99,7 +115,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_Stream: TPanel
     Left = 0
-    Top = 144
+    Top = 184
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -108,7 +124,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_DirectionSetting: TPanel
     Left = 0
-    Top = 272
+    Top = 312
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -133,7 +149,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_Dirction: TPanel
     Left = 0
-    Top = 240
+    Top = 280
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -142,7 +158,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_AddAndSubStractSetting: TPanel
     Left = 0
-    Top = 368
+    Top = 408
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -167,7 +183,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_AddAndSubStract: TPanel
     Left = 0
-    Top = 336
+    Top = 376
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -176,7 +192,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_Setting: TPanel
     Left = 0
-    Top = 432
+    Top = 472
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -185,7 +201,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_SettingSet: TPanel
     Left = 0
-    Top = 463
+    Top = 503
     Width = 393
     Height = 76
     Color = clHighlightText
