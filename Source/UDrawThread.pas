@@ -3,7 +3,7 @@ unit UDrawThread;
 interface
 
 uses
-  System.Classes, VCLTee.TeEngine, Winapi.Windows, Vcl.Forms;
+  System.Classes, VCLTee.TeEngine, Winapi.Windows, Vcl.Forms, UI_LineSetting;
 
 type
   TDrawThread = class(TThread)
@@ -94,7 +94,7 @@ begin
         Form_UI.DrawData[22][I + Form_UI.paintCounts] := TempRData.RH_value;
         Form_UI.DrawData[23][I + Form_UI.paintCounts] := TempRData.RH_time;
         Form_UI.DrawData[24][I + Form_UI.paintCounts] := TempRData.RH_numb;
-        Form_UI.DrawData[25][I + Form_UI.paintCounts] := TempRData.mykilo;
+        Form_UI.DrawData[25][I + Form_UI.paintCounts] := TempRData.mykilo / 1000;
         Form_UI.DrawData[26][I + Form_UI.paintCounts] := TempRData.ghNumb;
       end;
       Form_UI.paintCounts := Form_UI.paintCounts + Form_UI.drawThreshold;
@@ -163,7 +163,7 @@ begin
         Form_UI.DrawData[22][I] := TempRData.RH_value;
         Form_UI.DrawData[23][I] := TempRData.RH_time;
         Form_UI.DrawData[24][I] := TempRData.RH_numb;
-        Form_UI.DrawData[25][I] := TempRData.mykilo;
+        Form_UI.DrawData[25][I] := TempRData.mykilo / 1000;
         Form_UI.DrawData[26][I] := TempRData.ghNumb;
       end;
     end;
@@ -171,10 +171,7 @@ begin
     if Form_UI.paintCounts > Number_Draw then Form_UI.paintCounts := Number_Draw;
 
     SetLength(tmp0ChartValues, Form_UI.paintCounts);
-    for I := 0 to Form_UI.paintCounts - 1 do
-    begin
-      tmp0ChartValues[I] := Form_UI.DrawData[25][I];
-    end;
+    for I := 0 to Form_UI.paintCounts - 1 do tmp0ChartValues[I] := Form_UI.DrawData[25][I];
 
     if Form_UI.RzPageControl.ActivePage = Form_UI.TabSheet_Conductor then
     begin
@@ -499,10 +496,7 @@ begin
         tmp8ChartValues[I] := Form_UI.DrawData[21][I];
         tmp9ChartValues[I] := Form_UI.DrawData[22][I];
         tmp10ChartValues[I] := Form_UI.DrawData[26][I];
-        if tmp10ChartValues[I] <> 0 then tmp10ChartValues[I] := 1;
-
-//        if Form_UI.DrawData[26][I] = 4 then tmp10ChartValues[I] := 1
-//        else tmp10ChartValues[I] := 0;
+        if tmp10ChartValues[I] <> Form_LineSetting.Pole_InitNumber then tmp10ChartValues[I] := 1;
       end;
 
       Form_UI.FastLineSeries_Line1Height.XValues.Value := tmp0ChartValues;

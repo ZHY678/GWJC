@@ -20,7 +20,7 @@ type
     lineWidth, lineHeight, lineWidthValue, lineHeightValue: Single;
   end;
 
-  sResultDataPara = record              //信息头
+  sResultDataPara = packed record              //信息头
     lineName: array [0..99] of Char;    //线路名称
     Version: Byte;                      //软件版本
     reserved: array [0..394] of Byte;   //预留
@@ -33,7 +33,7 @@ type
     DataTime: array [0..11] of Char;    //采集时间 YYMMDDHHMMSS
   end;
 
-  sDataFrame = record                    //数据
+  sDataFrame = packed record                    //数据
     LCZ11_value: Single;                 //接触线1拉出值1，mm
     LCZ12_value: Single;                 //接触线1拉出值2（柔性双线时），mm
     LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
@@ -104,19 +104,6 @@ type
     OLvData: TRecord_OriginalLv;
     AcyingData: TRecord_OriginalAcying;
   end;
-
-//暂时保留
-//  TData_2D = record
-//    Data_2D: array [0..199] of JCWJH;
-//  end;
-//
-//  TData_Hv = record
-//    Data_Hv: array [0..199] of TRecord_OriginalHv;
-//  end;
-//
-//  TData_Lv = record
-//    Data_Lv: array [0..199] of TRecord_OriginalLv;
-//  end;
 
   TData_Extra = record
     LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
@@ -342,7 +329,6 @@ type
     IsDebug: Byte;
 
     FGlobalpara: TGlobalpara;
-    FDrawThread: TDrawThread;
 
     FileStream_Original, FileStream_Result : TFileStream;
 
@@ -376,14 +362,11 @@ type
     GSpeed: Double;
     GKilometer: Single;
 
+    FDrawThread: TDrawThread;
+
     Counts_Package, Counts_Save, Counts_Number: Integer;   //包号测试，这三个变量在程序中无任何实际意义，但是存在的意义是为了测试是否丢失数据
 
 //    CS: TRTLCriticalSection;
-
-//暂时保留
-//    tempData_2D: TData_2D;
-//    tempData_Hv: TData_Hv;
-//    tempData_Lv: TData_Lv;
 
     //drawCounts 一次性绘图的点数
     //calCounts 计算均值、最大值、最小值、均方根值的点数多少
@@ -576,7 +559,7 @@ var
   IniFile : TIniFile;
   temp_time: Single;   //记录速度起始时间
 
-  startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus, startAcyingCount, startAcyingTime, tmpSpeed, tmpPluse: Double;   //最开始的脉冲数
+  startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus, tmpSpeed, tmpPluse: Double;   //最开始的脉冲数
   array_DataDeal: array [0..Number_Cal - 1] of Record_SaveOriginal;    //最原始数据数组
   array_DataDealing: array[0..Number_Cal - 1] of TData_Dealing;   //处理过程中的数组，包括滤波、计算等
   array_ResultDeal: array[0..Number_Cal - 1] of sDataFrame;   //计算后的结果数据
@@ -592,7 +575,7 @@ begin
   while True do
   begin
     //数据取值
-    if (Form_UI.Data2DCache.count > Number_Cal * 2) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
+    if (Form_UI.Data2DCache.count > Number_Cal) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
     begin
       for I := 0 to Number_Cal - 1 do
       begin
@@ -603,9 +586,9 @@ begin
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
         Array_DataDeal[I].Om_data := TempDataO2D;
-        TempData2D := Form_UI.Data2DCache.Pop;
-        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-        Dispose(TempData2D);
+//        TempData2D := Form_UI.Data2DCache.Pop;
+//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+//        Dispose(TempData2D);
 
         TempDataHv := Form_UI.HvUDPCache.Pop;
         CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
@@ -1057,6 +1040,12 @@ begin
         end
         else array_ResultDeal[I].mark := 0;
 
+        //经确认发现JCXP_UNKNOW可能是锚段或线叉，目前2D暂时不会出现JCXP_ELECCONN和JCXP_MAO
+        if array_DataDealing[I].TempJCWJH.posi = JCXP_UNKNOW then
+        begin
+          array_ResultDeal[I].mark := 2;
+        end;
+
         array_ResultDeal[I].CheckTime := GetTickCount - Form_UI.startMs;
       end;
 
@@ -1067,26 +1056,29 @@ begin
         startPlus := array_ResultDeal[0].mykilo;
         startKm := Form_LineSetting.kilometer;
         startRecordKm := Form_LineSetting.kilometer;
-//        startAcyingTime := array_ResultDeal[0].RH_time;
-//        startAcyingCount := array_ResultDeal[0].RH_numb;
-        //上面注释的两行相应变量暂时未注释
 
         if array_ResultDeal[0].mark = 2 then
         begin
           if array_ResultDeal[0].LCZ12_value <> 0 then
           begin
-            Form_UI.calHCounts := Form_UI.calHCounts + 1;
-            SetLength(temp_SPJL_value, Form_UI.calHCounts);
-            SetLength(temp_SPGC_value, Form_UI.calHCounts);
-            SetLength(temp_DGBHL_value, Form_UI.calHCounts);
-            SetLength(temp_DWDGC_value, Form_UI.calHCounts);
-            temp_MaxH := array_ResultDeal[0].DGZ11_value;
-            temp_MinH := array_ResultDeal[0].DGZ11_value;
-            temp_SPJL_value[Form_UI.calHCounts - 1] := Abs(array_ResultDeal[0].LCZ12_value - array_ResultDeal[0].LCZ11_value);
-            temp_SPGC_value[Form_UI.calHCounts - 1] := Abs(array_ResultDeal[0].DGZ12_value - array_ResultDeal[0].DGZ11_value);
-            temp_DGBHL_value[Form_UI.calHCounts - 1] := 0;
-            temp_DWDGC_value[Form_UI.calHCounts - 1] := Abs(temp_MaxH - temp_MinH);
+            Form_UI.calMaoCounts := Form_UI.calMaoCounts + 1;
+            SetLength(temp_SPJL_value, Form_UI.calMaoCounts);
+            SetLength(temp_SPGC_value, Form_UI.calMaoCounts);
+            temp_SPJL_value[Form_UI.calMaoCounts - 1] := Abs(array_ResultDeal[I].LCZ12_value - array_ResultDeal[I].LCZ11_value);
+            temp_SPGC_value[Form_UI.calMaoCounts - 1] := Abs(array_ResultDeal[I].DGZ12_value - array_ResultDeal[I].DGZ11_value);
           end;
+        end
+        else Form_UI.calMaoCounts := 0;
+
+        if array_ResultDeal[0].mark = 4 then
+        begin
+          Form_UI.calHCounts := Form_UI.calHCounts + 1;
+          SetLength(temp_DGBHL_value, Form_UI.calHCounts);
+          SetLength(temp_DWDGC_value, Form_UI.calHCounts);
+          temp_MaxH := array_ResultDeal[0].DGZ11_value;
+          temp_MinH := array_ResultDeal[0].DGZ11_value;
+          temp_DGBHL_value[Form_UI.calHCounts - 1] := 0;
+          temp_DWDGC_value[Form_UI.calHCounts - 1] := Abs(temp_MaxH - temp_MinH);
         end
         else
         begin
@@ -1094,6 +1086,7 @@ begin
           temp_MaxH := 0;
           temp_MinH := 0;
         end;
+
         Form_UI.IsFirstCal := False;
       end;
 
@@ -1116,7 +1109,7 @@ begin
 
           //速度、公里标赋值
           tempKm := (tempPlus - startPlus) * Distance_Pluse / 1000000 + startKm;
-          array_PlusResult[Form_UI.calingCounts - 1].mykilo := tempKm;
+          array_PlusResult[Form_UI.calingCounts - 1].mykilo := tempKm * 1000;
           if Form_UI.time_CalSpeed = 0 then
           begin
             array_PlusResult[Form_UI.calingCounts - 1].myspeed := 0;
@@ -1155,6 +1148,8 @@ begin
               temp_SPGC_value[Form_UI.calMaoCounts - 1] := Abs(array_ResultDeal[I].DGZ12_value - array_ResultDeal[I].DGZ11_value);
               array_PlusResult[Form_UI.calingCounts - 1].SPJL_value := Form_UI.CalAve(temp_SPJL_value);
               array_PlusResult[Form_UI.calingCounts - 1].SPGC_value := Form_UI.CalAve(temp_SPGC_value);
+              array_PlusResult[Form_UI.calingCounts - 1].SPJL_value := temp_SPJL_value[Form_UI.calMaoCounts - 1];
+              array_PlusResult[Form_UI.calingCounts - 1].SPGC_value := temp_SPGC_value[Form_UI.calMaoCounts - 1];
               Form_UI.calMaoCounts := 0;
               SetLength(temp_SPJL_value, Form_UI.calMaoCounts);
               SetLength(temp_SPGC_value, Form_UI.calMaoCounts);
@@ -1162,6 +1157,8 @@ begin
           end;
 
           //为高差计算做准备
+          if temp_MaxH = 0 then temp_MaxH := array_ResultDeal[I].DGZ11_value;
+          if temp_MinH = 0 then temp_MinH := array_ResultDeal[I].DGZ11_value;
           if temp_MaxH < array_ResultDeal[I].DGZ11_value then temp_MaxH := array_ResultDeal[I].DGZ11_value;
           if temp_MinH > array_ResultDeal[I].DGZ11_value then temp_MinH := array_ResultDeal[I].DGZ11_value;
 
@@ -1170,20 +1167,6 @@ begin
           begin
             Form_UI.IsGJD := True;
             Form_UI.poleCounts := 0;
-            endRecordKm := tempKm;
-            if Abs(endRecordKm - startRecordKm) > 0.005 then   //0.005是5米
-            begin
-              Form_UI.calHCounts := Form_UI.calHCounts + 1;
-              SetLength(temp_DGBHL_value, Form_UI.calHCounts);
-              SetLength(temp_DWDGC_value, Form_UI.calHCounts);
-              temp_DWDGC_value[Form_UI.calHCounts - 1] := Abs(temp_MaxH - temp_MinH);
-              temp_DGBHL_value[Form_UI.calHCounts - 1] := temp_DWDGC_value[Form_UI.calHCounts - 1] / Abs(endRecordKm - startRecordKm) / 1000;
-              array_PlusResult[Form_UI.calingCounts - 1].DWDGC_value := Form_UI.CalAve(temp_DWDGC_value);
-              array_PlusResult[Form_UI.calingCounts - 1].DGBHL_value := Form_UI.CalAve(temp_DGBHL_value);
-              Form_UI.calHCounts := 0;
-              SetLength(temp_DGBHL_value, Form_UI.calHCounts);
-              SetLength(temp_DWDGC_value, Form_UI.calHCounts);
-            end;
           end
           else
           begin
@@ -1195,6 +1178,21 @@ begin
               end
               else
               begin
+                endRecordKm := tempKm;
+                if Abs(endRecordKm - startRecordKm) > 0.005 then   //0.005是5米
+                begin
+                  Form_UI.calHCounts := Form_UI.calHCounts + 1;
+                  SetLength(temp_DGBHL_value, Form_UI.calHCounts);
+                  SetLength(temp_DWDGC_value, Form_UI.calHCounts);
+                  temp_DWDGC_value[Form_UI.calHCounts - 1] := Abs(temp_MaxH - temp_MinH);
+                  temp_DGBHL_value[Form_UI.calHCounts - 1] := temp_DWDGC_value[Form_UI.calHCounts - 1] / Abs(endRecordKm - startRecordKm) / 1000 / 1000;
+                  array_PlusResult[Form_UI.calingCounts - 1].DWDGC_value := Form_UI.CalAve(temp_DWDGC_value);
+                  array_PlusResult[Form_UI.calingCounts - 1].DGBHL_value := Form_UI.CalAve(temp_DGBHL_value);
+                  Form_UI.calHCounts := 0;
+                  SetLength(temp_DGBHL_value, Form_UI.calHCounts);
+                  SetLength(temp_DWDGC_value, Form_UI.calHCounts);
+                end;
+
                 Form_UI.IsGJD := False;
                 Form_UI.poleCounts := 0;
                 temp_MaxH := 0;
@@ -1236,14 +1234,6 @@ begin
               Form_UI.IsJCDL := True;
             end;
           end;
-
-//          //燃弧赋值
-//          if array_PlusResult[Form_UI.calingCounts - 1].RH_numb <> startAcyingCount then startAcyingCount := array_PlusResult[Form_UI.calingCounts - 1].RH_numb
-//          else
-//          begin
-//            array_PlusResult[Form_UI.calingCounts - 1].RH_time := 0;
-//            array_PlusResult[Form_UI.calingCounts - 1].RH_numb := 0;
-//          end;
 
           //标定值同时计算
           SetLength(temp_arraycalibYL1, Form_UI.noPlusCounts);
@@ -1297,19 +1287,6 @@ begin
               Form_UI.Calibrate_ACC4 := Form_UI.YD4;
               Form_UI.Calibrate_ACC5 := Form_UI.YD5;
               Form_UI.Calibrate_ACC6 := Form_UI.YD6;
-
-//              Form_UI.YL1 := 0;
-//              Form_UI.YL2 := 0;
-//              Form_UI.YL3 := 0;
-//              Form_UI.YL4 := 0;
-//              Form_UI.YD1 := 0;
-//              Form_UI.YD2 := 0;
-//              Form_UI.YD3 := 0;
-//              Form_UI.YD4 := 0;
-//              Form_UI.YD5 := 0;
-//              Form_UI.YD6 := 0;
-//              Form_UI.Calib_DY := 0;
-//              Form_UI.JCL := 0;
 
               if FileExists(Form_UI.ConfigurationFilePath) then
               begin
@@ -1411,7 +1388,7 @@ begin
           if array_ResultDeal[I].mark = 4 then
           begin
             endRecordKm := tempKm;
-            if Abs(endRecordKm - startRecordKm) > 5 then
+            if Abs(endRecordKm - startRecordKm) > 0.005 then
             begin
               if Form_UI.calHCounts < Length_DynamicArray - 1 then
               begin
@@ -2048,18 +2025,6 @@ begin
   Counts_Number := 0;
   AcyingNumber_First := -1;
 
-//  JCL := 0;
-//  Calib_DY := 0;
-//  YL1 := 0;
-//  YL2 := 0;
-//  YL3 := 0;
-//  YL4 := 0;
-//  YD1 := 0;
-//  YD2 := 0;
-//  YD3 := 0;
-//  YD4 := 0;
-//  YD5 := 0;
-//  YD6 := 0;
   time_Electricity := 0;
   time_CalSpeed := 0;
 
@@ -2604,7 +2569,6 @@ begin
   FileStream.Destroy;
 end;
 
-
 procedure TForm_UI.StartSaveOriginalData;
 var
   SaveOriginalFile : file;
@@ -2856,7 +2820,7 @@ begin
   for I := 4 to 39 do Buffer_Send[I] := 0;
   Buffer_Send[40] := 1;
   Buffer_Send[41] := 1;
-  Buffer_Send[42] := 91;
+  Buffer_Send[42] := 35;
   Buffer_Send[43] := 0;
   Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
   Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));
@@ -2883,7 +2847,7 @@ begin
   for I := 4 to 39 do Buffer_Send[I] := 0;
   Buffer_Send[40] := 2;
   Buffer_Send[41] := 1;
-  Buffer_Send[42] := 91;
+  Buffer_Send[42] := 35;
   Buffer_Send[43] := 0;
   Buffer_Send[44] := StrToInt(FormatDateTime('yy', TempTime));
   Buffer_Send[45] := StrToInt(FormatDateTime('mm', TempTime));

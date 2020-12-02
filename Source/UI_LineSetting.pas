@@ -120,6 +120,7 @@ begin
               Form_UI.OriginalCache.clear;
               ResumeThread(Form_UI.PSaveThread);
               ResumeThread(Form_UI.PProcessThread);
+              Form_UI.FDrawThread.Resume;
               if not Form_UI.IsSave then Form_UI.TempOrignalDataPath := Form_UI.SavedOriginalDataPath + FormatDateTime('yyyymmddhhnnss', Now) + '.dat';
               Form_UI.Action_StartSaveExecute(Sender);
               Form_UI.IsRun := True;

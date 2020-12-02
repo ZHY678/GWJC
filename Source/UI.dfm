@@ -123,10 +123,6 @@ object Form_UI: TForm_UI
     object TabSheet_Conductor: TRzTabSheet
       TabVisible = False
       Caption = #23548#39640#25289#20986#20540#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Condutor: TChart
         Left = 0
         Top = 0
@@ -422,10 +418,6 @@ object Form_UI: TForm_UI
     object TabSheet_Parameter: TRzTabSheet
       TabVisible = False
       Caption = #20854#20313#20960#20309#21442#25968#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Parameter: TChart
         Left = 0
         Top = 0
@@ -595,10 +587,6 @@ object Form_UI: TForm_UI
     object TabSheet_Contactforce: TRzTabSheet
       TabVisible = False
       Caption = #25509#35302#21147#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Contactforce: TChart
         Left = 0
         Top = 0
@@ -779,10 +767,6 @@ object Form_UI: TForm_UI
     object TabSheet_Hardspot: TRzTabSheet
       TabVisible = False
       Caption = #30828#28857#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Hardspot: TChart
         Left = 0
         Top = 0
@@ -894,10 +878,6 @@ object Form_UI: TForm_UI
     object TabSheet_Electric: TRzTabSheet
       TabVisible = False
       Caption = #30005#27969#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Electric: TChart
         Left = 0
         Top = 0
@@ -1012,10 +992,6 @@ object Form_UI: TForm_UI
     object TabSheet_Acying: TRzTabSheet
       TabVisible = False
       Caption = #29123#24359#30028#38754
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Chart_Acying: TChart
         Left = 0
         Top = 0
@@ -1525,6 +1501,7 @@ object Form_UI: TForm_UI
     object MenuItem_LineAndSensor: TMenuItem
       Caption = #32447#36335#19982#20256#24863#22120#35774#32622
       object MenuItem_InitLine: TMenuItem
+        Action = Action_OpenLineUI
         Caption = #32447#36335#35774#32622
       end
       object MenuItem_Sensor: TMenuItem
