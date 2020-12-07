@@ -119,6 +119,14 @@ type
     Edit_AC1: TEdit;
     Label_IsCompensate: TLabel;
     Edit_IsCompensate: TEdit;
+    Label_ForceK: TLabel;
+    Edit_ForceK: TEdit;
+    Label_ForceB: TLabel;
+    Edit_ForceB: TEdit;
+    Label_1: TLabel;
+    Edit_1: TEdit;
+    Label_11: TLabel;
+    Edit_11: TEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure Button_ComfirmClick(Sender: TObject);

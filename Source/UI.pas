@@ -16,10 +16,6 @@ uses
   UDrawThread;
 
 type
-  data2D = record
-    lineWidth, lineHeight, lineWidthValue, lineHeightValue: Single;
-  end;
-
   sResultDataPara = packed record              //信息头
     lineName: array [0..99] of Char;    //线路名称
     Version: Byte;                      //软件版本
@@ -30,6 +26,7 @@ type
     shangxia: Byte;                     //上下行（0=未知 1=上行 2=下行）
     rundir: Byte;                       //正反向（1=正 0=反）
     initzengjian: Byte;                 //里程增减（1=增 0=减）
+    ghzengjian: Byte;                   //杆号增减（1=增 0=减）
     DataTime: array [0..11] of Char;    //采集时间 YYMMDDHHMMSS
   end;
 
@@ -64,7 +61,8 @@ type
     ghNumb: Integer;                     //杆号
     myspeed: Single;                     //速度，单位km/h
     mykilo: Double;                      //公里标，单位m
-    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
+//    Errmark: Byte;                       //  03代表异常数据
+    mark: Byte;                          //  01代表公里标矫正 02代表锚段或线叉
     CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
   end;
 
@@ -105,20 +103,6 @@ type
     AcyingData: TRecord_OriginalAcying;
   end;
 
-  TData_Extra = record
-    LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
-    LCZSP2_value: Single;                //接触线2水平距离（柔性双线时），mm
-    SPJL_value: Single;                  //锚段或线叉处接触线水平距离，mm
-    SPGC_value: Single;                  //锚段或线叉处接触线高差，mm
-    DGBHL_value: Single;                 //导高变化率
-    DWDGC_value: Single;                 //定位点高差，mm
-    ghNumb: Integer;                     //杆号
-    myspeed: Single;                     //速度，单位km/h
-    mykilo: Double;                      //公里标，单位m
-    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
-    CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
-  end;
-
   TData_Dealing = record
     TempJCWJH: JCWJH;
     TempHv: TRecord_Hv;
@@ -138,12 +122,9 @@ type
     MenuItem_StartCollect: TMenuItem;
     MenuItem_StopCollect: TMenuItem;
     MenuItem_Save: TMenuItem;
-    MenuItem_Server: TMenuItem;
     MenuItem_LineAndSensor: TMenuItem;
     MenuItem_StartSave: TMenuItem;
     MenuItem_StopSave: TMenuItem;
-    MenuItem_Connect: TMenuItem;
-    MenuItem_DisConnect: TMenuItem;
     MenuItem_InitLine: TMenuItem;
     MenuItem_Close: TMenuItem;
     ActionList: TActionList;
@@ -168,15 +149,12 @@ type
     LargeButton_Close: TdxBarLargeButton;
     ManagerBar_Collect: TdxBar;
     ManagerBar_Save: TdxBar;
-    ManagerBar_Server: TdxBar;
     ManagerBar_LineAndSensor: TdxBar;
     ManagerBar_Playback: TdxBar;
     LargeButton_StartCollect: TdxBarLargeButton;
     LargeButton_StopCollect: TdxBarLargeButton;
     LargeButton_StartSave: TdxBarLargeButton;
     LargeButton_StopSave: TdxBarLargeButton;
-    LargeButton_Connect: TdxBarLargeButton;
-    LargeButton_Disconnect: TdxBarLargeButton;
     LargeButton_Line: TdxBarLargeButton;
     LargeButton_SelectData: TdxBarLargeButton;
     LargeButton_StartPlayback: TdxBarLargeButton;
@@ -243,12 +221,8 @@ type
     Action_OpenSensorUI: TAction;
     Timer_InitSubGroup: TTimer;
     IdUDPServer_Hv: TIdUDPServer;
-    MenuItem_Calibration: TMenuItem;
-    Action_StartCalibrate: TAction;
+    Action_StartInitCalibrate: TAction;
     Action_StopCalibrate: TAction;
-    LargeButton_StartCalibrate: TdxBarLargeButton;
-    LargeButton_StopCalibrate: TdxBarLargeButton;
-    MenuItem_StopCalibrate: TMenuItem;
     IdUDPServer_Lv: TIdUDPServer;
     IdUDPServer_Acying: TIdUDPServer;
     Action_StartSave: TAction;
@@ -286,6 +260,18 @@ type
     PointSeries_ElectricTimeData: TPointSeries;
     Action_DataDisplay: TAction;
     FastLineSeries_Pole: TFastLineSeries;
+    MenuItem_CalibrateSetting: TMenuItem;
+    MenuItem_InitCalibrate: TMenuItem;
+    MenuItem_RaiseCalibrate: TMenuItem;
+    MenuItem_Normal: TMenuItem;
+    ManagerBar_Calibrate: TdxBar;
+    LargeButton_StartInitCali: TdxBarLargeButton;
+    LargeButton_StartRaiseCali: TdxBarLargeButton;
+    LargeButton_StartNormalCali: TdxBarLargeButton;
+    LargeButton_StopCalibrate: TdxBarLargeButton;
+    MenuItem_StopCalibrate: TMenuItem;
+    Action_StartRaiseCalibrate: TAction;
+    Action_StartNormalCalibrate: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -308,7 +294,7 @@ type
     procedure Timer_InitSubGroupTimer(Sender: TObject);
     procedure IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
-    procedure Action_StartCalibrateExecute(Sender: TObject);
+    procedure Action_StartInitCalibrateExecute(Sender: TObject);
     procedure Action_StopCalibrateExecute(Sender: TObject);
     procedure IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
@@ -322,6 +308,8 @@ type
     procedure Action_StartSimulateExecute(Sender: TObject);
     procedure Action_StopSimulateExecute(Sender: TObject);
     procedure Action_DataDisplayExecute(Sender: TObject);
+    procedure Action_StartRaiseCalibrateExecute(Sender: TObject);
+    procedure Action_StartNormalCalibrateExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
@@ -372,9 +360,8 @@ type
     //calCounts 计算均值、最大值、最小值、均方根值的点数多少
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和Number_Cal * 2 - 1有关
     calCounts, drawCounts, calingCounts, paintCounts: Word;
-//    counts: Word;
 
-    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
+    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating_Init, IsCalibrating_Raise, IsCalibrating_Normal, IsFirstCal, IsGJD, IsJCDL: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
     drawThreshold, poleCounts: Byte;   //绘图点数和支柱计算高差计数
@@ -390,7 +377,7 @@ type
 
     Direction_Sensor, IsCompensate: Byte;   //传感器方向和是否补偿
     Value_Quality, Value_StandradElectricity: Single;   //弓网质量和电流标准值
-    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6: Single;
+    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6, calibrate_ForceK, calibrate_ForceB: Single;
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;   //此行和上一行是压力、硬点、接触力和电流标定值
     Sensitivity_YL1, Sensitivity_YL2, Sensitivity_YL3, Sensitivity_YL4, Sensitivity_ACC1, Sensitivity_ACC2: Single;
     calibrate_DGZ, calibrate_LCZ: Single;
@@ -542,8 +529,7 @@ end;
 
 function ProcessThread(p: Pointer): Integer; stdcall;
 var
-  I, J, tempCounts: Word;
-//  plusCounts: Byte;
+  I, J: Word;
   TempWord: array [0..1] of Byte;
   TempInteger: array [0..3] of Byte;
   TempData2D: ^JCWJH;
@@ -992,10 +978,16 @@ begin
         if Form_UI.Direction_Sensor = 1 then array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 + Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2 - Form_UI.Value_Quality * G
         else array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2 - Form_UI.Value_Quality * G;
 
-        array_ResultDeal[I].JCL_mean := 0;
-        array_ResultDeal[I].JCL_max := 0;
-        array_ResultDeal[I].JCL_min := 0;
-        array_ResultDeal[I].JCL_std := 0;
+//        array_ResultDeal[I].JCL_mean := 0;
+//        array_ResultDeal[I].JCL_max := 0;
+//        array_ResultDeal[I].JCL_min := 0;
+//        array_ResultDeal[I].JCL_std := 0;
+
+        //原本正常计算按上述计算，但现在这四个力的值为别赋值为4个压力传感器的值
+        array_ResultDeal[I].JCL_mean := array_CalibResultDeal[I].Power1 - Form_UI.Calibrate_Power1;
+        array_ResultDeal[I].JCL_max := array_CalibResultDeal[I].Power2 - Form_UI.Calibrate_Power2;
+        array_ResultDeal[I].JCL_min := array_CalibResultDeal[I].Power3 - Form_UI.Calibrate_Power3;
+        array_ResultDeal[I].JCL_std := array_CalibResultDeal[I].Power4 - Form_UI.Calibrate_Power4;
 
         //电流赋值
         array_ResultDeal[I].DL_value := Form_UI.CalDL(Form_UI.vector_Electricity[I]);
@@ -1029,6 +1021,7 @@ begin
         array_ResultDeal[I].ghNumb := 0;
         array_ResultDeal[I].myspeed := 0;
         array_ResultDeal[I].mykilo := array_DataDealing[I].TempLv.encoder;
+//        array_ResultDeal[I].Errmark := 0;
 
         if array_DataDealing[I].TempJCWJH.posi = JCXP_POLE then
         begin
@@ -1256,7 +1249,7 @@ begin
           //是否进行标定
           if Form_UI.IsFirstCalibrate then
           begin
-            if Form_UI.IsCalibrating then
+            if Form_UI.IsCalibrating_Init then
             begin
               Form_UI.YL1 := Form_UI.CalMean(temp_arraycalibYL1);
               Form_UI.YL2 := Form_UI.CalMean(temp_arraycalibYL2);
@@ -1291,22 +1284,40 @@ begin
               if FileExists(Form_UI.ConfigurationFilePath) then
               begin
                 IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
-                Inifile.WriteString('标定', 'Force', FloatToStr(Form_UI.Calibrate_Force));
-                Inifile.WriteString('标定', 'Electricity', FloatToStr(Form_UI.Calibrate_Electricity));
-                Inifile.WriteString('标定', 'Power1', FloatToStr(Form_UI.Calibrate_Power1));
-                Inifile.WriteString('标定', 'Power2', FloatToStr(Form_UI.Calibrate_Power2));
-                Inifile.WriteString('标定', 'Power3', FloatToStr(Form_UI.Calibrate_Power3));
-                Inifile.WriteString('标定', 'Power4', FloatToStr(Form_UI.Calibrate_Power4));
-                Inifile.WriteString('标定', 'ACC1', FloatToStr(Form_UI.Calibrate_ACC1));
-                Inifile.WriteString('标定', 'ACC2', FloatToStr(Form_UI.Calibrate_ACC2));
-                Inifile.WriteString('标定', 'ACC3', FloatToStr(Form_UI.Calibrate_ACC3));
-                Inifile.WriteString('标定', 'ACC4', FloatToStr(Form_UI.Calibrate_ACC4));
-                Inifile.WriteString('标定', 'ACC5', FloatToStr(Form_UI.Calibrate_ACC5));
-                Inifile.WriteString('标定', 'ACC6', FloatToStr(Form_UI.Calibrate_ACC6));
+                Inifile.WriteString('标定', 'Force', FormatFloat('0.0', Form_UI.Calibrate_Force));
+                Inifile.WriteString('标定', 'Electricity', FormatFloat('0.0', Form_UI.Calibrate_Electricity));
+                Inifile.WriteString('标定', 'Power1', FormatFloat('0.0', Form_UI.Calibrate_Power1));
+                Inifile.WriteString('标定', 'Power2', FormatFloat('0.0', Form_UI.Calibrate_Power2));
+                Inifile.WriteString('标定', 'Power3', FormatFloat('0.0', Form_UI.Calibrate_Power3));
+                Inifile.WriteString('标定', 'Power4', FormatFloat('0.0', Form_UI.Calibrate_Power4));
+                Inifile.WriteString('标定', 'ACC1', FormatFloat('0.0', Form_UI.Calibrate_ACC1));
+                Inifile.WriteString('标定', 'ACC2', FormatFloat('0.0', Form_UI.Calibrate_ACC2));
+                Inifile.WriteString('标定', 'ACC3', FormatFloat('0.0', Form_UI.Calibrate_ACC3));
+                Inifile.WriteString('标定', 'ACC4', FormatFloat('0.0', Form_UI.Calibrate_ACC4));
+                Inifile.WriteString('标定', 'ACC5', FormatFloat('0.0', Form_UI.Calibrate_ACC5));
+                Inifile.WriteString('标定', 'ACC6', FormatFloat('0.0', Form_UI.Calibrate_ACC6));
                 IniFile.Free;
 
                 Form_UI.InitSubGroup;
               end;
+              Form_UI.IsFirstCalibrate := False;
+            end;
+
+            if Form_UI.IsCalibrating_Raise then
+            begin
+              ;
+            end
+            else
+            begin
+              Form_UI.IsFirstCalibrate := False;
+            end;
+
+            if Form_UI.IsCalibrating_Normal then
+            begin
+              ;
+            end
+            else
+            begin
               Form_UI.IsFirstCalibrate := False;
             end;
           end;
@@ -1326,18 +1337,19 @@ begin
           SetLength(temp_arraycalibYD4, Form_UI.noPlusCounts);
           SetLength(temp_arraycalibYD5, Form_UI.noPlusCounts);
 
-          //计算力的均值、最大值、最小值、均方根值
-          if Form_UI.calingCounts > Form_UI.calCounts - 1 then
-          begin
-            for J := 0 to Form_UI.calCounts - 1 do
-            begin
-              Form_UI.array_CalForce[J] := array_PlusResult[Form_UI.calingCounts - Form_UI.calCounts + J].JCL_value;
-            end;
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_mean := Form_UI.CalMean(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_max := Form_UI.CalMax(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_min := Form_UI.CalMin(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_std := Form_UI.Calstd(Form_UI.array_CalForce);
-          end;
+          //因为这儿的值分别显示4个力传感器的计算值，所以暂时注释
+//          //计算力的均值、最大值、最小值、均方根值
+//          if Form_UI.calingCounts > Form_UI.calCounts - 1 then
+//          begin
+//            for J := 0 to Form_UI.calCounts - 1 do
+//            begin
+//              Form_UI.array_CalForce[J] := array_PlusResult[Form_UI.calingCounts - Form_UI.calCounts + J].JCL_value;
+//            end;
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_mean := Form_UI.CalMean(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_max := Form_UI.CalMax(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_min := Form_UI.CalMin(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_std := Form_UI.Calstd(Form_UI.array_CalForce);
+//          end;
 
           //数据压入绘图缓存区中
           New(TempDataSR);
@@ -1570,9 +1582,23 @@ begin
   else MessageBox(Handle, '未发现备份的配置文件。', '恢复设置', MB_OK + MB_ICONQUESTION);
 end;
 
-procedure TForm_UI.Action_StartCalibrateExecute(Sender: TObject);
+procedure TForm_UI.Action_StartInitCalibrateExecute(Sender: TObject);
 begin
-  IsCalibrating := True;
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Init := True;
+  IsFirstCalibrate := True;
+end;
+
+procedure TForm_UI.Action_StartNormalCalibrateExecute(Sender: TObject);
+begin
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Normal := True;
   IsFirstCalibrate := True;
 end;
 
@@ -1638,6 +1664,16 @@ begin
   FDrawThread.Resume;
 end;
 
+procedure TForm_UI.Action_StartRaiseCalibrateExecute(Sender: TObject);
+begin
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Raise := True;
+  IsFirstCalibrate := True;
+end;
+
 procedure TForm_UI.Action_StartSaveExecute(Sender: TObject);
 begin
   if not IsSave then
@@ -1652,6 +1688,7 @@ begin
     StartSaveResultData;
     IsSave := True;
     dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
+    Application.ProcessMessages;
   end;
 end;
 
@@ -1711,7 +1748,13 @@ end;
 
 procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
 begin
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
+
+  LargeButton_StartInitCali.Enabled := True;
+  LargeButton_StartRaiseCali.Enabled := True;
+  LargeButton_StartNormalCali.Enabled := True;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
@@ -1726,6 +1769,7 @@ begin
 
     SuspendThread(Form_UI.PProcessThread);
     FDrawThread.Suspend;
+    SuspendThread(Form_UI.pSaveThread);
 
     IsRun := False;
     IsSave := False;
@@ -1736,7 +1780,6 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
-//    counts:= 0;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -1777,24 +1820,34 @@ begin
   SuspendThread(PProcessThread);
   FDrawThread.Suspend;
   IsFirstCalibrate := False;
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
   LargeButton_InitSetting.Enabled := True;
   LargeButton_Pause.Enabled := True;
   LargeButton_StartCollect.Enabled := True;
   LargeButton_StopCollect.Enabled := True;
-  SuspendThread(PSaveThread);
+  IsPlayback := False;
 end;
 
 procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
 begin
   if IsSave then
   begin
+    SuspendThread(PProcessThread);
+    SuspendThread(pSaveThread);
     IsSave := False;
     OriginalCache.clear;
     ResultCache.clear;
     dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
     StopSaveOriginalData;
     StopSaveResultData;
+    if IsRun or IsPlayback then
+    begin
+      ResumeThread(pSaveThread);
+      ResumeThread(PProcessThread);
+    end;
+    Application.ProcessMessages;
   end;
 end;
 
@@ -1821,7 +1874,6 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
-//    counts:= 0;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -2007,13 +2059,14 @@ begin
   IsSave := False;
   IsPlayback := False;
   IsFirstCalibrate := False;
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
   IsFirstCal := True;
   IsJCDL := True;
   IsGJD := False;
 
   //计算绘图技术点初始化
-//  counts := 0;
   drawCounts := 0;
   calingCounts := 0;
   noPlusCounts := 0;
@@ -2052,6 +2105,8 @@ end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
 begin
+  Timer.Enabled := False;
+
   if IsSave then
   begin
     Action_StopSaveExecute(Sender);
@@ -2125,11 +2180,13 @@ begin
   Counts_Save := Counts_Save;
   Counts_Number := Counts_Number;
 
-  if IsRun then Form_Sensor.Button_Comfirm.Enabled := False
+  if IsRun or IsPlayback then Form_Sensor.Button_Comfirm.Enabled := False
   else Form_Sensor.Button_Comfirm.Enabled := True;
 
   dxRibbonStatusBar.Panels[5].Text := '公里标：' + Formatfloat('0.000', GKilometer) + 'km   速度：' + Formatfloat('0.000', GSpeed) + 'km/h';
   dxRibbonStatusBar.Panels[6].Text := FormatDateTime('yyyy年mm月dd日 hh:nn:ss', Now);
+
+  Application.ProcessMessages;
 end;
 
 procedure TForm_UI.Timer_InitSubGroupTimer(Sender: TObject);
@@ -2176,8 +2233,8 @@ begin
 
       Writeln(ConfigurationTextFile, '[参数设置]');
       Writeln(ConfigurationTextFile, '是否补偿 = 0');
-      Writeln(ConfigurationTextFile, '弓网质量 = 0');
-      Writeln(ConfigurationTextFile, '电流标准值 = 0');
+      Writeln(ConfigurationTextFile, '弓网质量 = 30');
+      Writeln(ConfigurationTextFile, '电流标准值 = 1500');
       Writeln(ConfigurationTextFile, '压力传感器1灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '压力传感器2灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '压力传感器3灵敏度系数 = 2');
@@ -2199,6 +2256,8 @@ begin
       Writeln(ConfigurationTextFile, 'ACC4 = 0');
       Writeln(ConfigurationTextFile, 'ACC5 = 0');
       Writeln(ConfigurationTextFile, 'ACC6 = 0');
+      Writeln(ConfigurationTextFile, 'ForceK = 1');
+      Writeln(ConfigurationTextFile, 'ForceB = 0');
       Writeln(ConfigurationTextFile, 'DGZ = 0');
       Writeln(ConfigurationTextFile, 'LCZ = 0');
       Writeln(ConfigurationTextFile, '');
@@ -2228,8 +2287,8 @@ begin
     Direction_Sensor := IniFile.ReadInteger('传感器设置', 'Direction', 1);
 
     IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
-    Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 0);
-    Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 0);
+    Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 30);
+    Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 1500);
     Sensitivity_YL1 := IniFile.ReadFloat('参数设置', '压力传感器1灵敏度系数', 2);
     Sensitivity_YL2 := IniFile.ReadFloat('参数设置', '压力传感器2灵敏度系数', 2);
     Sensitivity_YL3 := IniFile.ReadFloat('参数设置', '压力传感器3灵敏度系数', 2);
@@ -2249,6 +2308,8 @@ begin
     Calibrate_ACC4 := IniFile.ReadFloat('标定', 'ACC4', 0);
     Calibrate_ACC5 := IniFile.ReadFloat('标定', 'ACC5', 0);
     Calibrate_ACC6 := IniFile.ReadFloat('标定', 'ACC6', 0);
+    calibrate_ForceK := IniFile.ReadFloat('标定', 'ForceK', 1);
+    calibrate_ForceB := IniFile.ReadFloat('标定', 'ForceB', 0);
     calibrate_DGZ := IniFile.ReadFloat('标定', 'DGZ', 0);
     calibrate_LCZ := IniFile.ReadFloat('标定', 'LCZ', 0);
 
@@ -2265,26 +2326,8 @@ begin
 
     IniFile.Free;
 
-    if IsDebug > 0 then
-    begin
-      dxRibbonTab_Debug.Visible := True;
-
-      MenuItem_Collect.Visible := True;
-      MenuItem_Save.Visible := True;
-      MenuItem_Server.Visible := True;
-      MenuItem_LineAndSensor.Visible := True;
-      MenuItem_Playback.Visible := True;
-    end
-    else
-    begin
-      dxRibbonTab_Debug.Visible := False;
-
-      MenuItem_Collect.Visible := False;
-      MenuItem_Save.Visible := False;
-      MenuItem_Server.Visible := False;
-      MenuItem_LineAndSensor.Visible := False;
-      MenuItem_Playback.Visible := False;
-    end;
+    if IsDebug > 0 then Menu := MainMenu_UI
+    else Menu := nil;
   except
     On E : Exception Do
     begin
@@ -2383,6 +2426,8 @@ begin
   Form_Sensor.Edit_ACC4.Text := FloatToStr(Calibrate_ACC4);
   Form_Sensor.Edit_ACC5.Text := FloatToStr(Calibrate_ACC5);
   Form_Sensor.Edit_ACC6.Text := FloatToStr(Calibrate_ACC6);
+  Form_Sensor.Edit_ForceK.Text := FloatToStr(calibrate_ForceK);
+  Form_Sensor.Edit_ForceB.Text := FloatToStr(calibrate_ForceB);
 
   Form_Sensor.Edit_IsCompensate.Text := IntToStr(IsCompensate);
   Form_Sensor.Edit_DGZ.Text := FloatToStr(calibrate_DGZ);
@@ -2545,14 +2590,10 @@ begin
   WritePosition := FileStream.Size;
   FileStream.Seek(WritePosition, 0);
 
-  if Length(tempLineName) > 0 then
-  begin
-    for I := 0 to Length(tempLineName) - 1 do
-    begin
-      TempData.lineName[I] := tempLineName[I];
-    end;
-  end;
-  TempData.Version := 1;
+  for I := 0 to Length(TempData.lineName) - 1 do TempData.lineName[I] := '0';
+  if Length(tempLineName) > 0 then for I := 0 to Length(tempLineName) - 1 do TempData.lineName[I] := tempLineName[I + 1];
+  //结果数据协议版本增加了一版
+  TempData.Version := 2;
   for I := 0 to 394 do TempData.reserved[I] := 0;
   TempData.inight := inight;
   TempData.inidis := Round(initDis * 1000);
@@ -2565,7 +2606,7 @@ begin
   else TempData.initzengjian := 0;
 
   tempString := FormatDateTime('yymmddhhnnss', Now);
-  for I := 0 to 11 do TempData.DataTime[I] := tempString[I];
+  for I := 0 to 11 do TempData.DataTime[I] := tempString[I + 1];
 
   LengthNumber := FileStream.Write(TempData, SizeOf(sResultDataPara));
   FileStream.Destroy;
