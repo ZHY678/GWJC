@@ -605,7 +605,7 @@ object Form_Sensor: TForm_Sensor
     Left = 567
     Top = 175
     Width = 305
-    Height = 123
+    Height = 99
     Caption = #35745#31639#35774#32622
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -616,7 +616,7 @@ object Form_Sensor: TForm_Sensor
     TabOrder = 5
     object Label_DrawCounts: TLabel
       Left = 17
-      Top = 33
+      Top = 25
       Width = 80
       Height = 19
       Caption = #32472#22270#28857#25968#65306
@@ -629,7 +629,7 @@ object Form_Sensor: TForm_Sensor
     end
     object Label_CalCounts: TLabel
       Left = 17
-      Top = 73
+      Top = 65
       Width = 80
       Height = 19
       Caption = #35745#31639#28857#25968#65306
@@ -642,7 +642,7 @@ object Form_Sensor: TForm_Sensor
     end
     object Edit_DrawCounts: TEdit
       Left = 145
-      Top = 30
+      Top = 22
       Width = 88
       Height = 27
       Alignment = taCenter
@@ -656,7 +656,7 @@ object Form_Sensor: TForm_Sensor
     end
     object Edit_CalCounts: TEdit
       Left = 145
-      Top = 70
+      Top = 62
       Width = 88
       Height = 27
       Alignment = taCenter
@@ -890,7 +890,7 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_1: TLabel
+    object Label_ForceCalK: TLabel
       Left = 16
       Top = 503
       Width = 87
@@ -903,12 +903,12 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
     end
-    object Label_11: TLabel
+    object Label_ForceCalB: TLabel
       Left = 16
       Top = 536
-      Width = 87
+      Width = 93
       Height = 19
-      Caption = #36733#29289#21147'(N)'#65306
+      Caption = #36733#29289#21147'(kg)'#65306
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -1154,7 +1154,7 @@ object Form_Sensor: TForm_Sensor
       ReadOnly = True
       TabOrder = 15
     end
-    object Edit_1: TEdit
+    object Edit_ForceCalK: TEdit
       Left = 142
       Top = 500
       Width = 88
@@ -1168,7 +1168,7 @@ object Form_Sensor: TForm_Sensor
       ParentFont = False
       TabOrder = 16
     end
-    object Edit_11: TEdit
+    object Edit_ForceCalB: TEdit
       Left = 142
       Top = 533
       Width = 88
@@ -1429,9 +1429,9 @@ object Form_Sensor: TForm_Sensor
   end
   object GroupBox_Sensor: TGroupBox
     Left = 567
-    Top = 304
+    Top = 384
     Width = 305
-    Height = 98
+    Height = 65
     Caption = #20256#24863#22120#26041#21521#35774#32622
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -1442,7 +1442,7 @@ object Form_Sensor: TForm_Sensor
     TabOrder = 9
     object RadioButton_Zheng: TRadioButton
       Left = 48
-      Top = 48
+      Top = 32
       Width = 113
       Height = 17
       Caption = #27491#21521
@@ -1450,7 +1450,7 @@ object Form_Sensor: TForm_Sensor
     end
     object RadioButton_Fu: TRadioButton
       Left = 175
-      Top = 48
+      Top = 32
       Width = 113
       Height = 17
       Caption = #21453#21521
@@ -1459,7 +1459,7 @@ object Form_Sensor: TForm_Sensor
   end
   object GroupBox_Sensitivity: TGroupBox
     Left = 567
-    Top = 408
+    Top = 455
     Width = 305
     Height = 234
     Caption = #28789#25935#24230#31995#25968
@@ -1631,6 +1631,74 @@ object Form_Sensor: TForm_Sensor
       Font.Style = []
       ParentFont = False
       TabOrder = 5
+    end
+  end
+  object GroupBox_Vehicle: TGroupBox
+    Left = 567
+    Top = 279
+    Width = 305
+    Height = 99
+    Caption = #36710#36742#35774#32622
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 11
+    object Label_Wheel: TLabel
+      Left = 17
+      Top = 25
+      Width = 104
+      Height = 19
+      Caption = #36718#24452#20540'(mm)'#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label_Pluse: TLabel
+      Left = 17
+      Top = 65
+      Width = 64
+      Height = 19
+      Caption = #33033#20914#25968#65306
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Edit_Wheel: TEdit
+      Left = 145
+      Top = 22
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+    object Edit_Pluse: TEdit
+      Left = 145
+      Top = 62
+      Width = 88
+      Height = 27
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
     end
   end
 end

@@ -377,10 +377,16 @@ type
 
     Direction_Sensor, IsCompensate: Byte;   //传感器方向和是否补偿
     Value_Quality, Value_StandradElectricity: Single;   //弓网质量和电流标准值
-    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6, calibrate_ForceK, calibrate_ForceB: Single;
+
+    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4,
+    calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6,
+    calibrate_ForceK, calibrate_ForceB, Force_CalK, Force_CalB, tmpForceK, tmpForceB: Single;   //读取的配置参数及标定参数
+
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;   //此行和上一行是压力、硬点、接触力和电流标定值
     Sensitivity_YL1, Sensitivity_YL2, Sensitivity_YL3, Sensitivity_YL4, Sensitivity_ACC1, Sensitivity_ACC2: Single;
     calibrate_DGZ, calibrate_LCZ: Single;
+    Distance_Pluse, D_Wheel: Single;
+    N_Pluse: Word;
     array_CalForce: array of Single;
 
     //滤波器所要的vector数组
@@ -448,13 +454,13 @@ var
   Form_UI: TForm_UI;
 
   const
-    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
+//    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
     Number_Draw = 5000;           //绘图的点数
-    Number_Cal = 200;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
+    Number_Cal = 400;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
     G = 9.8;                      //重力加速度
     Fq_BandPass = 20;             //低通滤波带通频率
     Fq_CutOff = 25;               //低通滤波截止频率
-    Length_DynamicArray = 1000;   //中间计算过程动态数组长度
+    Length_DynamicArray = 2000;   //中间计算过程动态数组长度
 
 implementation
 
@@ -1101,7 +1107,7 @@ begin
           end;
 
           //速度、公里标赋值
-          tempKm := (tempPlus - startPlus) * Distance_Pluse / 1000000 + startKm;
+          tempKm := (tempPlus - startPlus) * Form_UI.Distance_Pluse / 1000000 + startKm;
           array_PlusResult[Form_UI.calingCounts - 1].mykilo := tempKm * 1000;
           if Form_UI.time_CalSpeed = 0 then
           begin
@@ -1114,7 +1120,7 @@ begin
             if GetTickCount - Form_UI.time_CalSpeed > 2500 then   //2500毫秒算一次速度
             begin
               temp_time := GetTickCount;
-              array_PlusResult[Form_UI.calingCounts - 1].myspeed := Abs((tempPlus - tmpPluse) * Distance_Pluse / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
+              array_PlusResult[Form_UI.calingCounts - 1].myspeed := Abs((tempPlus - tmpPluse) * Form_UI.Distance_Pluse / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
               Form_UI.GSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
               tmpSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
               Form_UI.time_CalSpeed := temp_time;
@@ -1207,7 +1213,7 @@ begin
           temp_arrayYD2[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].YD2_value;
           temp_arrayJCL[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].JCL_value;
           temp_arrayDL[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].DL_value;
-          array_PlusResult[Form_UI.calingCounts - 1].JCL_value := Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force;
+          array_PlusResult[Form_UI.calingCounts - 1].JCL_value := Form_UI.calibrate_ForceK * (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force) + Form_UI.calibrate_ForceB;
           array_PlusResult[Form_UI.calingCounts - 1].DL_value := Abs(Form_UI.CalMean(temp_arrayDL) - Form_UI.calibrate_Electricity);   //暂时加绝对值计算电流，以后可能分正负值计算
           array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC3;
           array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC6;
@@ -1303,21 +1309,37 @@ begin
               Form_UI.IsFirstCalibrate := False;
             end;
 
-            if Form_UI.IsCalibrating_Raise then
-            begin
-              ;
-            end
+            if Form_UI.IsCalibrating_Raise then Form_UI.tmpForceK := Form_UI.Force_CalK / (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force)
             else
             begin
+              Form_UI.calibrate_ForceK := Form_UI.tmpForceK;
+
+              if FileExists(Form_UI.ConfigurationFilePath) then
+              begin
+                IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
+                Inifile.WriteString('标定', 'ForceK', FormatFloat('0.0', Form_UI.calibrate_ForceK));
+                IniFile.Free;
+
+                Form_UI.InitSubGroup;
+              end;
+
               Form_UI.IsFirstCalibrate := False;
             end;
 
-            if Form_UI.IsCalibrating_Normal then
-            begin
-              ;
-            end
+            if Form_UI.IsCalibrating_Normal then Form_UI.tmpForceB := Form_UI.Force_CalB * G - Form_UI.calibrate_ForceK * (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force)
             else
             begin
+              Form_UI.calibrate_ForceB := Form_UI.tmpForceB;
+
+              if FileExists(Form_UI.ConfigurationFilePath) then
+              begin
+                IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
+                Inifile.WriteString('标定', 'ForceB', FormatFloat('0.0', Form_UI.calibrate_ForceB));
+                IniFile.Free;
+
+                Form_UI.InitSubGroup;
+              end;
+
               Form_UI.IsFirstCalibrate := False;
             end;
           end;
@@ -2231,6 +2253,10 @@ begin
       Writeln(ConfigurationTextFile, 'Direction = 1');
       Writeln(ConfigurationTextFile, '');
 
+      Writeln(ConfigurationTextFile, '[车辆设置]');
+      Writeln(ConfigurationTextFile, '轮径值 = 840');
+      Writeln(ConfigurationTextFile, '轮径脉冲数 = 80');
+
       Writeln(ConfigurationTextFile, '[参数设置]');
       Writeln(ConfigurationTextFile, '是否补偿 = 0');
       Writeln(ConfigurationTextFile, '弓网质量 = 30');
@@ -2241,6 +2267,8 @@ begin
       Writeln(ConfigurationTextFile, '压力传感器4灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '加速度1灵敏度系数 = 24');
       Writeln(ConfigurationTextFile, '加速度2灵敏度系数 = 24');
+      Writeln(ConfigurationTextFile, '弓网力 = 120');
+      Writeln(ConfigurationTextFile, '载物力 = 10.2');
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[标定]');
@@ -2286,32 +2314,39 @@ begin
     ComputerPort := IniFile.ReadString('传感器设置', 'ComputerPort', '1025');
     Direction_Sensor := IniFile.ReadInteger('传感器设置', 'Direction', 1);
 
-    IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
-    Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 30);
-    Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 1500);
-    Sensitivity_YL1 := IniFile.ReadFloat('参数设置', '压力传感器1灵敏度系数', 2);
-    Sensitivity_YL2 := IniFile.ReadFloat('参数设置', '压力传感器2灵敏度系数', 2);
-    Sensitivity_YL3 := IniFile.ReadFloat('参数设置', '压力传感器3灵敏度系数', 2);
-    Sensitivity_YL4 := IniFile.ReadFloat('参数设置', '压力传感器4灵敏度系数', 2);
-    Sensitivity_ACC1 := IniFile.ReadFloat('参数设置', '加速度1灵敏度系数', 24);
-    Sensitivity_ACC2 := IniFile.ReadFloat('参数设置', '加速度2灵敏度系数', 24);
 
-    Calibrate_Force := IniFile.ReadFloat('标定', 'Force', 0);
-    Calibrate_Electricity := IniFile.ReadFloat('标定', 'Electricity', 0);
-    Calibrate_Power1 := IniFile.ReadFloat('标定', 'Power1', 0);
-    Calibrate_Power2 := IniFile.ReadFloat('标定', 'Power2', 0);
-    Calibrate_Power3 := IniFile.ReadFloat('标定', 'Power3', 0);
-    Calibrate_Power4 := IniFile.ReadFloat('标定', 'Power4', 0);
-    Calibrate_ACC1 := IniFile.ReadFloat('标定', 'ACC1', 0);
-    Calibrate_ACC2 := IniFile.ReadFloat('标定', 'ACC2', 0);
-    Calibrate_ACC3 := IniFile.ReadFloat('标定', 'ACC3', 0);
-    Calibrate_ACC4 := IniFile.ReadFloat('标定', 'ACC4', 0);
-    Calibrate_ACC5 := IniFile.ReadFloat('标定', 'ACC5', 0);
-    Calibrate_ACC6 := IniFile.ReadFloat('标定', 'ACC6', 0);
-    calibrate_ForceK := IniFile.ReadFloat('标定', 'ForceK', 1);
-    calibrate_ForceB := IniFile.ReadFloat('标定', 'ForceB', 0);
-    calibrate_DGZ := IniFile.ReadFloat('标定', 'DGZ', 0);
-    calibrate_LCZ := IniFile.ReadFloat('标定', 'LCZ', 0);
+    IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
+    Value_Quality := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '弓网质量', 30)));
+    Value_StandradElectricity := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '电流标准值', 1500)));
+    Sensitivity_YL1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器1灵敏度系数', 2)));
+    Sensitivity_YL2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器2灵敏度系数', 2)));
+    Sensitivity_YL3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器3灵敏度系数', 2)));
+    Sensitivity_YL4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器4灵敏度系数', 2)));
+    Sensitivity_ACC1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '加速度1灵敏度系数', 24)));
+    Sensitivity_ACC2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '加速度2灵敏度系数', 24)));
+    Force_CalK := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '弓网力', 120)));
+    Force_CalB := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '载物力', 10.2)));
+
+    D_Wheel := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('车辆设置', '轮径值', 840)));
+    N_Pluse := IniFile.ReadInteger('车辆设置', '轮径脉冲数', 80);
+    Distance_Pluse := D_Wheel * 3.141592653 / N_Pluse;
+
+    Calibrate_Force := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Force', 0)));
+    Calibrate_Electricity := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Electricity', 0)));
+    Calibrate_Power1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power1', 0)));
+    Calibrate_Power2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power2', 0)));
+    Calibrate_Power3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power3', 0)));
+    Calibrate_Power4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power4', 0)));
+    Calibrate_ACC1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC1', 0)));
+    Calibrate_ACC2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC2', 0)));
+    Calibrate_ACC3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC3', 0)));
+    Calibrate_ACC4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC4', 0)));
+    Calibrate_ACC5 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC5', 0)));
+    Calibrate_ACC6 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC6', 0)));
+    calibrate_ForceK := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ForceK', 1)));
+    calibrate_ForceB := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ForceB', 0)));
+    calibrate_DGZ := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'DGZ', 0)));
+    calibrate_LCZ := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'LCZ', 0)));
 
     IsDebug := IniFile.ReadInteger('调试', '调试', 1);
     drawThreshold := IniFile.ReadInteger('调试', '绘图点数', 50);
@@ -2408,36 +2443,42 @@ begin
   if Direction_Sensor = 1 then Form_Sensor.RadioButton_Zheng.Checked := True
   else Form_Sensor.RadioButton_Fu.Checked := True;
 
-  Form_Sensor.Edit_Quality.Text := FloatToStr(Value_Quality);
-  Form_Sensor.Edit_ElectrycityValue.Text := FloatToStr(Value_StandradElectricity);
+  Form_Sensor.Edit_Quality.Text := FormatFloat('0.0', Value_Quality);
+  Form_Sensor.Edit_ElectrycityValue.Text := FormatFloat('0.0', Value_StandradElectricity);
 
   Form_Sensor.Edit_DrawCounts.Text := IntToStr(drawThreshold);
   Form_Sensor.Edit_CalCounts.Text := IntToStr(calCounts);
 
-  Form_Sensor.Edit_Force.Text := FloatToStr(Calibrate_Force);
-  Form_Sensor.Edit_Electricity.Text := FloatToStr(Calibrate_Electricity);
-  Form_Sensor.Edit_Power1.Text := FloatToStr(Calibrate_Power1);
-  Form_Sensor.Edit_Power2.Text := FloatToStr(Calibrate_Power2);
-  Form_Sensor.Edit_Power3.Text := FloatToStr(Calibrate_Power3);
-  Form_Sensor.Edit_Power4.Text := FloatToStr(Calibrate_Power4);
-  Form_Sensor.Edit_ACC1.Text := FloatToStr(Calibrate_ACC1);
-  Form_Sensor.Edit_ACC2.Text := FloatToStr(Calibrate_ACC2);
-  Form_Sensor.Edit_ACC3.Text := FloatToStr(Calibrate_ACC3);
-  Form_Sensor.Edit_ACC4.Text := FloatToStr(Calibrate_ACC4);
-  Form_Sensor.Edit_ACC5.Text := FloatToStr(Calibrate_ACC5);
-  Form_Sensor.Edit_ACC6.Text := FloatToStr(Calibrate_ACC6);
-  Form_Sensor.Edit_ForceK.Text := FloatToStr(calibrate_ForceK);
-  Form_Sensor.Edit_ForceB.Text := FloatToStr(calibrate_ForceB);
+  Form_Sensor.Edit_ForceCalK.Text := FormatFloat('0.0', Force_CalK);
+  Form_Sensor.Edit_ForceCalB.Text := FormatFloat('0.0', Force_CalB);
+
+  Form_Sensor.Edit_Wheel.Text := FormatFloat('0.0', D_Wheel);
+  Form_Sensor.Edit_Pluse.Text := IntToStr(N_Pluse);
+
+  Form_Sensor.Edit_Force.Text := FormatFloat('0.0', Calibrate_Force);
+  Form_Sensor.Edit_Electricity.Text := FormatFloat('0.0', Calibrate_Electricity);
+  Form_Sensor.Edit_Power1.Text := FormatFloat('0.0', Calibrate_Power1);
+  Form_Sensor.Edit_Power2.Text := FormatFloat('0.0', Calibrate_Power2);
+  Form_Sensor.Edit_Power3.Text := FormatFloat('0.0', Calibrate_Power3);
+  Form_Sensor.Edit_Power4.Text := FormatFloat('0.0', Calibrate_Power4);
+  Form_Sensor.Edit_ACC1.Text := FormatFloat('0.0', Calibrate_ACC1);
+  Form_Sensor.Edit_ACC2.Text := FormatFloat('0.0', Calibrate_ACC2);
+  Form_Sensor.Edit_ACC3.Text := FormatFloat('0.0', Calibrate_ACC3);
+  Form_Sensor.Edit_ACC4.Text := FormatFloat('0.0', Calibrate_ACC4);
+  Form_Sensor.Edit_ACC5.Text := FormatFloat('0.0', Calibrate_ACC5);
+  Form_Sensor.Edit_ACC6.Text := FormatFloat('0.0', Calibrate_ACC6);
+  Form_Sensor.Edit_ForceK.Text := FormatFloat('0.0', calibrate_ForceK);
+  Form_Sensor.Edit_ForceB.Text := FormatFloat('0.0', calibrate_ForceB);
 
   Form_Sensor.Edit_IsCompensate.Text := IntToStr(IsCompensate);
-  Form_Sensor.Edit_DGZ.Text := FloatToStr(calibrate_DGZ);
-  Form_Sensor.Edit_LCZ.Text := FloatToStr(calibrate_LCZ);
-  Form_Sensor.Edit_YL1.Text := FloatToStr(Sensitivity_YL1);
-  Form_Sensor.Edit_YL2.Text := FloatToStr(Sensitivity_YL2);
-  Form_Sensor.Edit_YL3.Text := FloatToStr(Sensitivity_YL3);
-  Form_Sensor.Edit_YL4.Text := FloatToStr(Sensitivity_YL4);
-  Form_Sensor.Edit_AC1.Text := FloatToStr(Sensitivity_ACC1);
-  Form_Sensor.Edit_AC2.Text := FloatToStr(Sensitivity_ACC2);
+  Form_Sensor.Edit_DGZ.Text := FormatFloat('0.0', calibrate_DGZ);
+  Form_Sensor.Edit_LCZ.Text := FormatFloat('0.0', calibrate_LCZ);
+  Form_Sensor.Edit_YL1.Text := FormatFloat('0.0', Sensitivity_YL1);
+  Form_Sensor.Edit_YL2.Text := FormatFloat('0.0', Sensitivity_YL2);
+  Form_Sensor.Edit_YL3.Text := FormatFloat('0.0', Sensitivity_YL3);
+  Form_Sensor.Edit_YL4.Text := FormatFloat('0.0', Sensitivity_YL4);
+  Form_Sensor.Edit_AC1.Text := FormatFloat('0.0', Sensitivity_ACC1);
+  Form_Sensor.Edit_AC2.Text := FormatFloat('0.0', Sensitivity_ACC2);
 end;
 
 function TForm_UI.JCWSetIP(tempTCPIP: string) : Integer;
