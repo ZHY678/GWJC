@@ -119,6 +119,19 @@ type
     Edit_AC1: TEdit;
     Label_IsCompensate: TLabel;
     Edit_IsCompensate: TEdit;
+    Label_ForceK: TLabel;
+    Edit_ForceK: TEdit;
+    Label_ForceB: TLabel;
+    Edit_ForceB: TEdit;
+    Label_ForceCalK: TLabel;
+    Edit_ForceCalK: TEdit;
+    Label_ForceCalB: TLabel;
+    Edit_ForceCalB: TEdit;
+    GroupBox_Vehicle: TGroupBox;
+    Label_Wheel: TLabel;
+    Label_Pluse: TLabel;
+    Edit_Wheel: TEdit;
+    Edit_Pluse: TEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure Button_ComfirmClick(Sender: TObject);
@@ -156,7 +169,9 @@ begin
   (FGlobalpara.IsNumberType(Edit_Quality.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_ElectrycityValue.Text) <> 0) and
   (FGlobalpara.IsNumberType(Edit_IsCompensate.Text) = 1) and (FGlobalpara.IsNumberType(Edit_DGZ.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_LCZ.Text) <> 0) and
   (FGlobalpara.IsNumberType(Edit_YL1.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_YL2.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_YL3.Text) <> 0) and
-  (FGlobalpara.IsNumberType(Edit_YL4.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC1.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC2.Text) <> 0) then
+  (FGlobalpara.IsNumberType(Edit_YL4.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC1.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_AC2.Text) <> 0) and
+  (FGlobalpara.IsNumberType(Edit_ForceCalK.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_ForceCalB.Text) <> 0) and
+  (FGlobalpara.IsNumberType(Edit_Wheel.Text) <> 0) and (FGlobalpara.IsNumberType(Edit_Pluse.Text) = 1)then
   begin
     if (StrToInt(Edit_IP1.Text) <= 255) and (StrToInt(Edit_IP2.Text) <= 255) and (StrToInt(Edit_IP3.Text) <= 255) and
     (StrToInt(Edit_IP4.Text) <= 255) and (StrToInt(Edit_UDPHvIP1.Text) <= 255) and (StrToInt(Edit_UDPHvIP2.Text) <= 255) and
@@ -180,7 +195,9 @@ begin
     (StrToFloat(Edit_Quality.Text) >= 0) and (StrToFloat(Edit_ElectrycityValue.Text) >= 0) and
     (StrToFloat(Edit_YL1.Text) > 0) and (StrToFloat(Edit_YL2.Text) > 0) and (StrToFloat(Edit_YL3.Text) > 0) and
     (StrToFloat(Edit_YL4.Text) > 0) and (StrToFloat(Edit_AC1.Text) > 0) and (StrToFloat(Edit_AC2.Text) > 0) and
-    (StrToInt(Edit_IsCompensate.Text) >= 0) and (StrToInt(Edit_IsCompensate.Text) <= 1) then
+    (StrToInt(Edit_IsCompensate.Text) >= 0) and (StrToInt(Edit_IsCompensate.Text) <= 1) and
+    (StrToFloat(Edit_ForceCalK.Text) >= 0) and (StrToFloat(Edit_ForceCalB.Text) >= 0) and
+    (StrToFloat(Edit_Wheel.Text) > 0) and (StrToInt(Edit_Pluse.Text) > 0) then
     begin
       if FileExists(Form_UI.ConfigurationFilePath) then
       begin
@@ -198,18 +215,23 @@ begin
           Inifile.WriteString('调试', '计算点数',  Edit_CalCounts.Text);
           Inifile.WriteString('传感器设置', 'ComputerIP',  Edit_ComputerIP1.Text + '.' + Edit_ComputerIP2.Text + '.' + Edit_ComputerIP3.Text + '.' + Edit_ComputerIP4.Text);
           Inifile.WriteString('传感器设置', 'ComputerPort',  Edit_ComputerPort.Text);
-          Inifile.WriteString('参数设置', '弓网质量',  Edit_Quality.Text);
-          Inifile.WriteString('参数设置', '电流标准值',  Edit_ElectrycityValue.Text);
+          Inifile.WriteString('参数设置', '弓网质量',  FormatFloat('0.0', StrToFloat(Edit_Quality.Text)));
+          Inifile.WriteString('参数设置', '电流标准值',  FormatFloat('0.0', StrToFloat(Edit_ElectrycityValue.Text)));
 
           Inifile.WriteString('参数设置', '是否补偿 ',  Edit_IsCompensate.Text);
-          Inifile.WriteString('参数设置', '压力传感器1灵敏度系数',  Edit_YL1.Text);
-          Inifile.WriteString('参数设置', '压力传感器2灵敏度系数',  Edit_YL2.Text);
-          Inifile.WriteString('参数设置', '压力传感器3灵敏度系数',  Edit_YL3.Text);
-          Inifile.WriteString('参数设置', '压力传感器4灵敏度系数',  Edit_YL4.Text);
-          Inifile.WriteString('参数设置', '加速度1灵敏度系数',  Edit_AC1.Text);
-          Inifile.WriteString('参数设置', '加速度2灵敏度系数',  Edit_AC2.Text);
-          Inifile.WriteString('标定', 'DGZ',  Edit_DGZ.Text);
-          Inifile.WriteString('标定', 'LCZ',  Edit_LCZ.Text);
+          Inifile.WriteString('参数设置', '压力传感器1灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_YL1.Text)));
+          Inifile.WriteString('参数设置', '压力传感器2灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_YL2.Text)));
+          Inifile.WriteString('参数设置', '压力传感器3灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_YL3.Text)));
+          Inifile.WriteString('参数设置', '压力传感器4灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_YL4.Text)));
+          Inifile.WriteString('参数设置', '加速度1灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_AC1.Text)));
+          Inifile.WriteString('参数设置', '加速度2灵敏度系数',  FormatFloat('0.0', StrToFloat(Edit_AC2.Text)));
+          Inifile.WriteString('参数设置', '弓网力',  FormatFloat('0.0', StrToFloat(Edit_ForceCalK.Text)));
+          Inifile.WriteString('参数设置', '载物力',  FormatFloat('0.0', StrToFloat(Edit_ForceCalB.Text)));
+          Inifile.WriteString('标定', 'DGZ',  FormatFloat('0.0', StrToFloat(Edit_DGZ.Text)));
+          Inifile.WriteString('标定', 'LCZ',  FormatFloat('0.0', StrToFloat(Edit_LCZ.Text)));
+
+          Inifile.WriteString('车辆设置', '轮径值',  FormatFloat('0.0', StrToFloat(Edit_Wheel.Text)));
+          Inifile.WriteString('车辆设置', '轮径脉冲数',  Edit_Pluse.Text);
 
           if RadioButton_Zheng.Checked then Inifile.WriteString('传感器设置', 'Direction',  '1')
           else Inifile.WriteString('传感器设置', 'Direction',  '0');

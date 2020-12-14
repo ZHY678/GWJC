@@ -39,6 +39,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <SanitizedProjectName>GWJC</SanitizedProjectName>
@@ -63,6 +69,9 @@
         <DCC_UsePackage>dxPScxSchedulerLnkRS21;cxSchedulerRibbonStyleEventEditorRS21;cxSchedulerRS21;FireDACPgDriver;dxEMFRS21;cxTreeListdxBarPopupMenuRS21;cxPivotGridRS21;DBXInterBaseDriver;DataSnapServer;DataSnapCommon;dxHttpIndyRequestRS21;dxSpreadSheetReportDesignerRS21;dxGaugeControlRS21;DbxCommonDriver;vclimg;cxPivotGridOLAPRS21;dxPsPrVwAdvRS21;dbxcds;dxTileControlRS21;DatasnapConnectorsFreePascal;dxADOEMFRS21;dxPSdxGaugeControlLnkRS21;vcldb;cxTreeListRS21;dxdborRS21;dxBarExtItemsRS21;dxWizardControlRS21;CustomIPTransport;dsnap;IndyIPServer;IndyCore;CloudService;dxRichEditCoreRS21;FireDACIBDriver;dxPScxPCProdRS21;dxPSRichEditControlLnkRS21;dxDockingRS21;dsnapxml;FireDACDb2Driver;dxPSLnksRS21;dxPSdxDBOCLnkRS21;cxLibraryRS21;dxPSdxMapControlLnkRS21;bindcompfmx;dxPSdxPDFViewerLnkRS21;dxComnRS21;FireDACODBCDriver;RESTBackendComponents;BMThreadPkg;dbrtl;FireDACCommon;bindcomp;inetdb;dxPScxTLLnkRS21;DBXOdbcDriver;vclFireDAC;dxRichEditInplaceRS21;xmlrtl;ibxpress;dxCloudServiceLibraryRS21;dxRichEditDocumentModelRS21;cxExportRS21;dxSpreadSheetCoreConditionalFormattingDialogsRS21;FireDACCommonDriver;dxFlowChartRS21;soaprtl;vclactnband;bindengine;bindcompvcl;dxCoreRS21;vclie;dxSpreadSheetConditionalFormattingDialogsRS21;dxPSCoreRS21;cxSchedulerWebServiceStorageRS21;dxPSdxDBTVLnkRS21;dxPScxCommonRS21;dxADOServerModeRS21;FireDACMSSQLDriver;DBXInformixDriver;Intraweb;DataSnapServerMidas;DBXFirebirdDriver;dsnapcon;dxNavBarRS21;inet;dxRibbonRS21;FireDACMySQLDriver;soapmidas;vclx;dxSkinsCoreRS21;dxFlowChartDesignerRS21;DBXSybaseASADriver;dxSpreadSheetCoreDialogsRS21;dxFireDACServerModeRS21;RESTComponents;dbexpress;IndyIPClient;office2K;FireDACSqliteDriver;dxDBXServerModeRS21;FireDACDSDriver;DBXSqliteDriver;dxRichEditControlRS21;fmx;cxVerticalGridRS21;IndySystem;dxSpreadSheetRS21;tethering;vclib;DataSnapClient;dxPScxPivotGridLnkRS21;DataSnapProviderClient;dxPSPrVwRibbonRS21;DBXSybaseASEDriver;dxFlowChartAdvancedCustomizeFormRS21;cxGridRS21;dxPDFViewerRS21;Classifiers121;MetropolisUILiveTile;vcldsnap;dxSpellCheckerRS21;fmxFireDAC;DBXDb2Driver;DBXOracleDriver;vclribbon;dxtrmdRS21;dxBarExtDBItemsRS21;vcl;fmxase;dxGDIPlusRS21;DBXMSSQLDriver;IndyIPCommon;DataSnapFireDAC;dxPSdxSpreadSheetLnkRS21;FireDACDBXDriver;soapserver;dxdbtrRS21;inetdbxpress;FireDACInfxDriver;dxPScxGridLnkRS21;dxPSdxFCLnkRS21;adortl;dxSpreadSheetInplaceRichEditRS21;FireDACASADriver;dxFireDACEMFRS21;dxTabbedMDIRS21;emsclientfiredac;rtl;dxPSdxOCLnkRS21;DbxClientDriver;dxorgcRS21;dxPScxExtCommonRS21;dxPSdxLCLnkRS21;dxMapControlRS21;DataSnapNativeClient;IndyProtocols;DBXMySQLDriver;cxPivotGridChartRS21;dxRichEditControlCoreRS21;bindcompdbx;cxSchedulerTreeBrowserRS21;dxmdsRS21;FireDACADSDriver;vcltouch;dxServerModeRS21;emsclient;ClassifiersDB121;VCLRESTComponents;FireDAC;VclSmp;dxBarDBNavRS21;dxRibbonCustomizationFormRS21;DataSnapConnectors;cxSchedulerGridRS21;fmxobj;dxPScxVGridLnkRS21;dxBarRS21;FireDACOracleDriver;fmxdae;FireDACMSAccDriver;dxSpreadSheetCoreRS21;DataSnapIndy10ServerTransport;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>2052</VerInfo_Locale>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
         <DCC_Optimize>false</DCC_Optimize>
@@ -82,6 +91,12 @@
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_DebugInformation>0</DCC_DebugInformation>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_ExeOutput>F:\弓网检测\Bin\</DCC_ExeOutput>
+        <DCC_DcuOutput>F:\弓网检测\UnitsOutput\</DCC_DcuOutput>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -124,6 +139,7 @@
                     <Source Name="MainSource">GWJC.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\DclSignalTee421.bpl">Dew DSP Master v4 TeeChart</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp210.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>

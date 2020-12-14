@@ -4,7 +4,7 @@ object Form_LineSetting: TForm_LineSetting
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #32447#36335#35774#32622
-  ClientHeight = 581
+  ClientHeight = 675
   ClientWidth = 392
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -187,12 +187,12 @@ object Form_LineSetting: TForm_LineSetting
     Width = 393
     Height = 33
     BevelKind = bkTile
-    Caption = #36882#22686#36882#20943
+    Caption = #37324#31243#36882#22686#36882#20943
     TabOrder = 7
   end
   object Panel_Setting: TPanel
     Left = 0
-    Top = 472
+    Top = 568
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -201,7 +201,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_SettingSet: TPanel
     Left = 0
-    Top = 503
+    Top = 599
     Width = 393
     Height = 76
     Color = clHighlightText
@@ -225,5 +225,39 @@ object Form_LineSetting: TForm_LineSetting
       TabOrder = 1
       OnClick = Button_StartClick
     end
+  end
+  object Panel_JiaAndJjian: TPanel
+    Left = 0
+    Top = 504
+    Width = 393
+    Height = 65
+    Color = clHighlightText
+    ParentBackground = False
+    TabOrder = 10
+    object RadioButton_Jia: TRadioButton
+      Left = 96
+      Top = 24
+      Width = 113
+      Height = 17
+      Caption = #36882#22686
+      TabOrder = 0
+    end
+    object RadioButton_Jian: TRadioButton
+      Left = 232
+      Top = 24
+      Width = 113
+      Height = 17
+      Caption = #36882#20943
+      TabOrder = 1
+    end
+  end
+  object Panel_Ganjiajian: TPanel
+    Left = 0
+    Top = 472
+    Width = 393
+    Height = 33
+    BevelKind = bkTile
+    Caption = #26438#21495#36882#22686#36882#20943
+    TabOrder = 11
   end
 end

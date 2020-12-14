@@ -16,10 +16,6 @@ uses
   UDrawThread;
 
 type
-  data2D = record
-    lineWidth, lineHeight, lineWidthValue, lineHeightValue: Single;
-  end;
-
   sResultDataPara = packed record              //信息头
     lineName: array [0..99] of Char;    //线路名称
     Version: Byte;                      //软件版本
@@ -30,6 +26,7 @@ type
     shangxia: Byte;                     //上下行（0=未知 1=上行 2=下行）
     rundir: Byte;                       //正反向（1=正 0=反）
     initzengjian: Byte;                 //里程增减（1=增 0=减）
+    ghzengjian: Byte;                   //杆号增减（1=增 0=减）
     DataTime: array [0..11] of Char;    //采集时间 YYMMDDHHMMSS
   end;
 
@@ -64,7 +61,8 @@ type
     ghNumb: Integer;                     //杆号
     myspeed: Single;                     //速度，单位km/h
     mykilo: Double;                      //公里标，单位m
-    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
+    Errmark: Byte;                       //  03代表异常数据
+    mark: Byte;                          //  01代表公里标矫正 02代表锚段或线叉
     CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
   end;
 
@@ -87,36 +85,29 @@ type
     Status1, Status2: Byte;
   end;
 
+  //原始燃弧信息里加了初始公里标和杆号以及公里标杆号的递增递减
   TRecord_OriginalAcying = record
+    Distance_Init: Double;
+    Pole_Init: Integer;
+    initzengjian: Byte;
+    ghzengjian: Byte;
     Acying: array[0..9] of Byte;
   end;
 
   TRecord_Acying = record
+    Distance_Init: Double;
+    Pole_Init: Integer;
+    initzengjian: Byte;
+    ghzengjian: Byte;
     pluseTime, pluseCounts: Word;
     pluseNumber, pluseStatus: Byte;
   end;
 
   Record_SaveOriginal = record
-    Distance_Init: Double;
-    Pole_Init: Integer;
     Om_data: JCWJH;
     OHvData: TRecord_OriginalHv;
     OLvData: TRecord_OriginalLv;
     AcyingData: TRecord_OriginalAcying;
-  end;
-
-  TData_Extra = record
-    LCZSP1_value: Single;                //接触线1水平距离（柔性双线时），mm
-    LCZSP2_value: Single;                //接触线2水平距离（柔性双线时），mm
-    SPJL_value: Single;                  //锚段或线叉处接触线水平距离，mm
-    SPGC_value: Single;                  //锚段或线叉处接触线高差，mm
-    DGBHL_value: Single;                 //导高变化率
-    DWDGC_value: Single;                 //定位点高差，mm
-    ghNumb: Integer;                     //杆号
-    myspeed: Single;                     //速度，单位km/h
-    mykilo: Double;                      //公里标，单位m
-    mark: Byte;                          //   01代表公里标矫正 02代表锚段或线叉 03代表异常数据
-    CheckTime: Integer;                  //检测时间，从信息头采集时间开始的时间，单位ms
   end;
 
   TData_Dealing = record
@@ -138,12 +129,9 @@ type
     MenuItem_StartCollect: TMenuItem;
     MenuItem_StopCollect: TMenuItem;
     MenuItem_Save: TMenuItem;
-    MenuItem_Server: TMenuItem;
     MenuItem_LineAndSensor: TMenuItem;
     MenuItem_StartSave: TMenuItem;
     MenuItem_StopSave: TMenuItem;
-    MenuItem_Connect: TMenuItem;
-    MenuItem_DisConnect: TMenuItem;
     MenuItem_InitLine: TMenuItem;
     MenuItem_Close: TMenuItem;
     ActionList: TActionList;
@@ -168,15 +156,12 @@ type
     LargeButton_Close: TdxBarLargeButton;
     ManagerBar_Collect: TdxBar;
     ManagerBar_Save: TdxBar;
-    ManagerBar_Server: TdxBar;
     ManagerBar_LineAndSensor: TdxBar;
     ManagerBar_Playback: TdxBar;
     LargeButton_StartCollect: TdxBarLargeButton;
     LargeButton_StopCollect: TdxBarLargeButton;
     LargeButton_StartSave: TdxBarLargeButton;
     LargeButton_StopSave: TdxBarLargeButton;
-    LargeButton_Connect: TdxBarLargeButton;
-    LargeButton_Disconnect: TdxBarLargeButton;
     LargeButton_Line: TdxBarLargeButton;
     LargeButton_SelectData: TdxBarLargeButton;
     LargeButton_StartPlayback: TdxBarLargeButton;
@@ -243,12 +228,8 @@ type
     Action_OpenSensorUI: TAction;
     Timer_InitSubGroup: TTimer;
     IdUDPServer_Hv: TIdUDPServer;
-    MenuItem_Calibration: TMenuItem;
-    Action_StartCalibrate: TAction;
+    Action_StartInitCalibrate: TAction;
     Action_StopCalibrate: TAction;
-    LargeButton_StartCalibrate: TdxBarLargeButton;
-    LargeButton_StopCalibrate: TdxBarLargeButton;
-    MenuItem_StopCalibrate: TMenuItem;
     IdUDPServer_Lv: TIdUDPServer;
     IdUDPServer_Acying: TIdUDPServer;
     Action_StartSave: TAction;
@@ -286,6 +267,18 @@ type
     PointSeries_ElectricTimeData: TPointSeries;
     Action_DataDisplay: TAction;
     FastLineSeries_Pole: TFastLineSeries;
+    MenuItem_CalibrateSetting: TMenuItem;
+    MenuItem_InitCalibrate: TMenuItem;
+    MenuItem_RaiseCalibrate: TMenuItem;
+    MenuItem_Normal: TMenuItem;
+    ManagerBar_Calibrate: TdxBar;
+    LargeButton_StartInitCali: TdxBarLargeButton;
+    LargeButton_StartRaiseCali: TdxBarLargeButton;
+    LargeButton_StartNormalCali: TdxBarLargeButton;
+    LargeButton_StopCalibrate: TdxBarLargeButton;
+    MenuItem_StopCalibrate: TMenuItem;
+    Action_StartRaiseCalibrate: TAction;
+    Action_StartNormalCalibrate: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -308,7 +301,7 @@ type
     procedure Timer_InitSubGroupTimer(Sender: TObject);
     procedure IdUDPServer_HvUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
-    procedure Action_StartCalibrateExecute(Sender: TObject);
+    procedure Action_StartInitCalibrateExecute(Sender: TObject);
     procedure Action_StopCalibrateExecute(Sender: TObject);
     procedure IdUDPServer_LvUDPRead(AThread: TIdUDPListenerThread;
       const AData: TIdBytes; ABinding: TIdSocketHandle);
@@ -322,6 +315,8 @@ type
     procedure Action_StartSimulateExecute(Sender: TObject);
     procedure Action_StopSimulateExecute(Sender: TObject);
     procedure Action_DataDisplayExecute(Sender: TObject);
+    procedure Action_StartRaiseCalibrateExecute(Sender: TObject);
+    procedure Action_StartNormalCalibrateExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
@@ -330,14 +325,14 @@ type
 
     FGlobalpara: TGlobalpara;
 
-    FileStream_Original, FileStream_Result : TFileStream;
+    FileStream_Original, FileStream_Result: TFileStream;
 
     procedure InitFolder;
     function JCWSetIP(tempTCPIP: string): Integer;
     function YEGConnect(tempTCPIP: string): Integer;
     procedure YEGDisconnect;
     procedure LoadOriginalData(TempLoadOriginalPath: string);
-    procedure SaveResultHead(tempPath, tempLineName: string; inight: Integer; initDis: Double; shangxia, rundir: string; initzengjian: Byte);
+    procedure SaveResultHead(tempPath, tempLineName: string; inight: Integer; initDis: Double; shangxia, rundir: string; initzengjian, ghzengjian: Byte);
   public
     { Public declarations }
     //2D数据变量（导高拉出值）
@@ -356,7 +351,7 @@ type
     m_hYEG: Pointer;   //指针和Cardinal都可以
 
     pSaveThread, pProcessThread: DWORD;   //各个线程
-    startMs, nowMs: DWORD;
+    startMs: Single;   //检测时间，从信息头采集时间开始的时间，单位ms
     startTime: string;
     configurationFilePath, TempOrignalDataPath, TempResultDataPath, savedOriginalDataPath, savedResultDataPath: string;
     GSpeed: Double;
@@ -372,9 +367,8 @@ type
     //calCounts 计算均值、最大值、最小值、均方根值的点数多少
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和Number_Cal * 2 - 1有关
     calCounts, drawCounts, calingCounts, paintCounts: Word;
-//    counts: Word;
 
-    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating, IsFirstCal, IsGJD, IsJCDL: Boolean;
+    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating_Init, IsCalibrating_Raise, IsCalibrating_Normal, IsFirstCal, IsGJD, IsJCDL: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
     drawThreshold, poleCounts: Byte;   //绘图点数和支柱计算高差计数
@@ -382,7 +376,7 @@ type
     noPlusCounts, calHCounts, calMaoCounts: Word;   //无脉冲的数据计数和检测到柱和锚段的计数
     temp_X, temp_Y: array[0..3] of Single;   //2D错误值取前一个值数组
     time_Electricity: Single;   //电流大于标准值百分之30开始时间
-    time_CalSpeed: Single;
+    time_CalSpeed, tempStartTime, tempEndTime: Single;
 
     DrawData: array [0..26, 0..4999] of Single;   //绘图数据数组
 
@@ -390,14 +384,19 @@ type
 
     Direction_Sensor, IsCompensate: Byte;   //传感器方向和是否补偿
     Value_Quality, Value_StandradElectricity: Single;   //弓网质量和电流标准值
-    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4, calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6: Single;
+
+    calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4,
+    calibrate_ACC1, calibrate_ACC2, calibrate_ACC3, calibrate_ACC4, calibrate_ACC5, calibrate_ACC6,
+    calibrate_ForceK, calibrate_ForceB, Force_CalK, Force_CalB, tmpForceK, tmpForceB: Single;   //读取的配置参数及标定参数
+
     YL1, YL2, YL3, YL4, YD1, YD2, YD3, YD4, YD5, YD6, JCL, Calib_DY: Single;   //此行和上一行是压力、硬点、接触力和电流标定值
     Sensitivity_YL1, Sensitivity_YL2, Sensitivity_YL3, Sensitivity_YL4, Sensitivity_ACC1, Sensitivity_ACC2: Single;
     calibrate_DGZ, calibrate_LCZ: Single;
+    Distance_Pluse, D_Wheel: Single;
+    N_Pluse: Word;
     array_CalForce: array of Single;
 
     //滤波器所要的vector数组
-    vector_X1, vector_Y1, vector_X2, vector_Y2, vector_X3, vector_Y3, vector_X4, vector_Y4: Vector;
     vector_Power1, vector_Power2, vector_Power3, vector_Power4, vector_HardSpot1, vector_HardSpot2, vector_HardSpot3, vector_HardSpot4, vector_HardSpot5, vector_HardSpot6, vector_Electricity: Vector;
 
     //低通滤波器
@@ -412,24 +411,6 @@ type
     FirFilter_LowPassHardSpot5: TFirFilter;
     FirFilter_LowPassHardSpot6: TFirFilter;
     FirFilter_LowPassHardElectric: TFirFilter;
-
-    //平滑滤波器
-    FirFilter_2DAverageX1: TFirFilter;
-    FirFilter_2DAverageY1: TFirFilter;
-    FirFilter_2DAverageXX1: TFirFilter;
-    FirFilter_2DAverageYY1: TFirFilter;
-    FirFilter_2DAverageX2: TFirFilter;
-    FirFilter_2DAverageY2: TFirFilter;
-    FirFilter_2DAverageXX2: TFirFilter;
-    FirFilter_2DAverageYY2: TFirFilter;
-    FirFilter_2DAverageX3: TFirFilter;
-    FirFilter_2DAverageY3: TFirFilter;
-    FirFilter_2DAverageXX3: TFirFilter;
-    FirFilter_2DAverageYY3: TFirFilter;
-    FirFilter_2DAverageX4: TFirFilter;
-    FirFilter_2DAverageY4: TFirFilter;
-    FirFilter_2DAverageXX4: TFirFilter;
-    FirFilter_2DAverageYY4: TFirFilter;
 
     function Init2DIP: Integer;
     function Open2D: Integer;
@@ -461,13 +442,14 @@ var
   Form_UI: TForm_UI;
 
   const
-    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
+//    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
     Number_Draw = 5000;           //绘图的点数
     Number_Cal = 200;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
     G = 9.8;                      //重力加速度
     Fq_BandPass = 20;             //低通滤波带通频率
     Fq_CutOff = 25;               //低通滤波截止频率
     Length_DynamicArray = 1000;   //中间计算过程动态数组长度
+    time_Hz = 5;                  //每帧采样时间(ms)
 
 implementation
 
@@ -542,8 +524,7 @@ end;
 
 function ProcessThread(p: Pointer): Integer; stdcall;
 var
-  I, J, tempCounts: Word;
-//  plusCounts: Byte;
+  I, J: Word;
   TempWord: array [0..1] of Byte;
   TempInteger: array [0..3] of Byte;
   TempData2D: ^JCWJH;
@@ -559,7 +540,9 @@ var
   IniFile : TIniFile;
   temp_time: Single;   //记录速度起始时间
 
-  startRecordKm, endRecordKm, startKm, tempKm, startPlus, tempPlus, tmpSpeed, tmpPluse: Double;   //最开始的脉冲数
+  startRecordKm, endRecordKm, startKm, tempKm, nowKm, startPlus, tempPlus, tmpSpeed, tmpPluse: Double;   //最开始的脉冲数
+  startghNumber: Integer;   //第一次测试时所记录的杆号初始号
+  startKmZengjian, startGhzengjian: Byte;   //第一次测试时所记录的里程、杆号的递增递减
   array_DataDeal: array [0..Number_Cal - 1] of Record_SaveOriginal;    //最原始数据数组
   array_DataDealing: array[0..Number_Cal - 1] of TData_Dealing;   //处理过程中的数组，包括滤波、计算等
   array_ResultDeal: array[0..Number_Cal - 1] of sDataFrame;   //计算后的结果数据
@@ -575,20 +558,17 @@ begin
   while True do
   begin
     //数据取值
-    if (Form_UI.Data2DCache.count > Number_Cal) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
+    if (Form_UI.Data2DCache.count > Number_Cal * 2) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
     begin
       for I := 0 to Number_Cal - 1 do
       begin
-        array_DataDeal[I].Distance_Init := Form_LineSetting.kilometer;
-        array_DataDeal[I].Pole_Init := Form_LineSetting.Pole_InitNumber;
-
         TempData2D := Form_UI.Data2DCache.Pop;
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
         Array_DataDeal[I].Om_data := TempDataO2D;
-//        TempData2D := Form_UI.Data2DCache.Pop;
-//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-//        Dispose(TempData2D);
+        TempData2D := Form_UI.Data2DCache.Pop;
+        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+        Dispose(TempData2D);
 
         TempDataHv := Form_UI.HvUDPCache.Pop;
         CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
@@ -615,29 +595,6 @@ begin
           Form_UI.OriginalCache.Push(TempDataSO);
         end;
       end;
-
-      //因为燃弧传感器采样频率由500设置成了200，所以地下的代码暂时已经改到了上面，底下的不删，作为备份
-//      //燃弧数据从500个点抽200个点赋值
-//      J := 0;
-//      tempCounts := 0;
-//      for I := 0 to 499 do
-//      begin
-//        TempDataAcying := Form_UI.AcyingCache.Pop;
-//        CopyMemory(@TempDataOAcying, TempDataAcying, SizeOf(TRecord_OriginalAcying));
-//        Dispose(TempDataAcying);
-//
-//        if I = J + 1 then
-//        begin
-//          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
-//          tempCounts := tempCounts + 1;
-//        end;
-//        if I = J + 4 then
-//        begin
-//          array_DataDeal[tempCounts].AcyingData := TempDataOAcying;
-//          tempCounts := tempCounts + 1;
-//          J := J + 5;
-//        end;
-//      end;
 
       //数据处理
       for I := 0 to Number_Cal - 1 do
@@ -771,20 +728,17 @@ begin
 
         array_DataDealing[I].TempAcying.pluseNumber := array_DataDeal[I].AcyingData.Acying[2];   //原来是7，现在改为2，采集燃弧序号
         array_DataDealing[I].TempAcying.pluseStatus := array_DataDeal[I].AcyingData.Acying[8];
+
+        //后面新加的燃弧结构中的公里标、杆的信息赋值
+        array_DataDealing[I].TempAcying.Distance_Init := array_DataDeal[I].AcyingData.Distance_Init;
+        array_DataDealing[I].TempAcying.Pole_Init := array_DataDeal[I].AcyingData.Pole_Init;
+        array_DataDealing[I].TempAcying.initzengjian := array_DataDeal[I].AcyingData.initzengjian;
+        array_DataDealing[I].TempAcying.ghzengjian := array_DataDeal[I].AcyingData.ghzengjian;
       end;
 
       //滤波前vector赋值
       for I := 0 to Number_Cal - 1 do
       begin
-        Form_UI.vector_X1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x;
-        Form_UI.vector_Y1[I] := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y;
-        Form_UI.vector_X2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x;
-        Form_UI.vector_Y2[I] := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y;
-        Form_UI.vector_X3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x;
-        Form_UI.vector_Y3[I] := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.y;
-        Form_UI.vector_X4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.x;
-        Form_UI.vector_Y4[I] := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.y;
-
         Form_UI.vector_Power1[I] := array_DataDealing[I].TempHv.Power1;
         Form_UI.vector_Power2[I] := array_DataDealing[I].TempHv.Power2;
         Form_UI.vector_Power3[I] := array_DataDealing[I].TempHv.Power3;
@@ -800,15 +754,6 @@ begin
       end;
 
       //数据滤波
-//      Form_UI.FirFilter_2DAverageX1.filter(Form_UI.vector_X1, Form_UI.vector_X1);
-//      Form_UI.FirFilter_2DAverageY1.filter(Form_UI.vector_Y1, Form_UI.vector_Y1);
-//      Form_UI.FirFilter_2DAverageX2.filter(Form_UI.vector_X2, Form_UI.vector_X2);
-//      Form_UI.FirFilter_2DAverageY2.filter(Form_UI.vector_Y2, Form_UI.vector_Y2);
-//      Form_UI.FirFilter_2DAverageX3.filter(Form_UI.vector_X3, Form_UI.vector_X3);
-//      Form_UI.FirFilter_2DAverageY3.filter(Form_UI.vector_Y3, Form_UI.vector_Y3);
-//      Form_UI.FirFilter_2DAverageX4.filter(Form_UI.vector_X4, Form_UI.vector_X4);
-//      Form_UI.FirFilter_2DAverageY4.filter(Form_UI.vector_Y4, Form_UI.vector_Y4);
-
       Form_UI.FirFilter_LowPassPower1.filter(Form_UI.vector_Power1, Form_UI.vector_Power1);
       Form_UI.FirFilter_LowPassPower2.filter(Form_UI.vector_Power2, Form_UI.vector_Power2);
       Form_UI.FirFilter_LowPassPower3.filter(Form_UI.vector_Power3, Form_UI.vector_Power3);
@@ -845,55 +790,55 @@ begin
             end;
             1:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x - Form_UI.calibrate_LCZ;
               array_ResultDeal[I].LCZ12_value := 0;
               array_ResultDeal[I].LCZSP1_value := 0;
               array_ResultDeal[I].LCZ21_value := 0;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ12_value := 0;
               array_ResultDeal[I].DGZ21_value := 0;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             2:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x);
               array_ResultDeal[I].LCZ21_value := 0;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ21_value := 0;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             3:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x);
+              array_ResultDeal[I].LCZ21_value := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x - Form_UI.calibrate_LCZ;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             4:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.x);
+              array_ResultDeal[I].LCZ21_value := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP2_value := Abs(array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.x);
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcx[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcx[1].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := array_DataDealing[I].TempJCWJH.jcx[2].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := array_DataDealing[I].TempJCWJH.jcx[3].pntLinePos.y - Form_UI.calibrate_DGZ;
             end;
           end;
         end
@@ -915,55 +860,55 @@ begin
             end;
             1:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x - Form_UI.calibrate_LCZ;
               array_ResultDeal[I].LCZ12_value := 0;
               array_ResultDeal[I].LCZSP1_value := 0;
               array_ResultDeal[I].LCZ21_value := 0;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ12_value := 0;
               array_ResultDeal[I].DGZ21_value := 0;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             2:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x);
               array_ResultDeal[I].LCZ21_value := 0;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ21_value := 0;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             3:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x);
+              array_ResultDeal[I].LCZ21_value := array_DataDealing[I].TempJCWJH.jcxComp[2].pntLinePos.x - Form_UI.calibrate_LCZ;
               array_ResultDeal[I].LCZ22_value := 0;
               array_ResultDeal[I].LCZSP2_value := 0;
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := array_DataDealing[I].TempJCWJH.jcxComp[2].pntLinePos.y - Form_UI.calibrate_DGZ;
               array_ResultDeal[I].DGZ22_value := 0;
             end;
             4:
             begin
-              array_ResultDeal[I].LCZ11_value := Form_UI.vector_X1[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ12_value := Form_UI.vector_X2[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP1_value := Abs(Form_UI.vector_X2[I] - Form_UI.vector_X1[I]);
-              array_ResultDeal[I].LCZ21_value := Form_UI.vector_X3[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZ22_value := Form_UI.vector_X4[I] - Form_UI.calibrate_LCZ;
-              array_ResultDeal[I].LCZSP2_value := Abs(Form_UI.vector_X4[I] - Form_UI.vector_X3[I]);
-              array_ResultDeal[I].DGZ11_value := Form_UI.vector_Y1[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ12_value := Form_UI.vector_Y2[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ21_value := Form_UI.vector_Y3[I] - Form_UI.calibrate_DGZ;
-              array_ResultDeal[I].DGZ22_value := Form_UI.vector_Y4[I] - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].LCZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP1_value := Abs(array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.x);
+              array_ResultDeal[I].LCZ21_value := array_DataDealing[I].TempJCWJH.jcxComp[2].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZ22_value := array_DataDealing[I].TempJCWJH.jcxComp[3].pntLinePos.x - Form_UI.calibrate_LCZ;
+              array_ResultDeal[I].LCZSP2_value := Abs(array_DataDealing[I].TempJCWJH.jcxComp[3].pntLinePos.x - array_DataDealing[I].TempJCWJH.jcxComp[2].pntLinePos.x);
+              array_ResultDeal[I].DGZ11_value := array_DataDealing[I].TempJCWJH.jcxComp[0].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ12_value := array_DataDealing[I].TempJCWJH.jcxComp[1].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ21_value := array_DataDealing[I].TempJCWJH.jcxComp[2].pntLinePos.y - Form_UI.calibrate_DGZ;
+              array_ResultDeal[I].DGZ22_value := array_DataDealing[I].TempJCWJH.jcxComp[3].pntLinePos.y - Form_UI.calibrate_DGZ;
             end;
           end;
         end;
@@ -992,10 +937,16 @@ begin
         if Form_UI.Direction_Sensor = 1 then array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 + Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2 - Form_UI.Value_Quality * G
         else array_ResultDeal[I].JCL_value := array_CalibResultDeal[I].Power1 + array_CalibResultDeal[I].Power2 + array_CalibResultDeal[I].Power3 + array_CalibResultDeal[I].Power4 - Form_UI.Value_Quality * (array_CalibResultDeal[I].HardSpot3 + array_CalibResultDeal[I].HardSpot6) / 2 - Form_UI.Value_Quality * G;
 
-        array_ResultDeal[I].JCL_mean := 0;
-        array_ResultDeal[I].JCL_max := 0;
-        array_ResultDeal[I].JCL_min := 0;
-        array_ResultDeal[I].JCL_std := 0;
+//        array_ResultDeal[I].JCL_mean := 0;
+//        array_ResultDeal[I].JCL_max := 0;
+//        array_ResultDeal[I].JCL_min := 0;
+//        array_ResultDeal[I].JCL_std := 0;
+
+        //原本正常计算按上述计算，但现在这四个力的值为别赋值为4个压力传感器的值
+        array_ResultDeal[I].JCL_mean := array_CalibResultDeal[I].Power1 - Form_UI.Calibrate_Power1;
+        array_ResultDeal[I].JCL_max := array_CalibResultDeal[I].Power2 - Form_UI.Calibrate_Power2;
+        array_ResultDeal[I].JCL_min := array_CalibResultDeal[I].Power3 - Form_UI.Calibrate_Power3;
+        array_ResultDeal[I].JCL_std := array_CalibResultDeal[I].Power4 - Form_UI.Calibrate_Power4;
 
         //电流赋值
         array_ResultDeal[I].DL_value := Form_UI.CalDL(Form_UI.vector_Electricity[I]);
@@ -1029,6 +980,7 @@ begin
         array_ResultDeal[I].ghNumb := 0;
         array_ResultDeal[I].myspeed := 0;
         array_ResultDeal[I].mykilo := array_DataDealing[I].TempLv.encoder;
+        array_ResultDeal[I].Errmark := 0;
 
         if array_DataDealing[I].TempJCWJH.posi = JCXP_POLE then
         begin
@@ -1046,7 +998,8 @@ begin
           array_ResultDeal[I].mark := 2;
         end;
 
-        array_ResultDeal[I].CheckTime := GetTickCount - Form_UI.startMs;
+        Form_UI.startMs := Form_UI.startMs + time_Hz;
+        array_ResultDeal[I].CheckTime := Round(Form_UI.startMs);
       end;
 
       //初步按照脉冲计算（这小段代码是第一次开始计算所遇到的情况）
@@ -1054,8 +1007,12 @@ begin
       begin
         tempPlus := array_ResultDeal[0].mykilo;
         startPlus := array_ResultDeal[0].mykilo;
-        startKm := Form_LineSetting.kilometer;
-        startRecordKm := Form_LineSetting.kilometer;
+        startKm := array_DataDealing[0].TempAcying.Distance_Init;
+        startghNumber := array_DataDealing[0].TempAcying.Pole_Init;
+        startKmZengjian := array_DataDealing[0].TempAcying.initzengjian;
+        startGhzengjian := array_DataDealing[0].TempAcying.ghzengjian;
+        tempKm := 0;
+        startRecordKm := array_DataDealing[0].TempAcying.Distance_Init;
 
         if array_ResultDeal[0].mark = 2 then
         begin
@@ -1108,8 +1065,29 @@ begin
           end;
 
           //速度、公里标赋值
-          tempKm := (tempPlus - startPlus) * Distance_Pluse / 1000000 + startKm;
-          array_PlusResult[Form_UI.calingCounts - 1].mykilo := tempKm * 1000;
+          if startKm <> array_DataDealing[I].TempAcying.Distance_Init then
+          begin
+            tempKm := 0;
+            startKm := array_DataDealing[I].TempAcying.Distance_Init;
+            startKmZengjian := array_DataDealing[I].TempAcying.initzengjian;
+            Form_UI.DrawCache.clear;
+            Form_UI.paintCounts := 0;
+          end;
+
+          if startKmZengjian <> array_DataDealing[I].TempAcying.initzengjian then
+          begin
+            tempKm := -tempKm;
+            startKmZengjian := array_DataDealing[I].TempAcying.initzengjian;
+            Form_UI.DrawCache.clear;
+            Form_UI.paintCounts := 0;
+          end;
+
+          if array_DataDealing[I].TempAcying.initzengjian = 1 then tempKm := tempKm + Abs((tempPlus - startPlus) * Form_UI.Distance_Pluse / 1000000)
+          else tempKm := tempKm - Abs((tempPlus - startPlus) * Form_UI.Distance_Pluse / 1000000);
+          nowKm := tempKm + array_DataDealing[I].TempAcying.Distance_Init;
+          array_PlusResult[Form_UI.calingCounts - 1].mykilo := nowKm * 1000;
+
+          //time_CalSpeed这个变量就类似于一个布尔类型来判断是否开始计算速度了
           if Form_UI.time_CalSpeed = 0 then
           begin
             array_PlusResult[Form_UI.calingCounts - 1].myspeed := 0;
@@ -1118,23 +1096,22 @@ begin
           end
           else
           begin
-            if GetTickCount - Form_UI.time_CalSpeed > 2500 then   //2500毫秒算一次速度
+            if Form_UI.tempEndTime - Form_UI.tempStartTime > 1000 then   //1000毫秒算一次速度
             begin
-              temp_time := GetTickCount;
-              array_PlusResult[Form_UI.calingCounts - 1].myspeed := Abs((tempPlus - tmpPluse) * Distance_Pluse / 1000 / 1000) / ((temp_time - Form_UI.time_CalSpeed) / 1000 / 60 / 60);
+              array_PlusResult[Form_UI.calingCounts - 1].myspeed := Abs((tempPlus - tmpPluse) * Form_UI.Distance_Pluse / 1000 / 1000) / ((Form_UI.tempEndTime - Form_UI.tempStartTime) / 1000 / 60 / 60);
               Form_UI.GSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
-              tmpSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
-              Form_UI.time_CalSpeed := temp_time;
               tmpPluse := tempPlus;
+              Form_UI.tempStartTime := Form_UI.tempEndTime;
+              tmpSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
             end
             else
             begin
-              if tmpSpeed <> 0 then array_PlusResult[Form_UI.calingCounts - 1].myspeed := tmpSpeed;
+              Form_UI.tempEndTime := Form_UI.tempEndTime + time_Hz;
+              array_PlusResult[Form_UI.calingCounts - 1].myspeed := tmpSpeed;
             end;
           end;
           startPlus := tempPlus;
-          startKm := tempKm;
-          Form_UI.GKilometer := startKm;
+          Form_UI.GKilometer := nowKm;
 
           //锚段计算
           if array_ResultDeal[I].mark = 2 then
@@ -1178,7 +1155,7 @@ begin
               end
               else
               begin
-                endRecordKm := tempKm;
+                endRecordKm := nowKm;
                 if Abs(endRecordKm - startRecordKm) > 0.005 then   //0.005是5米
                 begin
                   Form_UI.calHCounts := Form_UI.calHCounts + 1;
@@ -1197,9 +1174,24 @@ begin
                 Form_UI.poleCounts := 0;
                 temp_MaxH := 0;
                 temp_MinH := 0;
-                startRecordKm := tempKm;
-                Form_UI.pole_ghNumb := Form_UI.pole_ghNumb + 1;
-                array_PlusResult[Form_UI.calingCounts - 1].ghNumb := Form_LineSetting.Pole_InitNumber + Form_UI.pole_ghNumb;
+                startRecordKm := nowKm;
+
+                if startghNumber <> array_DataDealing[I].TempAcying.Pole_Init then
+                begin
+                  Form_UI.pole_ghNumb := 0;
+                  startghNumber := array_DataDealing[I].TempAcying.Pole_Init;
+                  startGhzengjian := array_DataDealing[I].TempAcying.ghzengjian;
+                end;
+
+                if startghNumber <> array_DataDealing[I].TempAcying.ghzengjian then
+                begin
+                  Form_UI.pole_ghNumb := -Form_UI.pole_ghNumb;
+                  startGhzengjian := array_DataDealing[I].TempAcying.ghzengjian;
+                end;
+
+                if array_DataDealing[I].TempAcying.ghzengjian = 1 then Form_UI.pole_ghNumb := Form_UI.pole_ghNumb + 1
+                else Form_UI.pole_ghNumb := Form_UI.pole_ghNumb - 1;
+                array_PlusResult[Form_UI.calingCounts - 1].ghNumb := array_DataDealing[I].TempAcying.Pole_Init + Form_UI.pole_ghNumb;
               end;
             end;
           end;
@@ -1214,7 +1206,7 @@ begin
           temp_arrayYD2[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].YD2_value;
           temp_arrayJCL[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].JCL_value;
           temp_arrayDL[Form_UI.noPlusCounts - 1] := array_ResultDeal[I].DL_value;
-          array_PlusResult[Form_UI.calingCounts - 1].JCL_value := Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force;
+          array_PlusResult[Form_UI.calingCounts - 1].JCL_value := Form_UI.calibrate_ForceK * (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force) + Form_UI.calibrate_ForceB;
           array_PlusResult[Form_UI.calingCounts - 1].DL_value := Abs(Form_UI.CalMean(temp_arrayDL) - Form_UI.calibrate_Electricity);   //暂时加绝对值计算电流，以后可能分正负值计算
           array_PlusResult[Form_UI.calingCounts - 1].YD1_value := Form_UI.CalMean(temp_arrayYD1) - Form_UI.calibrate_ACC3;
           array_PlusResult[Form_UI.calingCounts - 1].YD2_value := Form_UI.CalMean(temp_arrayYD2) - Form_UI.calibrate_ACC6;
@@ -1256,7 +1248,7 @@ begin
           //是否进行标定
           if Form_UI.IsFirstCalibrate then
           begin
-            if Form_UI.IsCalibrating then
+            if Form_UI.IsCalibrating_Init then
             begin
               Form_UI.YL1 := Form_UI.CalMean(temp_arraycalibYL1);
               Form_UI.YL2 := Form_UI.CalMean(temp_arraycalibYL2);
@@ -1291,22 +1283,56 @@ begin
               if FileExists(Form_UI.ConfigurationFilePath) then
               begin
                 IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
-                Inifile.WriteString('标定', 'Force', FloatToStr(Form_UI.Calibrate_Force));
-                Inifile.WriteString('标定', 'Electricity', FloatToStr(Form_UI.Calibrate_Electricity));
-                Inifile.WriteString('标定', 'Power1', FloatToStr(Form_UI.Calibrate_Power1));
-                Inifile.WriteString('标定', 'Power2', FloatToStr(Form_UI.Calibrate_Power2));
-                Inifile.WriteString('标定', 'Power3', FloatToStr(Form_UI.Calibrate_Power3));
-                Inifile.WriteString('标定', 'Power4', FloatToStr(Form_UI.Calibrate_Power4));
-                Inifile.WriteString('标定', 'ACC1', FloatToStr(Form_UI.Calibrate_ACC1));
-                Inifile.WriteString('标定', 'ACC2', FloatToStr(Form_UI.Calibrate_ACC2));
-                Inifile.WriteString('标定', 'ACC3', FloatToStr(Form_UI.Calibrate_ACC3));
-                Inifile.WriteString('标定', 'ACC4', FloatToStr(Form_UI.Calibrate_ACC4));
-                Inifile.WriteString('标定', 'ACC5', FloatToStr(Form_UI.Calibrate_ACC5));
-                Inifile.WriteString('标定', 'ACC6', FloatToStr(Form_UI.Calibrate_ACC6));
+                Inifile.WriteString('标定', 'Force', FormatFloat('0.0', Form_UI.Calibrate_Force));
+                Inifile.WriteString('标定', 'Electricity', FormatFloat('0.0', Form_UI.Calibrate_Electricity));
+                Inifile.WriteString('标定', 'Power1', FormatFloat('0.0', Form_UI.Calibrate_Power1));
+                Inifile.WriteString('标定', 'Power2', FormatFloat('0.0', Form_UI.Calibrate_Power2));
+                Inifile.WriteString('标定', 'Power3', FormatFloat('0.0', Form_UI.Calibrate_Power3));
+                Inifile.WriteString('标定', 'Power4', FormatFloat('0.0', Form_UI.Calibrate_Power4));
+                Inifile.WriteString('标定', 'ACC1', FormatFloat('0.0', Form_UI.Calibrate_ACC1));
+                Inifile.WriteString('标定', 'ACC2', FormatFloat('0.0', Form_UI.Calibrate_ACC2));
+                Inifile.WriteString('标定', 'ACC3', FormatFloat('0.0', Form_UI.Calibrate_ACC3));
+                Inifile.WriteString('标定', 'ACC4', FormatFloat('0.0', Form_UI.Calibrate_ACC4));
+                Inifile.WriteString('标定', 'ACC5', FormatFloat('0.0', Form_UI.Calibrate_ACC5));
+                Inifile.WriteString('标定', 'ACC6', FormatFloat('0.0', Form_UI.Calibrate_ACC6));
                 IniFile.Free;
 
                 Form_UI.InitSubGroup;
               end;
+              Form_UI.IsFirstCalibrate := False;
+            end;
+
+            if Form_UI.IsCalibrating_Raise then Form_UI.tmpForceK := Form_UI.Force_CalK / (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force)
+            else
+            begin
+              Form_UI.calibrate_ForceK := Form_UI.tmpForceK;
+
+              if FileExists(Form_UI.ConfigurationFilePath) then
+              begin
+                IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
+                Inifile.WriteString('标定', 'ForceK', FormatFloat('0.0', Form_UI.calibrate_ForceK));
+                IniFile.Free;
+
+                Form_UI.InitSubGroup;
+              end;
+
+              Form_UI.IsFirstCalibrate := False;
+            end;
+
+            if Form_UI.IsCalibrating_Normal then Form_UI.tmpForceB := Form_UI.Force_CalB * G - Form_UI.calibrate_ForceK * (Form_UI.CalMean(temp_arrayJCL) - Form_UI.calibrate_Force)
+            else
+            begin
+              Form_UI.calibrate_ForceB := Form_UI.tmpForceB;
+
+              if FileExists(Form_UI.ConfigurationFilePath) then
+              begin
+                IniFile := TIniFile.Create(Form_UI.ConfigurationFilePath);
+                Inifile.WriteString('标定', 'ForceB', FormatFloat('0.0', Form_UI.calibrate_ForceB));
+                IniFile.Free;
+
+                Form_UI.InitSubGroup;
+              end;
+
               Form_UI.IsFirstCalibrate := False;
             end;
           end;
@@ -1326,18 +1352,19 @@ begin
           SetLength(temp_arraycalibYD4, Form_UI.noPlusCounts);
           SetLength(temp_arraycalibYD5, Form_UI.noPlusCounts);
 
-          //计算力的均值、最大值、最小值、均方根值
-          if Form_UI.calingCounts > Form_UI.calCounts - 1 then
-          begin
-            for J := 0 to Form_UI.calCounts - 1 do
-            begin
-              Form_UI.array_CalForce[J] := array_PlusResult[Form_UI.calingCounts - Form_UI.calCounts + J].JCL_value;
-            end;
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_mean := Form_UI.CalMean(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_max := Form_UI.CalMax(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_min := Form_UI.CalMin(Form_UI.array_CalForce);
-            array_PlusResult[Form_UI.calingCounts - 1].JCL_std := Form_UI.Calstd(Form_UI.array_CalForce);
-          end;
+          //因为这儿的值分别显示4个力传感器的计算值，所以暂时注释
+//          //计算力的均值、最大值、最小值、均方根值
+//          if Form_UI.calingCounts > Form_UI.calCounts - 1 then
+//          begin
+//            for J := 0 to Form_UI.calCounts - 1 do
+//            begin
+//              Form_UI.array_CalForce[J] := array_PlusResult[Form_UI.calingCounts - Form_UI.calCounts + J].JCL_value;
+//            end;
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_mean := Form_UI.CalMean(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_max := Form_UI.CalMax(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_min := Form_UI.CalMin(Form_UI.array_CalForce);
+//            array_PlusResult[Form_UI.calingCounts - 1].JCL_std := Form_UI.Calstd(Form_UI.array_CalForce);
+//          end;
 
           //数据压入绘图缓存区中
           New(TempDataSR);
@@ -1387,7 +1414,7 @@ begin
           //区段计算
           if array_ResultDeal[I].mark = 4 then
           begin
-            endRecordKm := tempKm;
+            endRecordKm := nowKm;
             if Abs(endRecordKm - startRecordKm) > 0.005 then
             begin
               if Form_UI.calHCounts < Length_DynamicArray - 1 then
@@ -1476,7 +1503,7 @@ begin
         end;
       end;
       Application.ProcessMessages;
-      Sleep(500);
+      Sleep(300);
     end;
   end;
 end;
@@ -1570,9 +1597,23 @@ begin
   else MessageBox(Handle, '未发现备份的配置文件。', '恢复设置', MB_OK + MB_ICONQUESTION);
 end;
 
-procedure TForm_UI.Action_StartCalibrateExecute(Sender: TObject);
+procedure TForm_UI.Action_StartInitCalibrateExecute(Sender: TObject);
 begin
-  IsCalibrating := True;
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Init := True;
+  IsFirstCalibrate := True;
+end;
+
+procedure TForm_UI.Action_StartNormalCalibrateExecute(Sender: TObject);
+begin
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Normal := True;
   IsFirstCalibrate := True;
 end;
 
@@ -1591,7 +1632,7 @@ begin
             Counts_Package := 0;
             Counts_Save := 0;
             Counts_Number := 0;
-            StartMs := GetTickCount;
+            StartMs := 0;
             startTime := FormatDateTime('yymmddhhnnss', Now);
             Data2DCache.clear;
             HvUDPCache.clear;
@@ -1638,6 +1679,16 @@ begin
   FDrawThread.Resume;
 end;
 
+procedure TForm_UI.Action_StartRaiseCalibrateExecute(Sender: TObject);
+begin
+  LargeButton_StartInitCali.Enabled := False;
+  LargeButton_StartRaiseCali.Enabled := False;
+  LargeButton_StartNormalCali.Enabled := False;
+
+  IsCalibrating_Raise := True;
+  IsFirstCalibrate := True;
+end;
+
 procedure TForm_UI.Action_StartSaveExecute(Sender: TObject);
 begin
   if not IsSave then
@@ -1647,11 +1698,12 @@ begin
     CopyFile(PChar(configurationFilePath), PChar(ExtractFilePath(TempOrignalDataPath) + 'ConfigurationFile.txt'), False);
     TempResultDataPath := SavedResultDataPath + Form_LineSetting.line_name + '_' + FormatDateTime('yymmddhhnnss', Now) + '\GWResult.dat';
     if not DirectoryExists(ExtractFilePath(TempResultDataPath)) then ForceDirectories(ExtractFilePath(TempResultDataPath));
-    SaveResultHead(TempResultDataPath, Form_LineSetting.line_name, Form_LineSetting.Pole_InitNumber, Form_LineSetting.kilometer, Form_LineSetting.shangxiaxing, Form_LineSetting.direction, Form_LineSetting.plus_minus);
+    SaveResultHead(TempResultDataPath, Form_LineSetting.line_name, Form_LineSetting.Pole_InitNumber, Form_LineSetting.kilometer, Form_LineSetting.shangxiaxing, Form_LineSetting.direction, Form_LineSetting.plus_minus, Form_LineSetting.Pole_Zengjian);
     StartSaveOriginalData;
     StartSaveResultData;
     IsSave := True;
     dxRibbonStatusBar.Panels[1].Text := '正在存储数据。';
+    Application.ProcessMessages;
   end;
 end;
 
@@ -1667,7 +1719,7 @@ begin
 
           if not IsRun then
           begin
-            StartMs := GetTickCount;
+            StartMs := 0;
             startTime := FormatDateTime('yymmddhhnnss', Now);
             Data2DCache.clear;
             HvUDPCache.clear;
@@ -1711,7 +1763,13 @@ end;
 
 procedure TForm_UI.Action_StopCalibrateExecute(Sender: TObject);
 begin
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
+
+  LargeButton_StartInitCali.Enabled := True;
+  LargeButton_StartRaiseCali.Enabled := True;
+  LargeButton_StartNormalCali.Enabled := True;
 end;
 
 procedure TForm_UI.Action_StopCollectExecute(Sender: TObject);
@@ -1726,6 +1784,7 @@ begin
 
     SuspendThread(Form_UI.PProcessThread);
     FDrawThread.Suspend;
+    SuspendThread(Form_UI.pSaveThread);
 
     IsRun := False;
     IsSave := False;
@@ -1736,7 +1795,6 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
-//    counts:= 0;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -1749,6 +1807,8 @@ begin
 
     time_Electricity := 0;
     time_CalSpeed := 0;
+    tempStartTime := 0;
+    tempEndTime := 0;
 
     //2D错误值取前一个值数组初始化
     for I := 0 to 3 do
@@ -1777,22 +1837,34 @@ begin
   SuspendThread(PProcessThread);
   FDrawThread.Suspend;
   IsFirstCalibrate := False;
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
   LargeButton_InitSetting.Enabled := True;
   LargeButton_Pause.Enabled := True;
   LargeButton_StartCollect.Enabled := True;
   LargeButton_StopCollect.Enabled := True;
-  SuspendThread(PSaveThread);
+  IsPlayback := False;
 end;
 
 procedure TForm_UI.Action_StopSaveExecute(Sender: TObject);
 begin
   if IsSave then
   begin
+    SuspendThread(PProcessThread);
+    SuspendThread(pSaveThread);
     IsSave := False;
+    OriginalCache.clear;
+    ResultCache.clear;
     dxRibbonStatusBar.Panels[1].Text := '未存储数据。';
     StopSaveOriginalData;
     StopSaveResultData;
+    if IsRun or IsPlayback then
+    begin
+      ResumeThread(pSaveThread);
+      ResumeThread(PProcessThread);
+    end;
+    Application.ProcessMessages;
   end;
 end;
 
@@ -1819,7 +1891,6 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
-//    counts:= 0;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -1832,6 +1903,8 @@ begin
 
     time_Electricity := 0;
     time_CalSpeed := 0;
+    tempStartTime := 0;
+    tempEndTime := 0;
 
     //2D错误值取前一个值数组初始化
     for I := 0 to 3 do
@@ -1954,32 +2027,7 @@ begin
   FirFilter_LowPassHardSpot5 := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
   FirFilter_LowPassHardSpot6 := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
   FirFilter_LowPassHardElectric := TFirFilter.create(UserLowPass, W, FirOrder, 0.5, 200);
-  W[0] := 5;
-  FirFilter_2DAverageX1 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageY1 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageXX1 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageYY1 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageX2 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageY2 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageXX2 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageYY2 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageX3 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageY3 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageXX3 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageYY3 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageX4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageY4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageXX4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
-  FirFilter_2DAverageYY4 := TFirFilter.create(UserAverage, W, FirOrder, 0.5, 200);
 
-  vector_X1.Size(Number_Cal);
-  vector_Y1.Size(Number_Cal);
-  vector_X2.Size(Number_Cal);
-  vector_Y2.Size(Number_Cal);
-  vector_X3.Size(Number_Cal);
-  vector_Y3.Size(Number_Cal);
-  vector_X4.Size(Number_Cal);
-  vector_Y4.Size(Number_Cal);
   vector_Power1.Size(Number_Cal);
   vector_Power2.Size(Number_Cal);
   vector_Power3.Size(Number_Cal);
@@ -2005,13 +2053,14 @@ begin
   IsSave := False;
   IsPlayback := False;
   IsFirstCalibrate := False;
-  IsCalibrating := False;
+  IsCalibrating_Init := False;
+  IsCalibrating_Raise := False;
+  IsCalibrating_Normal := False;
   IsFirstCal := True;
   IsJCDL := True;
   IsGJD := False;
 
   //计算绘图技术点初始化
-//  counts := 0;
   drawCounts := 0;
   calingCounts := 0;
   noPlusCounts := 0;
@@ -2027,6 +2076,8 @@ begin
 
   time_Electricity := 0;
   time_CalSpeed := 0;
+  tempStartTime := 0;
+  tempEndTime := 0;
 
   //2D错误值取前一个值数组初始化
   for I := 0 to 3 do
@@ -2050,17 +2101,15 @@ end;
 
 procedure TForm_UI.FormDestroy(Sender: TObject);
 begin
-  if IsSave then
-  begin
-    Action_StopSaveExecute(Sender);
-  end;
+  Timer.Enabled := False;
+
+  if IsSave then Action_StopSaveExecute(Sender);
 
   if IsRun then
   begin
     Action_StopCollectExecute(Sender);
     Action_StopSimulateExecute(Sender);
   end;
-
 
   //线程销毁
   TerminateThread(PSaveThread, 0);
@@ -2092,22 +2141,6 @@ begin
   FirFilter_LowPassHardSpot5.Free;
   FirFilter_LowPassHardSpot6.Free;
   FirFilter_LowPassHardElectric.Free;
-  FirFilter_2DAverageX1.Free;
-  FirFilter_2DAverageY1.Free;
-  FirFilter_2DAverageXX1.Free;
-  FirFilter_2DAverageYY1.Free;
-  FirFilter_2DAverageX2.Free;
-  FirFilter_2DAverageY2.Free;
-  FirFilter_2DAverageXX2.Free;
-  FirFilter_2DAverageYY2.Free;
-  FirFilter_2DAverageX3.Free;
-  FirFilter_2DAverageY3.Free;
-  FirFilter_2DAverageXX3.Free;
-  FirFilter_2DAverageYY3.Free;
-  FirFilter_2DAverageX4.Free;
-  FirFilter_2DAverageY4.Free;
-  FirFilter_2DAverageXX4.Free;
-  FirFilter_2DAverageYY4.Free;
 
   //2D析构
   CloseHandle(m_mutex);
@@ -2123,11 +2156,13 @@ begin
   Counts_Save := Counts_Save;
   Counts_Number := Counts_Number;
 
-  if IsRun then Form_Sensor.Button_Comfirm.Enabled := False
+  if IsRun or IsPlayback then Form_Sensor.Button_Comfirm.Enabled := False
   else Form_Sensor.Button_Comfirm.Enabled := True;
 
   dxRibbonStatusBar.Panels[5].Text := '公里标：' + Formatfloat('0.000', GKilometer) + 'km   速度：' + Formatfloat('0.000', GSpeed) + 'km/h';
   dxRibbonStatusBar.Panels[6].Text := FormatDateTime('yyyy年mm月dd日 hh:nn:ss', Now);
+
+  Application.ProcessMessages;
 end;
 
 procedure TForm_UI.Timer_InitSubGroupTimer(Sender: TObject);
@@ -2172,16 +2207,22 @@ begin
       Writeln(ConfigurationTextFile, 'Direction = 1');
       Writeln(ConfigurationTextFile, '');
 
+      Writeln(ConfigurationTextFile, '[车辆设置]');
+      Writeln(ConfigurationTextFile, '轮径值 = 840');
+      Writeln(ConfigurationTextFile, '轮径脉冲数 = 80');
+
       Writeln(ConfigurationTextFile, '[参数设置]');
       Writeln(ConfigurationTextFile, '是否补偿 = 0');
-      Writeln(ConfigurationTextFile, '弓网质量 = 0');
-      Writeln(ConfigurationTextFile, '电流标准值 = 0');
+      Writeln(ConfigurationTextFile, '弓网质量 = 30');
+      Writeln(ConfigurationTextFile, '电流标准值 = 1500');
       Writeln(ConfigurationTextFile, '压力传感器1灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '压力传感器2灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '压力传感器3灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '压力传感器4灵敏度系数 = 2');
       Writeln(ConfigurationTextFile, '加速度1灵敏度系数 = 24');
       Writeln(ConfigurationTextFile, '加速度2灵敏度系数 = 24');
+      Writeln(ConfigurationTextFile, '弓网力 = 120');
+      Writeln(ConfigurationTextFile, '载物力 = 10.2');
       Writeln(ConfigurationTextFile, '');
 
       Writeln(ConfigurationTextFile, '[标定]');
@@ -2197,6 +2238,8 @@ begin
       Writeln(ConfigurationTextFile, 'ACC4 = 0');
       Writeln(ConfigurationTextFile, 'ACC5 = 0');
       Writeln(ConfigurationTextFile, 'ACC6 = 0');
+      Writeln(ConfigurationTextFile, 'ForceK = 1');
+      Writeln(ConfigurationTextFile, 'ForceB = 0');
       Writeln(ConfigurationTextFile, 'DGZ = 0');
       Writeln(ConfigurationTextFile, 'LCZ = 0');
       Writeln(ConfigurationTextFile, '');
@@ -2225,30 +2268,39 @@ begin
     ComputerPort := IniFile.ReadString('传感器设置', 'ComputerPort', '1025');
     Direction_Sensor := IniFile.ReadInteger('传感器设置', 'Direction', 1);
 
-    IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
-    Value_Quality := IniFile.ReadFloat('参数设置', '弓网质量', 0);
-    Value_StandradElectricity := IniFile.ReadFloat('参数设置', '电流标准值', 0);
-    Sensitivity_YL1 := IniFile.ReadFloat('参数设置', '压力传感器1灵敏度系数', 2);
-    Sensitivity_YL2 := IniFile.ReadFloat('参数设置', '压力传感器2灵敏度系数', 2);
-    Sensitivity_YL3 := IniFile.ReadFloat('参数设置', '压力传感器3灵敏度系数', 2);
-    Sensitivity_YL4 := IniFile.ReadFloat('参数设置', '压力传感器4灵敏度系数', 2);
-    Sensitivity_ACC1 := IniFile.ReadFloat('参数设置', '加速度1灵敏度系数', 24);
-    Sensitivity_ACC2 := IniFile.ReadFloat('参数设置', '加速度2灵敏度系数', 24);
 
-    Calibrate_Force := IniFile.ReadFloat('标定', 'Force', 0);
-    Calibrate_Electricity := IniFile.ReadFloat('标定', 'Electricity', 0);
-    Calibrate_Power1 := IniFile.ReadFloat('标定', 'Power1', 0);
-    Calibrate_Power2 := IniFile.ReadFloat('标定', 'Power2', 0);
-    Calibrate_Power3 := IniFile.ReadFloat('标定', 'Power3', 0);
-    Calibrate_Power4 := IniFile.ReadFloat('标定', 'Power4', 0);
-    Calibrate_ACC1 := IniFile.ReadFloat('标定', 'ACC1', 0);
-    Calibrate_ACC2 := IniFile.ReadFloat('标定', 'ACC2', 0);
-    Calibrate_ACC3 := IniFile.ReadFloat('标定', 'ACC3', 0);
-    Calibrate_ACC4 := IniFile.ReadFloat('标定', 'ACC4', 0);
-    Calibrate_ACC5 := IniFile.ReadFloat('标定', 'ACC5', 0);
-    Calibrate_ACC6 := IniFile.ReadFloat('标定', 'ACC6', 0);
-    calibrate_DGZ := IniFile.ReadFloat('标定', 'DGZ', 0);
-    calibrate_LCZ := IniFile.ReadFloat('标定', 'LCZ', 0);
+    IsCompensate := IniFile.ReadInteger('参数设置', '是否补偿', 0);
+    Value_Quality := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '弓网质量', 30)));
+    Value_StandradElectricity := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '电流标准值', 1500)));
+    Sensitivity_YL1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器1灵敏度系数', 2)));
+    Sensitivity_YL2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器2灵敏度系数', 2)));
+    Sensitivity_YL3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器3灵敏度系数', 2)));
+    Sensitivity_YL4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '压力传感器4灵敏度系数', 2)));
+    Sensitivity_ACC1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '加速度1灵敏度系数', 24)));
+    Sensitivity_ACC2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '加速度2灵敏度系数', 24)));
+    Force_CalK := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '弓网力', 120)));
+    Force_CalB := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('参数设置', '载物力', 10.2)));
+
+    D_Wheel := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('车辆设置', '轮径值', 840)));
+    N_Pluse := IniFile.ReadInteger('车辆设置', '轮径脉冲数', 80);
+    Distance_Pluse := D_Wheel * 3.141592653 / N_Pluse;
+
+    Calibrate_Force := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Force', 0)));
+    Calibrate_Electricity := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Electricity', 0)));
+    Calibrate_Power1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power1', 0)));
+    Calibrate_Power2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power2', 0)));
+    Calibrate_Power3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power3', 0)));
+    Calibrate_Power4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'Power4', 0)));
+    Calibrate_ACC1 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC1', 0)));
+    Calibrate_ACC2 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC2', 0)));
+    Calibrate_ACC3 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC3', 0)));
+    Calibrate_ACC4 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC4', 0)));
+    Calibrate_ACC5 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC5', 0)));
+    Calibrate_ACC6 := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ACC6', 0)));
+    calibrate_ForceK := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ForceK', 1)));
+    calibrate_ForceB := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'ForceB', 0)));
+    calibrate_DGZ := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'DGZ', 0)));
+    calibrate_LCZ := StrToFloat(FormatFloat('0.0', IniFile.ReadFloat('标定', 'LCZ', 0)));
 
     IsDebug := IniFile.ReadInteger('调试', '调试', 1);
     drawThreshold := IniFile.ReadInteger('调试', '绘图点数', 50);
@@ -2263,26 +2315,8 @@ begin
 
     IniFile.Free;
 
-    if IsDebug > 0 then
-    begin
-      dxRibbonTab_Debug.Visible := True;
-
-      MenuItem_Collect.Visible := True;
-      MenuItem_Save.Visible := True;
-      MenuItem_Server.Visible := True;
-      MenuItem_LineAndSensor.Visible := True;
-      MenuItem_Playback.Visible := True;
-    end
-    else
-    begin
-      dxRibbonTab_Debug.Visible := False;
-
-      MenuItem_Collect.Visible := False;
-      MenuItem_Save.Visible := False;
-      MenuItem_Server.Visible := False;
-      MenuItem_LineAndSensor.Visible := False;
-      MenuItem_Playback.Visible := False;
-    end;
+    if IsDebug > 0 then Menu := MainMenu_UI
+    else Menu := nil;
   except
     On E : Exception Do
     begin
@@ -2363,34 +2397,42 @@ begin
   if Direction_Sensor = 1 then Form_Sensor.RadioButton_Zheng.Checked := True
   else Form_Sensor.RadioButton_Fu.Checked := True;
 
-  Form_Sensor.Edit_Quality.Text := FloatToStr(Value_Quality);
-  Form_Sensor.Edit_ElectrycityValue.Text := FloatToStr(Value_StandradElectricity);
+  Form_Sensor.Edit_Quality.Text := FormatFloat('0.0', Value_Quality);
+  Form_Sensor.Edit_ElectrycityValue.Text := FormatFloat('0.0', Value_StandradElectricity);
 
   Form_Sensor.Edit_DrawCounts.Text := IntToStr(drawThreshold);
   Form_Sensor.Edit_CalCounts.Text := IntToStr(calCounts);
 
-  Form_Sensor.Edit_Force.Text := FloatToStr(Calibrate_Force);
-  Form_Sensor.Edit_Electricity.Text := FloatToStr(Calibrate_Electricity);
-  Form_Sensor.Edit_Power1.Text := FloatToStr(Calibrate_Power1);
-  Form_Sensor.Edit_Power2.Text := FloatToStr(Calibrate_Power2);
-  Form_Sensor.Edit_Power3.Text := FloatToStr(Calibrate_Power3);
-  Form_Sensor.Edit_Power4.Text := FloatToStr(Calibrate_Power4);
-  Form_Sensor.Edit_ACC1.Text := FloatToStr(Calibrate_ACC1);
-  Form_Sensor.Edit_ACC2.Text := FloatToStr(Calibrate_ACC2);
-  Form_Sensor.Edit_ACC3.Text := FloatToStr(Calibrate_ACC3);
-  Form_Sensor.Edit_ACC4.Text := FloatToStr(Calibrate_ACC4);
-  Form_Sensor.Edit_ACC5.Text := FloatToStr(Calibrate_ACC5);
-  Form_Sensor.Edit_ACC6.Text := FloatToStr(Calibrate_ACC6);
+  Form_Sensor.Edit_ForceCalK.Text := FormatFloat('0.0', Force_CalK);
+  Form_Sensor.Edit_ForceCalB.Text := FormatFloat('0.0', Force_CalB);
+
+  Form_Sensor.Edit_Wheel.Text := FormatFloat('0.0', D_Wheel);
+  Form_Sensor.Edit_Pluse.Text := IntToStr(N_Pluse);
+
+  Form_Sensor.Edit_Force.Text := FormatFloat('0.0', Calibrate_Force);
+  Form_Sensor.Edit_Electricity.Text := FormatFloat('0.0', Calibrate_Electricity);
+  Form_Sensor.Edit_Power1.Text := FormatFloat('0.0', Calibrate_Power1);
+  Form_Sensor.Edit_Power2.Text := FormatFloat('0.0', Calibrate_Power2);
+  Form_Sensor.Edit_Power3.Text := FormatFloat('0.0', Calibrate_Power3);
+  Form_Sensor.Edit_Power4.Text := FormatFloat('0.0', Calibrate_Power4);
+  Form_Sensor.Edit_ACC1.Text := FormatFloat('0.0', Calibrate_ACC1);
+  Form_Sensor.Edit_ACC2.Text := FormatFloat('0.0', Calibrate_ACC2);
+  Form_Sensor.Edit_ACC3.Text := FormatFloat('0.0', Calibrate_ACC3);
+  Form_Sensor.Edit_ACC4.Text := FormatFloat('0.0', Calibrate_ACC4);
+  Form_Sensor.Edit_ACC5.Text := FormatFloat('0.0', Calibrate_ACC5);
+  Form_Sensor.Edit_ACC6.Text := FormatFloat('0.0', Calibrate_ACC6);
+  Form_Sensor.Edit_ForceK.Text := FormatFloat('0.0', calibrate_ForceK);
+  Form_Sensor.Edit_ForceB.Text := FormatFloat('0.0', calibrate_ForceB);
 
   Form_Sensor.Edit_IsCompensate.Text := IntToStr(IsCompensate);
-  Form_Sensor.Edit_DGZ.Text := FloatToStr(calibrate_DGZ);
-  Form_Sensor.Edit_LCZ.Text := FloatToStr(calibrate_LCZ);
-  Form_Sensor.Edit_YL1.Text := FloatToStr(Sensitivity_YL1);
-  Form_Sensor.Edit_YL2.Text := FloatToStr(Sensitivity_YL2);
-  Form_Sensor.Edit_YL3.Text := FloatToStr(Sensitivity_YL3);
-  Form_Sensor.Edit_YL4.Text := FloatToStr(Sensitivity_YL4);
-  Form_Sensor.Edit_AC1.Text := FloatToStr(Sensitivity_ACC1);
-  Form_Sensor.Edit_AC2.Text := FloatToStr(Sensitivity_ACC2);
+  Form_Sensor.Edit_DGZ.Text := FormatFloat('0.0', calibrate_DGZ);
+  Form_Sensor.Edit_LCZ.Text := FormatFloat('0.0', calibrate_LCZ);
+  Form_Sensor.Edit_YL1.Text := FormatFloat('0.0', Sensitivity_YL1);
+  Form_Sensor.Edit_YL2.Text := FormatFloat('0.0', Sensitivity_YL2);
+  Form_Sensor.Edit_YL3.Text := FormatFloat('0.0', Sensitivity_YL3);
+  Form_Sensor.Edit_YL4.Text := FormatFloat('0.0', Sensitivity_YL4);
+  Form_Sensor.Edit_AC1.Text := FormatFloat('0.0', Sensitivity_ACC1);
+  Form_Sensor.Edit_AC2.Text := FormatFloat('0.0', Sensitivity_ACC2);
 end;
 
 function TForm_UI.JCWSetIP(tempTCPIP: string) : Integer;
@@ -2412,13 +2454,17 @@ procedure TForm_UI.IdUDPServer_AcyingUDPRead(AThread: TIdUDPListenerThread;
   const AData: TIdBytes; ABinding: TIdSocketHandle);
 var
   I: Byte;
-  tmp: array [0..9] of Byte;
+  tempData: TRecord_OriginalAcying;
   tempDataAcying: ^TRecord_OriginalAcying;
 begin
-  for I := 0 to 9 do tmp[I] := AData[I];
+  tempData.Distance_Init := Form_LineSetting.kilometer;
+  tempData.Pole_Init := Form_LineSetting.Pole_InitNumber;
+  tempData.initzengjian := Form_LineSetting.plus_minus;
+  tempData.ghzengjian := Form_LineSetting.Pole_Zengjian;
+  for I := 0 to 9 do tempData.Acying[I] := AData[I];
 
   New(tempDataAcying);
-  CopyMemory(tempDataAcying, @tmp, SizeOf(TRecord_OriginalAcying));
+  CopyMemory(tempDataAcying, @tempData, SizeOf(TRecord_OriginalAcying));
   AcyingCache.Push(tempDataAcying);
 end;
 
@@ -2523,7 +2569,7 @@ begin
   IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
 end;
 
-procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; inight: Integer; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte);
+procedure TForm_UI.SaveResultHead(tempPath: string; tempLineName: string; inight: Integer; initDis: Double; shangxia: string; rundir: string; initzengjian: Byte; ghzengjian: Byte);
 var
   SaveResultlFile : file;
   FileStream : TFileStream;
@@ -2543,14 +2589,10 @@ begin
   WritePosition := FileStream.Size;
   FileStream.Seek(WritePosition, 0);
 
-  if Length(tempLineName) > 0 then
-  begin
-    for I := 0 to Length(tempLineName) - 1 do
-    begin
-      TempData.lineName[I] := tempLineName[I];
-    end;
-  end;
-  TempData.Version := 1;
+  for I := 0 to Length(TempData.lineName) - 1 do TempData.lineName[I] := '0';
+  if Length(tempLineName) > 0 then for I := 0 to Length(tempLineName) - 1 do TempData.lineName[I] := tempLineName[I + 1];
+  //结果数据协议版本增加了一版
+  TempData.Version := 2;
   for I := 0 to 394 do TempData.reserved[I] := 0;
   TempData.inight := inight;
   TempData.inidis := Round(initDis * 1000);
@@ -2561,9 +2603,11 @@ begin
   else TempData.rundir := 0;
   if initzengjian = 1 then TempData.initzengjian := 1
   else TempData.initzengjian := 0;
+  if ghzengjian = 1 then TempData.ghzengjian := 1
+  else TempData.ghzengjian := 0;
 
   tempString := FormatDateTime('yymmddhhnnss', Now);
-  for I := 0 to 11 do TempData.DataTime[I] := tempString[I];
+  for I := 0 to 11 do TempData.DataTime[I] := tempString[I + 1];
 
   LengthNumber := FileStream.Write(TempData, SizeOf(sResultDataPara));
   FileStream.Destroy;
@@ -2631,7 +2675,6 @@ var
   LoadDataSize : Int64;
   InputDataSize : LongWord;
   TempPlayBackData : Record_SaveOriginal;
-  TempDistance_Init: Double;
   TempDataO2D: JCWJH;
   TempDataOHv: TRecord_OriginalHv;
   TempDataOLv: TRecord_OriginalLv;
@@ -2664,12 +2707,6 @@ begin
     TempDataOHv := TempPlayBackData.OHvData;
     TempDataOLv := TempPlayBackData.OLvData;
     TempDataOAcying := TempPlayBackData.AcyingData;
-
-    if InputDataSize = 0 then
-    begin
-      Form_LineSetting.kilometer := TempPlayBackData.Distance_Init;
-      Form_LineSetting.Pole_InitNumber := TempPlayBackData.Pole_Init;
-    end;
 
     New(TempData2D);
     CopyMemory(TempData2D, @TempDataO2D, SizeOf(JCWJH));

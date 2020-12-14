@@ -32,6 +32,10 @@ type
     Button_Start: TButton;
     Label_Pole: TLabel;
     Edit_Pole: TEdit;
+    Panel_JiaAndJjian: TPanel;
+    RadioButton_Jia: TRadioButton;
+    RadioButton_Jian: TRadioButton;
+    Panel_Ganjiajian: TPanel;
     procedure Button_StartClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -44,8 +48,9 @@ type
     { Public declarations }
     kilometer: Double;
     line_name, shangxiaxing, direction: string;
-    plus_minus: Byte;
+    plus_minus, Pole_Zengjian: Byte;
     Pole_InitNumber: Integer;       //初始计数杆号
+    record_gh: Integer;   //绘图杆号计数判断
   end;
 
 var
@@ -75,17 +80,24 @@ begin
           if not (RadioButton_Add.Checked or RadioButton_Substract.Checked) then MessageBox(Handle, '未选择递增递减，请检查。', '线路设置', MB_OK)
           else
           begin
-            kilometer := StrToFloat(Edit_Kilometer.Text);
-            Pole_InitNumber := StrToInt(Edit_Pole.Text);
-            line_name := ComboBox_Line.Text;
-            if RadioButton_Up.Checked then shangxiaxing := '上行'
-            else shangxiaxing := '下行';
-            if RadioButton_Front.Checked then direction := '正向'
-            else direction := '反向';
-            if RadioButton_Add.Checked then plus_minus := 1
-            else plus_minus := 0;
-            Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
-            Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
+            if MessageBox(Handle, '您确定要设置吗？', '线路设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
+            begin
+              kilometer := StrToFloat(Edit_Kilometer.Text);
+              Pole_InitNumber := StrToInt(Edit_Pole.Text);
+              record_gh := Pole_InitNumber;
+              line_name := ComboBox_Line.Text;
+              if RadioButton_Up.Checked then shangxiaxing := '上行'
+              else shangxiaxing := '下行';
+              if RadioButton_Front.Checked then direction := '正向'
+              else direction := '反向';
+              if RadioButton_Add.Checked then plus_minus := 1
+              else plus_minus := 0;
+              if RadioButton_Jia.Checked then Pole_Zengjian := 1
+              else Pole_Zengjian := 0;
+              Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
+              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
+              MessageBox(handle, '设置成功！', '信息提示', MB_OK);
+            end;
           end;
         end;
       end;
@@ -95,7 +107,7 @@ end;
 
 procedure TForm_LineSetting.Button_StartClick(Sender: TObject);
 begin
-  if plus_minus <> 2 then
+  if MessageBox(Handle, '您确定要开始吗？', '线路设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
   begin
     case Form_UI.Init2DIP of
       0:
@@ -151,8 +163,7 @@ begin
       -6: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器无效参数值，参数超出有效范围，或者参数组合无效。';
       -404: Form_UI.dxRibbonStatusBar.Panels[3].Text := '2D传感器未实现。';
     end;
-  end
-  else MessageBox(handle, '未进行相应的线路设置，请检查。', '线路设置', MB_OK);
+  end;
 end;
 
 procedure TForm_LineSetting.FormClose(Sender: TObject;
@@ -168,7 +179,9 @@ begin
   shangxiaxing := '上行';
   direction := '正向';
   plus_minus := 1;
+  Pole_Zengjian := 1;
   Pole_InitNumber := 0;
+  record_gh := 0;
 end;
 
 procedure TForm_LineSetting.FormShow(Sender: TObject);
