@@ -439,7 +439,7 @@ object Form_Sensor: TForm_Sensor
   end
   object Button_Comfirm: TButton
     Left = 419
-    Top = 645
+    Top = 654
     Width = 104
     Height = 33
     Caption = #20445#23384

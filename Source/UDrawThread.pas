@@ -496,7 +496,12 @@ begin
         tmp8ChartValues[I] := Form_UI.DrawData[21][I];
         tmp9ChartValues[I] := Form_UI.DrawData[22][I];
         tmp10ChartValues[I] := Form_UI.DrawData[26][I];
-        if tmp10ChartValues[I] <> Form_LineSetting.Pole_InitNumber then tmp10ChartValues[I] := 1;
+
+        if tmp10ChartValues[I] <> Form_LineSetting.record_gh then
+        begin
+          Form_LineSetting.record_gh := Round(tmp10ChartValues[I]);
+          tmp10ChartValues[I] := 1;
+        end;
       end;
 
       Form_UI.FastLineSeries_Line1Height.XValues.Value := tmp0ChartValues;
@@ -581,7 +586,7 @@ begin
   begin
     Synchronize(DrawLine);
     Application.ProcessMessages;
-    Sleep(50);
+    Sleep(30);
   end;
 end;
 end.
