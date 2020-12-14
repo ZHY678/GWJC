@@ -325,7 +325,7 @@ type
 
     FGlobalpara: TGlobalpara;
 
-    FileStream_Original, FileStream_Result : TFileStream;
+    FileStream_Original, FileStream_Result: TFileStream;
 
     procedure InitFolder;
     function JCWSetIP(tempTCPIP: string): Integer;
@@ -558,7 +558,7 @@ begin
   while True do
   begin
     //数据取值
-    if (Form_UI.Data2DCache.count > Number_Cal) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
+    if (Form_UI.Data2DCache.count > Number_Cal * 2) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
     begin
       for I := 0 to Number_Cal - 1 do
       begin
@@ -566,9 +566,9 @@ begin
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
         Array_DataDeal[I].Om_data := TempDataO2D;
-//        TempData2D := Form_UI.Data2DCache.Pop;
-//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-//        Dispose(TempData2D);
+        TempData2D := Form_UI.Data2DCache.Pop;
+        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+        Dispose(TempData2D);
 
         TempDataHv := Form_UI.HvUDPCache.Pop;
         CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
@@ -2675,7 +2675,6 @@ var
   LoadDataSize : Int64;
   InputDataSize : LongWord;
   TempPlayBackData : Record_SaveOriginal;
-  TempDistance_Init: Double;
   TempDataO2D: JCWJH;
   TempDataOHv: TRecord_OriginalHv;
   TempDataOLv: TRecord_OriginalLv;
