@@ -479,8 +479,6 @@ begin
       Dispose(TempResultData);
       Form_UI.SaveResultData(TempRData);
     end;
-
-    Sleep(1);
   end;
 end;
 
@@ -558,7 +556,7 @@ begin
   while True do
   begin
     //数据取值
-    if (Form_UI.Data2DCache.count > Number_Cal * 2) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
+    if (Form_UI.Data2DCache.count > Number_Cal) and (Form_UI.HvUDPCache.count > Number_Cal) and (Form_UI.LvUDPCache.count > Number_Cal) and (Form_UI.AcyingCache.count > Number_Cal) then
     begin
       for I := 0 to Number_Cal - 1 do
       begin
@@ -566,9 +564,9 @@ begin
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
         Array_DataDeal[I].Om_data := TempDataO2D;
-        TempData2D := Form_UI.Data2DCache.Pop;
-        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-        Dispose(TempData2D);
+//        TempData2D := Form_UI.Data2DCache.Pop;
+//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
+//        Dispose(TempData2D);
 
         TempDataHv := Form_UI.HvUDPCache.Pop;
         CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
