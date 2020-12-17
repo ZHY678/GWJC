@@ -36,6 +36,10 @@ type
     RadioButton_Jia: TRadioButton;
     RadioButton_Jian: TRadioButton;
     Panel_Ganjiajian: TPanel;
+    Panel_IsRectify: TPanel;
+    RadioButton_Rectify_True: TRadioButton;
+    RadioButton_Rectify_False: TRadioButton;
+    Panel_ghrectify: TPanel;
     procedure Button_StartClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -77,26 +81,36 @@ begin
         if not (RadioButton_Front.Checked or RadioButton_Back.Checked) then MessageBox(Handle, '未选择正反向，请检查。', '线路设置', MB_OK)
         else
         begin
-          if not (RadioButton_Add.Checked or RadioButton_Substract.Checked) then MessageBox(Handle, '未选择递增递减，请检查。', '线路设置', MB_OK)
+          if not (RadioButton_Add.Checked or RadioButton_Substract.Checked) then MessageBox(Handle, '未选择里程递增递减，请检查。', '线路设置', MB_OK)
           else
           begin
-            if MessageBox(Handle, '您确定要设置吗？', '线路设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
+            if not (RadioButton_jia.Checked or RadioButton_jian.Checked) then MessageBox(Handle, '未选择杆号递增递减，请检查。', '线路设置', MB_OK)
+            else
             begin
-              kilometer := StrToFloat(Edit_Kilometer.Text);
-              Pole_InitNumber := StrToInt(Edit_Pole.Text);
-              record_gh := Pole_InitNumber;
-              line_name := ComboBox_Line.Text;
-              if RadioButton_Up.Checked then shangxiaxing := '上行'
-              else shangxiaxing := '下行';
-              if RadioButton_Front.Checked then direction := '正向'
-              else direction := '反向';
-              if RadioButton_Add.Checked then plus_minus := 1
-              else plus_minus := 0;
-              if RadioButton_Jia.Checked then Pole_Zengjian := 1
-              else Pole_Zengjian := 0;
-              Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
-              Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
-              MessageBox(handle, '设置成功！', '信息提示', MB_OK);
+              if not (RadioButton_Rectify_True.Checked or RadioButton_Rectify_False.Checked) then MessageBox(Handle, '未选择杆号是否矫正，请检查。', '线路设置', MB_OK)
+              else
+              begin
+                if MessageBox(Handle, '您确定要设置吗？', '线路设置', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
+                begin
+                  kilometer := StrToFloat(Edit_Kilometer.Text);
+                  Pole_InitNumber := StrToInt(Edit_Pole.Text);
+                  record_gh := Pole_InitNumber;
+                  line_name := ComboBox_Line.Text;
+                  if RadioButton_Up.Checked then shangxiaxing := '上行'
+                  else shangxiaxing := '下行';
+                  if RadioButton_Front.Checked then direction := '正向'
+                  else direction := '反向';
+                  if RadioButton_Add.Checked then plus_minus := 1
+                  else plus_minus := 0;
+                  if RadioButton_Jia.Checked then Pole_Zengjian := 1
+                  else Pole_Zengjian := 0;
+                  if RadioButton_Rectify_True.Checked then Form_UI.gh_IsRectify := 1
+                  else Form_UI.gh_IsRectify := 0;
+                  Form_UI.dxRibbonStatusBar.Panels[4].Text := '线路状况：' + shangxiaxing + direction + '。';
+                  Form_UI.dxRibbonStatusBar.Panels[5].Text := '公里标：' + FloatToStr(kilometer) + 'km';
+                  MessageBox(handle, '设置成功！', '信息提示', MB_OK);
+                end;
+              end;
             end;
           end;
         end;
@@ -122,8 +136,7 @@ begin
               Form_UI.Counts_Package := 0;
               Form_UI.Counts_Save := 0;
               Form_UI.Counts_Number := 0;
-              Form_UI.StartMs := GetTickCount;
-              Form_UI.startTime := FormatDateTime('yymmddhhnnss', Now);
+              Form_UI.StartMs := 0;
               Form_UI.Data2DCache.clear;
               Form_UI.HvUDPCache.clear;
               Form_UI.LvUDPCache.clear;

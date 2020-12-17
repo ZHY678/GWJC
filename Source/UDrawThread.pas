@@ -586,7 +586,7 @@ begin
   begin
     Synchronize(DrawLine);
     Application.ProcessMessages;
-    Sleep(30);
+    Sleep(5);
   end;
 end;
 end.

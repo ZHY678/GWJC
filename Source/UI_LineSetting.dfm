@@ -4,8 +4,8 @@ object Form_LineSetting: TForm_LineSetting
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #32447#36335#35774#32622
-  ClientHeight = 675
-  ClientWidth = 392
+  ClientHeight = 483
+  ClientWidth = 784
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,7 +21,7 @@ object Form_LineSetting: TForm_LineSetting
   object Panel_Kilometer: TPanel
     Left = 0
     Top = 0
-    Width = 393
+    Width = 785
     Height = 33
     BevelKind = bkTile
     Caption = #20844#37324#26631
@@ -36,35 +36,35 @@ object Form_LineSetting: TForm_LineSetting
   object Panel_KilometerSetting: TPanel
     Left = 0
     Top = 32
-    Width = 393
+    Width = 785
     Height = 153
     Color = clHighlightText
     ParentBackground = False
     TabOrder = 1
     object Label_Kilometer: TLabel
-      Left = 64
-      Top = 24
+      Left = 280
+      Top = 28
       Width = 96
       Height = 19
       Caption = #21021#22987#20844#37324#26631#65306
     end
     object Label_Line: TLabel
-      Left = 80
-      Top = 65
+      Left = 296
+      Top = 69
       Width = 80
       Height = 19
       Caption = #32447#36335#21517#31216#65306
     end
     object Label_Pole: TLabel
-      Left = 80
-      Top = 104
+      Left = 296
+      Top = 108
       Width = 80
       Height = 19
       Caption = #21021#22987#26438#21495#65306
     end
     object Edit_Kilometer: TEdit
-      Left = 200
-      Top = 21
+      Left = 416
+      Top = 25
       Width = 145
       Height = 27
       Alignment = taCenter
@@ -72,15 +72,15 @@ object Form_LineSetting: TForm_LineSetting
       Text = '0'
     end
     object ComboBox_Line: TComboBox
-      Left = 200
-      Top = 60
+      Left = 416
+      Top = 64
       Width = 145
       Height = 27
       TabOrder = 1
     end
     object Edit_Pole: TEdit
-      Left = 200
-      Top = 101
+      Left = 416
+      Top = 105
       Width = 145
       Height = 27
       Alignment = taCenter
@@ -90,7 +90,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_StreamSetting: TPanel
     Left = 0
-    Top = 216
+    Top = 214
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -115,7 +115,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_Stream: TPanel
     Left = 0
-    Top = 184
+    Top = 182
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -123,8 +123,8 @@ object Form_LineSetting: TForm_LineSetting
     TabOrder = 3
   end
   object Panel_DirectionSetting: TPanel
-    Left = 0
-    Top = 312
+    Left = 392
+    Top = 215
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -148,8 +148,8 @@ object Form_LineSetting: TForm_LineSetting
     end
   end
   object Panel_Dirction: TPanel
-    Left = 0
-    Top = 280
+    Left = 392
+    Top = 182
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -158,9 +158,9 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_AddAndSubStractSetting: TPanel
     Left = 0
-    Top = 408
+    Top = 407
     Width = 393
-    Height = 65
+    Height = 76
     Color = clHighlightText
     ParentBackground = False
     TabOrder = 6
@@ -191,8 +191,8 @@ object Form_LineSetting: TForm_LineSetting
     TabOrder = 7
   end
   object Panel_Setting: TPanel
-    Left = 0
-    Top = 568
+    Left = 392
+    Top = 376
     Width = 393
     Height = 33
     BevelKind = bkTile
@@ -200,8 +200,8 @@ object Form_LineSetting: TForm_LineSetting
     TabOrder = 8
   end
   object Panel_SettingSet: TPanel
-    Left = 0
-    Top = 599
+    Left = 392
+    Top = 407
     Width = 393
     Height = 76
     Color = clHighlightText
@@ -228,7 +228,7 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_JiaAndJjian: TPanel
     Left = 0
-    Top = 504
+    Top = 311
     Width = 393
     Height = 65
     Color = clHighlightText
@@ -253,11 +253,45 @@ object Form_LineSetting: TForm_LineSetting
   end
   object Panel_Ganjiajian: TPanel
     Left = 0
-    Top = 472
+    Top = 279
     Width = 393
     Height = 33
     BevelKind = bkTile
     Caption = #26438#21495#36882#22686#36882#20943
     TabOrder = 11
+  end
+  object Panel_IsRectify: TPanel
+    Left = 392
+    Top = 311
+    Width = 393
+    Height = 65
+    Color = clHighlightText
+    ParentBackground = False
+    TabOrder = 12
+    object RadioButton_Rectify_True: TRadioButton
+      Left = 96
+      Top = 24
+      Width = 113
+      Height = 17
+      Caption = #30699#27491
+      TabOrder = 0
+    end
+    object RadioButton_Rectify_False: TRadioButton
+      Left = 232
+      Top = 24
+      Width = 113
+      Height = 17
+      Caption = #19981#30699#27491
+      TabOrder = 1
+    end
+  end
+  object Panel_ghrectify: TPanel
+    Left = 392
+    Top = 279
+    Width = 393
+    Height = 33
+    BevelKind = bkTile
+    Caption = #26438#21495#26159#21542#30699#27491
+    TabOrder = 13
   end
 end

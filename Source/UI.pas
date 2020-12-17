@@ -91,6 +91,7 @@ type
     Pole_Init: Integer;
     initzengjian: Byte;
     ghzengjian: Byte;
+    ghRectify: Byte;
     Acying: array[0..9] of Byte;
   end;
 
@@ -99,6 +100,7 @@ type
     Pole_Init: Integer;
     initzengjian: Byte;
     ghzengjian: Byte;
+    ghRectify: Byte;
     pluseTime, pluseCounts: Word;
     pluseNumber, pluseStatus: Byte;
   end;
@@ -115,6 +117,11 @@ type
     TempHv: TRecord_Hv;
     TempLv: TRecord_Lv;
     TempAcying: TRecord_Acying;
+  end;
+
+  TPole_Information = record
+    ghnumb: Integer;
+    ghKilometer: Single;
   end;
 
   TForm_UI = class(TForm)
@@ -279,6 +286,20 @@ type
     MenuItem_StopCalibrate: TMenuItem;
     Action_StartRaiseCalibrate: TAction;
     Action_StartNormalCalibrate: TAction;
+    LargeButton_SettingRectifyTrue: TdxBarLargeButton;
+    LargeButton_SettingRectifyFalse: TdxBarLargeButton;
+    ManagerBar_GhInformationRectify: TdxBar;
+    LargeButton_GhRectifyTrue: TdxBarLargeButton;
+    LargeButton_GhRectifyFalse: TdxBarLargeButton;
+    MenuItem_GhInformationRectify: TMenuItem;
+    MenuItem_GhRectifyTrue: TMenuItem;
+    MenuItem_GhRectifyFalse: TMenuItem;
+    MenuItem_SettingRectifyTrue: TMenuItem;
+    MenuItem_SettingRectifyFalse: TMenuItem;
+    Action_GhRectifyTrue: TAction;
+    Action_GhRectifyFalse: TAction;
+    Action_SettingRectifyTrue: TAction;
+    Action_SettingRectifyFalse: TAction;
     procedure Action_OpenLineUIExecute(Sender: TObject);
     procedure Action_CloseLineUIExecute(Sender: TObject);
     procedure Action_VersionExecute(Sender: TObject);
@@ -317,6 +338,10 @@ type
     procedure Action_DataDisplayExecute(Sender: TObject);
     procedure Action_StartRaiseCalibrateExecute(Sender: TObject);
     procedure Action_StartNormalCalibrateExecute(Sender: TObject);
+    procedure Action_GhRectifyTrueExecute(Sender: TObject);
+    procedure Action_GhRectifyFalseExecute(Sender: TObject);
+    procedure Action_SettingRectifyTrueExecute(Sender: TObject);
+    procedure Action_SettingRectifyFalseExecute(Sender: TObject);
   private
     { Private declarations }
     errorLogPath, backupFilePath: String;   //各个文件路径
@@ -333,6 +358,17 @@ type
     procedure YEGDisconnect;
     procedure LoadOriginalData(TempLoadOriginalPath: string);
     procedure SaveResultHead(tempPath, tempLineName: string; inight: Integer; initDis: Double; shangxia, rundir: string; initzengjian, ghzengjian: Byte);
+    procedure UDPStopCollect;
+    procedure UDPStartSimulate;
+    procedure UDPStopSimulate;
+    procedure Close2D;
+    procedure StartSaveOriginalData;
+    procedure SaveOriginalData(TempData: Record_SaveOriginal);
+    procedure StopSaveOriginalData;
+    procedure StartSaveResultData;
+    procedure SaveResultData(TempData: sDataFrame);
+    procedure StopSaveResultData;
+    procedure ReadPoleInformation(tempStringList: TStringList);
   public
     { Public declarations }
     //2D数据变量（导高拉出值）
@@ -352,8 +388,7 @@ type
 
     pSaveThread, pProcessThread: DWORD;   //各个线程
     startMs: Single;   //检测时间，从信息头采集时间开始的时间，单位ms
-    startTime: string;
-    configurationFilePath, TempOrignalDataPath, TempResultDataPath, savedOriginalDataPath, savedResultDataPath: string;
+    configurationFilePath, TempOrignalDataPath, TempResultDataPath, savedOriginalDataPath, savedResultDataPath, PoleDataPath: string;
     GSpeed: Double;
     GKilometer: Single;
 
@@ -368,7 +403,8 @@ type
     //calingCounts 正在计算的点数多少，如果超了就要滑动，目前和Number_Cal * 2 - 1有关
     calCounts, drawCounts, calingCounts, paintCounts: Word;
 
-    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating_Init, IsCalibrating_Raise, IsCalibrating_Normal, IsFirstCal, IsGJD, IsJCDL: Boolean;
+    IsRun, IsSave, IsPlayback, IsFirstCalibrate, IsCalibrating_Init, IsCalibrating_Raise, IsCalibrating_Normal,
+    IsFirstCal, IsGJD, IsJCDL, Setting_IsRectify, IsLiChengRectify: Boolean;
 
     Data2DCache, HvUDPCache, LvUDPCache, AcyingCache, DrawCache, OriginalCache, ResultCache: TsfQueue;
     drawThreshold, poleCounts: Byte;   //绘图点数和支柱计算高差计数
@@ -382,7 +418,7 @@ type
 
     AcyingNumber_First: SmallInt;
 
-    Direction_Sensor, IsCompensate: Byte;   //传感器方向和是否补偿
+    Direction_Sensor, IsCompensate, gh_IsRectify: Byte;   //传感器方向和是否补偿
     Value_Quality, Value_StandradElectricity: Single;   //弓网质量和电流标准值
 
     calibrate_Force, calibrate_Electricity, calibrate_Power1, calibrate_Power2, calibrate_Power3, calibrate_Power4,
@@ -412,19 +448,13 @@ type
     FirFilter_LowPassHardSpot6: TFirFilter;
     FirFilter_LowPassHardElectric: TFirFilter;
 
+    Array_PoleInformation: array of TPole_Information;
+
     function Init2DIP: Integer;
     function Open2D: Integer;
-    procedure Close2D;
-    procedure UDPStartCollect;
-    procedure UDPStopCollect;
-    procedure InitConfigurationFile;
     procedure InitSubGroup;
-    procedure StartSaveOriginalData;
-    procedure SaveOriginalData(TempData: Record_SaveOriginal);
-    procedure StopSaveOriginalData;
-    procedure StartSaveResultData;
-    procedure SaveResultData(TempData: sDataFrame);
-    procedure StopSaveResultData;
+    procedure InitConfigurationFile;
+    procedure UDPStartCollect;
     function AToV(kind_V: Byte; temp_A: Word): Single;
     function CalJCL(tempV, tempSensitivity: Single): Single;
     function CalYD(tempV, tempSensitivity: Single): Single;
@@ -434,8 +464,8 @@ type
     function CalMin(tempArray: array of Single): Single;
     function Calstd(tempArray: array of Single): Single;
     function CalAve(tempArray: array of Single): Single;
-    procedure UDPStartSimulate;
-    procedure UDPStopSimulate;
+    function IsPoleInformationExist(tempgh: Integer): Boolean;
+    function PoleInformationRectify(tempgh: Integer): Single;
   end;
 
 var
@@ -444,12 +474,12 @@ var
   const
 //    Distance_Pluse = 33;          //一个脉冲距离13mm（200个脉冲），现在一个脉冲距离32.9mm（80个脉冲）
     Number_Draw = 5000;           //绘图的点数
-    Number_Cal = 200;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
+    Number_Cal = 500;             //一次性计算的点数，这里也是一秒的采集频率，改这个的时候注意上方的结构体长度应作出相应的变化
     G = 9.8;                      //重力加速度
     Fq_BandPass = 20;             //低通滤波带通频率
     Fq_CutOff = 25;               //低通滤波截止频率
-    Length_DynamicArray = 1000;   //中间计算过程动态数组长度
-    time_Hz = 5;                  //每帧采样时间(ms)
+    Length_DynamicArray = 2500;   //中间计算过程动态数组长度
+    time_Hz = 2;                  //每帧采样时间(ms)
 
 implementation
 
@@ -548,6 +578,7 @@ var
   temp_arrayYD1, temp_arrayYD2, temp_arrayJCL, temp_arrayDL: array of Single;   //一个脉冲内的计算数据
   temp_SPJL_value, temp_SPGC_value, temp_DGBHL_value, temp_DWDGC_value: array of Single;   //定位点改变的取均值的数组
   temp_MaxH, temp_MinH: Single;   //定位点高差的最大值和最小值
+  LiCheng_Rectify: Single;   //里程矫正的公里标
   temp_arraycalibYL1, temp_arraycalibYL2, temp_arraycalibYL3, temp_arraycalibYL4, temp_arraycalibYD1, temp_arraycalibYD2, temp_arraycalibYD4, temp_arraycalibYD5: array of Single;
 
   //额外加俩标定数组
@@ -564,9 +595,6 @@ begin
         CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
         Dispose(TempData2D);
         Array_DataDeal[I].Om_data := TempDataO2D;
-//        TempData2D := Form_UI.Data2DCache.Pop;
-//        CopyMemory(@TempDataO2D, TempData2D, SizeOf(JCWJH));
-//        Dispose(TempData2D);
 
         TempDataHv := Form_UI.HvUDPCache.Pop;
         CopyMemory(@TempDataOHv, TempDataHv, SizeOf(TRecord_OriginalHv));
@@ -728,10 +756,36 @@ begin
         array_DataDealing[I].TempAcying.pluseStatus := array_DataDeal[I].AcyingData.Acying[8];
 
         //后面新加的燃弧结构中的公里标、杆的信息赋值
-        array_DataDealing[I].TempAcying.Distance_Init := array_DataDeal[I].AcyingData.Distance_Init;
-        array_DataDealing[I].TempAcying.Pole_Init := array_DataDeal[I].AcyingData.Pole_Init;
-        array_DataDealing[I].TempAcying.initzengjian := array_DataDeal[I].AcyingData.initzengjian;
-        array_DataDealing[I].TempAcying.ghzengjian := array_DataDeal[I].AcyingData.ghzengjian;
+        if Form_UI.IsRun then
+        begin
+          array_DataDealing[I].TempAcying.Distance_Init := array_DataDeal[I].AcyingData.Distance_Init;
+          array_DataDealing[I].TempAcying.Pole_Init := array_DataDeal[I].AcyingData.Pole_Init;
+          array_DataDealing[I].TempAcying.initzengjian := array_DataDeal[I].AcyingData.initzengjian;
+          array_DataDealing[I].TempAcying.ghzengjian := array_DataDeal[I].AcyingData.ghzengjian;
+          array_DataDealing[I].TempAcying.ghRectify := array_DataDeal[I].AcyingData.ghRectify;
+        end
+        else
+        begin
+          if Form_UI.IsPlayback then
+          begin
+            if Form_UI.Setting_IsRectify then
+            begin
+              array_DataDealing[I].TempAcying.Distance_Init := array_DataDeal[I].AcyingData.Distance_Init;
+              array_DataDealing[I].TempAcying.Pole_Init := array_DataDeal[I].AcyingData.Pole_Init;
+              array_DataDealing[I].TempAcying.initzengjian := array_DataDeal[I].AcyingData.initzengjian;
+              array_DataDealing[I].TempAcying.ghzengjian := array_DataDeal[I].AcyingData.ghzengjian;
+              array_DataDealing[I].TempAcying.ghRectify := array_DataDeal[I].AcyingData.ghRectify;
+            end
+            else
+            begin
+              array_DataDealing[I].TempAcying.Distance_Init := Form_LineSetting.kilometer;
+              array_DataDealing[I].TempAcying.Pole_Init := Form_LineSetting.Pole_InitNumber;
+              array_DataDealing[I].TempAcying.initzengjian := Form_LineSetting.plus_minus;
+              array_DataDealing[I].TempAcying.ghzengjian := Form_LineSetting.Pole_Zengjian;
+              array_DataDealing[I].TempAcying.ghRectify := Form_UI.gh_IsRectify;
+            end;
+          end;
+        end;
       end;
 
       //滤波前vector赋值
@@ -1067,9 +1121,9 @@ begin
           begin
             tempKm := 0;
             startKm := array_DataDealing[I].TempAcying.Distance_Init;
-            startKmZengjian := array_DataDealing[I].TempAcying.initzengjian;
             Form_UI.DrawCache.clear;
             Form_UI.paintCounts := 0;
+            Form_UI.IsLiChengRectify := False;
           end;
 
           if startKmZengjian <> array_DataDealing[I].TempAcying.initzengjian then
@@ -1082,7 +1136,11 @@ begin
 
           if array_DataDealing[I].TempAcying.initzengjian = 1 then tempKm := tempKm + Abs((tempPlus - startPlus) * Form_UI.Distance_Pluse / 1000000)
           else tempKm := tempKm - Abs((tempPlus - startPlus) * Form_UI.Distance_Pluse / 1000000);
-          nowKm := tempKm + array_DataDealing[I].TempAcying.Distance_Init;
+          if Form_UI.IsLiChengRectify then
+          begin
+            nowKm := LiCheng_Rectify + tempKm
+          end
+          else nowKm := tempKm + array_DataDealing[I].TempAcying.Distance_Init;
           array_PlusResult[Form_UI.calingCounts - 1].mykilo := nowKm * 1000;
 
           //time_CalSpeed这个变量就类似于一个布尔类型来判断是否开始计算速度了
@@ -1102,11 +1160,8 @@ begin
               Form_UI.tempStartTime := Form_UI.tempEndTime;
               tmpSpeed := array_PlusResult[Form_UI.calingCounts - 1].myspeed;
             end
-            else
-            begin
-              Form_UI.tempEndTime := Form_UI.tempEndTime + time_Hz;
-              array_PlusResult[Form_UI.calingCounts - 1].myspeed := tmpSpeed;
-            end;
+            else array_PlusResult[Form_UI.calingCounts - 1].myspeed := tmpSpeed;
+            Form_UI.tempEndTime := Form_UI.tempEndTime + time_Hz;
           end;
           startPlus := tempPlus;
           Form_UI.GKilometer := nowKm;
@@ -1172,7 +1227,6 @@ begin
                 Form_UI.poleCounts := 0;
                 temp_MaxH := 0;
                 temp_MinH := 0;
-                startRecordKm := nowKm;
 
                 if startghNumber <> array_DataDealing[I].TempAcying.Pole_Init then
                 begin
@@ -1181,7 +1235,7 @@ begin
                   startGhzengjian := array_DataDealing[I].TempAcying.ghzengjian;
                 end;
 
-                if startghNumber <> array_DataDealing[I].TempAcying.ghzengjian then
+                if startGhzengjian <> array_DataDealing[I].TempAcying.ghzengjian then
                 begin
                   Form_UI.pole_ghNumb := -Form_UI.pole_ghNumb;
                   startGhzengjian := array_DataDealing[I].TempAcying.ghzengjian;
@@ -1189,6 +1243,20 @@ begin
 
                 if array_DataDealing[I].TempAcying.ghzengjian = 1 then Form_UI.pole_ghNumb := Form_UI.pole_ghNumb + 1
                 else Form_UI.pole_ghNumb := Form_UI.pole_ghNumb - 1;
+
+                //通过杆号进行公里标矫正
+                if array_DataDealing[I].TempAcying.ghRectify = 1 then
+                begin
+                  if Form_UI.IsPoleInformationExist(Form_UI.pole_ghNumb) then
+                  begin
+                    LiCheng_Rectify := Form_UI.PoleInformationRectify(Form_UI.pole_ghNumb);
+                    Form_UI.IsLiChengRectify := True;
+                    tempKm := 0;
+                  end;
+                end;
+
+                startRecordKm := nowKm;
+
                 array_PlusResult[Form_UI.calingCounts - 1].ghNumb := array_DataDealing[I].TempAcying.Pole_Init + Form_UI.pole_ghNumb;
               end;
             end;
@@ -1212,7 +1280,7 @@ begin
           begin
             if Form_UI.IsJCDL then
             begin
-              Form_UI.time_Electricity := GetTickCount;
+              Form_UI.time_Electricity := Form_UI.tempEndTime;
               Form_UI.IsJCDL := False;
             end;
           end
@@ -1220,7 +1288,7 @@ begin
           begin
             if not Form_UI.IsJCDL then
             begin
-              array_PlusResult[Form_UI.calingCounts - 1].RH_value := GetTickCount - Form_UI.time_Electricity;
+              array_PlusResult[Form_UI.calingCounts - 1].RH_value := Form_UI.tempEndTime - Form_UI.time_Electricity;
               Form_UI.IsJCDL := True;
             end;
           end;
@@ -1501,7 +1569,7 @@ begin
         end;
       end;
       Application.ProcessMessages;
-      Sleep(300);
+      Sleep(100);
     end;
   end;
 end;
@@ -1539,6 +1607,16 @@ end;
 procedure TForm_UI.Action_ForceDisplayExecute(Sender: TObject);
 begin
   RzPageControl.ActivePage := TabSheet_ContactForce;
+end;
+
+procedure TForm_UI.Action_GhRectifyFalseExecute(Sender: TObject);
+begin
+  gh_IsRectify := 0;
+end;
+
+procedure TForm_UI.Action_GhRectifyTrueExecute(Sender: TObject);
+begin
+  gh_IsRectify := 1;
 end;
 
 procedure TForm_UI.Action_HardspotDisplayExecute(Sender: TObject);
@@ -1615,6 +1693,16 @@ begin
   IsFirstCalibrate := True;
 end;
 
+procedure TForm_UI.Action_SettingRectifyFalseExecute(Sender: TObject);
+begin
+  Setting_IsRectify := False;
+end;
+
+procedure TForm_UI.Action_SettingRectifyTrueExecute(Sender: TObject);
+begin
+  Setting_IsRectify := True;
+end;
+
 procedure TForm_UI.Action_StartCollectExecute(Sender: TObject);
 begin
   case Init2DIP of
@@ -1631,7 +1719,6 @@ begin
             Counts_Save := 0;
             Counts_Number := 0;
             StartMs := 0;
-            startTime := FormatDateTime('yymmddhhnnss', Now);
             Data2DCache.clear;
             HvUDPCache.clear;
             LvUDPCache.clear;
@@ -1718,7 +1805,6 @@ begin
           if not IsRun then
           begin
             StartMs := 0;
-            startTime := FormatDateTime('yymmddhhnnss', Now);
             Data2DCache.clear;
             HvUDPCache.clear;
             LvUDPCache.clear;
@@ -1793,6 +1879,7 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
+    IsLiChengRectify := False;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -1889,6 +1976,7 @@ begin
     IsFirstCal := True;
     IsJCDL := True;
     IsGJD := False;
+    IsLiChengRectify := False;
     drawCounts:= 0;
     calingCounts := 0;
     noPlusCounts := 0;
@@ -1982,6 +2070,7 @@ begin
   BackupFilePath := ExtractFilePath(Application.ExeName) + AnsiString('ConfigurationFile\配置备份\ConfigurationFile.txt');
   SavedOriginalDataPath := ExtractFilePath(Application.ExeName) + AnsiString('SavedData\');
   SavedResultDataPath := ExtractFilePath(Application.ExeName) + AnsiString('DATA\');
+  PoleDataPath := ExtractFilePath(Application.ExeName) + AnsiString('Database\PoleData.ini');
 
   //2D初始化（导高拉出值）
 //  Set8087CW(DWord($133f));   //屏蔽错误用
@@ -2057,6 +2146,7 @@ begin
   IsFirstCal := True;
   IsJCDL := True;
   IsGJD := False;
+  IsLiChengRectify := False;
 
   //计算绘图技术点初始化
   drawCounts := 0;
@@ -2076,6 +2166,10 @@ begin
   time_CalSpeed := 0;
   tempStartTime := 0;
   tempEndTime := 0;
+
+  //是否矫正设置
+  gh_IsRectify := 0;
+  Setting_IsRectify := True;
 
   //2D错误值取前一个值数组初始化
   for I := 0 to 3 do
@@ -2175,80 +2269,82 @@ begin
   if not DirectoryExists(ExtractFilePath(BackupFilePath)) then ForceDirectories(ExtractFilePath(BackupFilePath));
   if not DirectoryExists(ExtractFilePath(SavedOriginalDataPath)) then ForceDirectories(ExtractFilePath(SavedOriginalDataPath));
   if not DirectoryExists(ExtractFilePath(SavedResultDataPath)) then ForceDirectories(ExtractFilePath(SavedResultDataPath));
+  if not DirectoryExists(ExtractFilePath(PoleDataPath)) then ForceDirectories(ExtractFilePath(PoleDataPath));
 end;
 
 procedure TForm_UI.InitConfigurationFile;
 var
-  ConfigurationTextFile : TextFile;
+  tempTextFile : TextFile;
   IniFile : TIniFile;
+  StringList: TStringList;
 begin
   try
-    AssignFile(ConfigurationTextFile, ConfigurationFilePath);
+    AssignFile(tempTextFile, ConfigurationFilePath);
     if not FileExists(ConfigurationFilePath) then
     Begin
-      Rewrite(ConfigurationTextFile);
-      Writeln(ConfigurationTextFile, '[基础设置]');
-      Writeln(ConfigurationTextFile, '线路名称 = 未知线路');
-      Writeln(ConfigurationTextFile, '');
+      Rewrite(tempTextFile);
+      Writeln(tempTextFile, '[基础设置]');
+      Writeln(tempTextFile, '线路名称 = 未知线路');
+      Writeln(tempTextFile, '');
 
-      Writeln(ConfigurationTextFile, '[传感器设置]');
-      Writeln(ConfigurationTextFile, '2DIP = 10.10.10.100');
-      Writeln(ConfigurationTextFile, 'HvUDPIP = 10.10.10.3');
-      Writeln(ConfigurationTextFile, 'HvUDPPort = 1025');
-      Writeln(ConfigurationTextFile, 'LvUDPIP = 10.10.10.2');
-      Writeln(ConfigurationTextFile, 'LvUDPPort = 1026');
-      Writeln(ConfigurationTextFile, 'AcyingUDPIP = 10.10.10.4');
-      Writeln(ConfigurationTextFile, 'AcyingUDPPort = 1027');
-      Writeln(ConfigurationTextFile, 'ComputerIP = 10.10.10.11');
-      Writeln(ConfigurationTextFile, 'ComputerPort = 1025');
-      Writeln(ConfigurationTextFile, 'ComputerPort = 1025');
-      Writeln(ConfigurationTextFile, 'Direction = 1');
-      Writeln(ConfigurationTextFile, '');
+      Writeln(tempTextFile, '[传感器设置]');
+      Writeln(tempTextFile, '2DIP = 10.10.10.100');
+      Writeln(tempTextFile, 'HvUDPIP = 10.10.10.3');
+      Writeln(tempTextFile, 'HvUDPPort = 1025');
+      Writeln(tempTextFile, 'LvUDPIP = 10.10.10.2');
+      Writeln(tempTextFile, 'LvUDPPort = 1026');
+      Writeln(tempTextFile, 'AcyingUDPIP = 10.10.10.4');
+      Writeln(tempTextFile, 'AcyingUDPPort = 1027');
+      Writeln(tempTextFile, 'ComputerIP = 10.10.10.11');
+      Writeln(tempTextFile, 'ComputerPort = 1025');
+      Writeln(tempTextFile, 'ComputerPort = 1025');
+      Writeln(tempTextFile, 'Direction = 1');
+      Writeln(tempTextFile, '');
 
-      Writeln(ConfigurationTextFile, '[车辆设置]');
-      Writeln(ConfigurationTextFile, '轮径值 = 840');
-      Writeln(ConfigurationTextFile, '轮径脉冲数 = 80');
+      Writeln(tempTextFile, '[车辆设置]');
+      Writeln(tempTextFile, '轮径值 = 840');
+      Writeln(tempTextFile, '轮径脉冲数 = 80');
 
-      Writeln(ConfigurationTextFile, '[参数设置]');
-      Writeln(ConfigurationTextFile, '是否补偿 = 0');
-      Writeln(ConfigurationTextFile, '弓网质量 = 30');
-      Writeln(ConfigurationTextFile, '电流标准值 = 1500');
-      Writeln(ConfigurationTextFile, '压力传感器1灵敏度系数 = 2');
-      Writeln(ConfigurationTextFile, '压力传感器2灵敏度系数 = 2');
-      Writeln(ConfigurationTextFile, '压力传感器3灵敏度系数 = 2');
-      Writeln(ConfigurationTextFile, '压力传感器4灵敏度系数 = 2');
-      Writeln(ConfigurationTextFile, '加速度1灵敏度系数 = 24');
-      Writeln(ConfigurationTextFile, '加速度2灵敏度系数 = 24');
-      Writeln(ConfigurationTextFile, '弓网力 = 120');
-      Writeln(ConfigurationTextFile, '载物力 = 10.2');
-      Writeln(ConfigurationTextFile, '');
+      Writeln(tempTextFile, '[参数设置]');
+      Writeln(tempTextFile, '是否补偿 = 0');
+      Writeln(tempTextFile, '弓网质量 = 30');
+      Writeln(tempTextFile, '电流标准值 = 1500');
+      Writeln(tempTextFile, '压力传感器1灵敏度系数 = 2');
+      Writeln(tempTextFile, '压力传感器2灵敏度系数 = 2');
+      Writeln(tempTextFile, '压力传感器3灵敏度系数 = 2');
+      Writeln(tempTextFile, '压力传感器4灵敏度系数 = 2');
+      Writeln(tempTextFile, '加速度1灵敏度系数 = 24');
+      Writeln(tempTextFile, '加速度2灵敏度系数 = 24');
+      Writeln(tempTextFile, '弓网力 = 120');
+      Writeln(tempTextFile, '载物力 = 10.2');
+      Writeln(tempTextFile, '');
 
-      Writeln(ConfigurationTextFile, '[标定]');
-      Writeln(ConfigurationTextFile, 'Force = 0');
-      Writeln(ConfigurationTextFile, 'Electricity = 0');
-      Writeln(ConfigurationTextFile, 'Power1 = 0');
-      Writeln(ConfigurationTextFile, 'Power2 = 0');
-      Writeln(ConfigurationTextFile, 'Power3 = 0');
-      Writeln(ConfigurationTextFile, 'Power4 = 0');
-      Writeln(ConfigurationTextFile, 'ACC1 = 0');
-      Writeln(ConfigurationTextFile, 'ACC2 = 0');
-      Writeln(ConfigurationTextFile, 'ACC3 = 0');
-      Writeln(ConfigurationTextFile, 'ACC4 = 0');
-      Writeln(ConfigurationTextFile, 'ACC5 = 0');
-      Writeln(ConfigurationTextFile, 'ACC6 = 0');
-      Writeln(ConfigurationTextFile, 'ForceK = 1');
-      Writeln(ConfigurationTextFile, 'ForceB = 0');
-      Writeln(ConfigurationTextFile, 'DGZ = 0');
-      Writeln(ConfigurationTextFile, 'LCZ = 0');
-      Writeln(ConfigurationTextFile, '');
+      Writeln(tempTextFile, '[标定]');
+      Writeln(tempTextFile, 'Force = 0');
+      Writeln(tempTextFile, 'Electricity = 0');
+      Writeln(tempTextFile, 'Power1 = 0');
+      Writeln(tempTextFile, 'Power2 = 0');
+      Writeln(tempTextFile, 'Power3 = 0');
+      Writeln(tempTextFile, 'Power4 = 0');
+      Writeln(tempTextFile, 'ACC1 = 0');
+      Writeln(tempTextFile, 'ACC2 = 0');
+      Writeln(tempTextFile, 'ACC3 = 0');
+      Writeln(tempTextFile, 'ACC4 = 0');
+      Writeln(tempTextFile, 'ACC5 = 0');
+      Writeln(tempTextFile, 'ACC6 = 0');
+      Writeln(tempTextFile, 'ForceK = 1');
+      Writeln(tempTextFile, 'ForceB = 0');
+      Writeln(tempTextFile, 'DGZ = 0');
+      Writeln(tempTextFile, 'LCZ = 0');
+      Writeln(tempTextFile, '');
 
-      Writeln(ConfigurationTextFile, '[调试]');
-      Writeln(ConfigurationTextFile, '调试 = 0');
-      Writeln(ConfigurationTextFile, '绘图点数 = 100');
-      Writeln(ConfigurationTextFile, '计算点数 = 100');
-      Writeln(ConfigurationTextFile, '');
+      Writeln(tempTextFile, '[调试]');
+      Writeln(tempTextFile, '调试 = 0');
+      Writeln(tempTextFile, '绘图点数 = 100');
+      Writeln(tempTextFile, '计算点数 = 100');
+      Writeln(tempTextFile, '');
 
-      CloseFile(ConfigurationTextFile);
+      CloseFile(tempTextFile);
     End;
 
     IniFile := TIniFile.Create(ConfigurationFilePath);
@@ -2315,6 +2411,23 @@ begin
 
     if IsDebug > 0 then Menu := MainMenu_UI
     else Menu := nil;
+
+    AssignFile(tempTextFile, PoleDataPath);
+    if not FileExists(PoleDataPath) then
+    Begin
+      Rewrite(tempTextFile);
+      Writeln(tempTextFile, '[杆号信息]');
+      Writeln(tempTextFile, '');
+
+      CloseFile(tempTextFile);
+    End;
+
+    IniFile := TIniFile.Create(PoleDataPath);
+    StringList := TStringList.Create;
+    IniFile.ReadSectionValues('杆号信息', StringList);
+    ReadPoleInformation(StringList);
+    StringList.Free;
+    IniFile.Free;
   except
     On E : Exception Do
     begin
@@ -2459,6 +2572,7 @@ begin
   tempData.Pole_Init := Form_LineSetting.Pole_InitNumber;
   tempData.initzengjian := Form_LineSetting.plus_minus;
   tempData.ghzengjian := Form_LineSetting.Pole_Zengjian;
+  tempData.ghRectify := gh_IsRectify;
   for I := 0 to 9 do tempData.Acying[I] := AData[I];
 
   New(tempDataAcying);
@@ -2892,5 +3006,56 @@ begin
   Buffer_Send[49] := StrToInt(FormatDateTime('ss', TempTime));
   IdUDPServer_Lv.SendBuffer('10.10.10.2', 1025, Buffer_Send);
   IdUDPServer_Hv.SendBuffer('10.10.10.3', 1025, Buffer_Send);
+end;
+
+procedure TForm_UI.ReadPoleInformation(tempStringList: TStringList);
+var
+  division: TArray<string>;
+  I: LongInt;
+  tmp : Single;
+begin
+  if tempStringList.Count > 0 then
+  begin
+    SetLength(Array_PoleInformation, tempStringList.Count);
+    for I := 0 to tempStringList.Count - 1 do
+    begin
+      division := tempStringList[I].Split(['=']);
+      Array_PoleInformation[I].ghnumb := Round(StrToFloat(division[0]));
+      Array_PoleInformation[I].ghKilometer := StrToFloat(division[1]);
+    end;
+  end
+  else SetLength(Array_PoleInformation, 0);
+end;
+
+function TForm_UI.IsPoleInformationExist(tempgh: Integer): Boolean;
+var
+  I: LongInt;
+begin
+  Result := False;
+  if Length(Array_PoleInformation) > 0 then
+  begin
+    for I := 0 to Length(Array_PoleInformation) - 1 do
+    begin
+      if tempgh = Array_PoleInformation[I].ghnumb then
+      begin
+        Result := True;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+function TForm_UI.PoleInformationRectify(tempgh: Integer): Single;
+var
+  I: LongInt;
+begin
+  for I := 0 to Length(Array_PoleInformation) - 1 do
+  begin
+    if tempgh = Array_PoleInformation[I].ghnumb then
+    begin
+      Result := Array_PoleInformation[I].ghKilometer;
+      Break;
+    end;
+  end;
 end;
 end.
